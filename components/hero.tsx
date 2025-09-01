@@ -1,5 +1,5 @@
 "use client"
-
+import chirag from "../public/chirag.png"
 import Link from "next/link"
 import { Star, Package, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -7,6 +7,7 @@ import { FlipWords } from "./ui/flip-words"
 import { BackgroundParticles } from "./parts/background-particles"
 import { AnimateIn } from "./parts/animate-in"
 import { CopyButton } from "./parts/copy-button"
+import Image from "next/image"
 export default function Hero() {
   const words = ["origins", "staging", "commits", "pushes"];
   return (
@@ -21,16 +22,25 @@ export default function Hero() {
         </AnimateIn>
 
         <AnimateIn>
-          <h1 className={cn("text-balance text-center text-4xl font-semibold sm:text-5xl md:text-6xl leading-tight")}>
+          <h1 className={cn("text-balance text-center text-4xl font-semibold sm:text-5xl md:text-6xl leading-tight flex gap-3 justify-center items-center")}>
             Meet <span className="text-transparent bg-clip-text bg-gradient-to-bl from-amber-400 to-amber-800">GitGenie</span>{" "}
-            <Sparkles className="inline-block align-middle h-[1em] w-[1em] text-amber-400" aria-hidden="true" />
+            {/* <Sparkles className="inline-block align-middle h-[1em] w-[1em] text-white" aria-hidden="true" /> */}
+            <Image
+              src={chirag}
+              alt="Git Genie"
+              width={50}
+              height={50}
+              priority
+              className="w-24"
+            />
+
           </h1>
         </AnimateIn>
 
         <AnimateIn delay={100}>
-          <p className="text-pretty mx-auto mt-6 max-w-3xl text-center text-lg leading-relaxed text-zinc-300 sm:text-xl">
+          <article className="text-pretty mx-auto mt-6 max-w-3xl text-center text-lg leading-relaxed text-zinc-300 sm:text-xl">
             Your AI-powered Git assistant — automate  <FlipWords words={words} /> <br />  with just one command.
-          </p>
+          </article>
         </AnimateIn>
 
         <AnimateIn delay={150}>
