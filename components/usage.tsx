@@ -1,7 +1,7 @@
 "use client"
 
 import { AnimateIn } from "./parts/animate-in"
-import AmbientBackground from "./parts/ambient-background"
+import AmbientBackground from "./parts/ambient-two"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion"
 import { CopyButton } from "./parts/copy-button"
 
@@ -29,8 +29,8 @@ export default function Usage() {
     },
     {
       flag: "--push-to-main",
-      desc: "Auto-merge & push.",
-      example: "gg --push",
+      desc: "Auto-merge with main & push.",
+      example: "gg --push-to-main",
     },
     {
       flag: "--remote <url>",
@@ -40,13 +40,18 @@ export default function Usage() {
   ]
 
   return (
-    <section id="usage" aria-labelledby="usage-title" className="relative mx-auto max-w-6xl px-6 py-20 sm:py-24">
+    <section id="usage" aria-labelledby="usage-title" className="relative mx-auto max-w-6xl px-6 py-20 sm:py-24 z-0">
       <AmbientBackground />
       <div className="mb-10">
         <AnimateIn>
+          <div>
+
           <h2 id="usage-title" className="text-2xl font-semibold sm:text-3xl">
             Usage & Flags
           </h2>
+                <div className="line h-1 mt-1 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
+
+          </div>
         </AnimateIn>
         <AnimateIn delay={60}>
           <p className="mt-3 max-w-2xl text-zinc-300">Configure Git Genie behavior with clean, human-friendly flags.</p>

@@ -2,7 +2,7 @@
 
 import { TerminalSquare, MessageSquarePlus, Flag } from "lucide-react"
 import { AnimateIn } from "./parts/animate-in"
-import AmbientBackground from "./parts/ambient-background"
+import AmbientBackground from "./parts/ambient-two"
 
 export default function Features() {
   const items = [
@@ -19,20 +19,24 @@ export default function Features() {
     {
       icon: <Flag className="h-6 w-6 text-amber-400" aria-hidden="true" />,
       title: "Custom flags.",
-      body: "Control with --no-ai, --staged, and more.",
+      body: "Control with --genie, --staged, and more.",
     },
   ]
 
   return (
-    <section aria-labelledby="features-title" className="relative mx-auto max-w-6xl px-6 py-20 sm:py-24">
+    <section aria-labelledby="features-title" className="relative mx-auto max-w-6xl px-6 py-20 sm:py-24 z-0 ">
       <AmbientBackground />
-      <h2 id="features-title" className="sr-only">
+      <div className="mb-10">
+
+      <h2 id="features-title" className="text-2xl font-semibold sm:text-3xl">
         Features
       </h2>
+      <div className="line h-1 mt-1 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
+      </div>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((it, idx) => (
           <AnimateIn key={it.title} delay={idx * 80}>
-            <article className="group rounded-2xl border border-white/10 bg-zinc-900/40 p-6 backdrop-blur transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.15)]">
+            <article className="group flex flex-col gap-1 rounded-2xl border border-white/10 bg-zinc-900/40 p-6 backdrop-blur transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.15)]">
               <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
                 {it.icon}
               </div>

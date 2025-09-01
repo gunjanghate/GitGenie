@@ -13,9 +13,20 @@ const plusJakarta = Plus_Jakarta_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
-  generator: "v0.app",
+  title: "Git Genie — AI-powered Git assistant",
+  description:
+    "Automate staging, commit messages, branch flow, and pushes in one command. Open-source NPM package to supercharge your Git workflow.",
+  alternates: { canonical: "https://git-genie.example.com" },
+  openGraph: {
+    title: "Git Genie — AI-powered Git assistant",
+    description: "Automate staging, commit messages, branch flow, and pushes in one command. Open-source NPM package.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Git Genie — AI-powered Git assistant",
+    description: "Automate staging, commit messages, branch flow, and pushes in one command.",
+  },
 }
 
 export default function RootLayout({

@@ -2,7 +2,7 @@
 
 import { AnimateIn } from "./parts/animate-in"
 import { CopyButton } from "./parts/copy-button"
-import AmbientBackground from "./parts/ambient-background"
+import AmbientBackground from "./parts/ambient-three"
 
 export default function HowItWorks() {
   const steps = [
@@ -27,13 +27,18 @@ export default function HowItWorks() {
   ]
 
   return (
-    <section id="how-it-works" aria-labelledby="how-title" className="relative mx-auto max-w-6xl px-6 py-20 sm:py-24">
+    <section id="how-it-works" aria-labelledby="how-title" className="relative mx-auto max-w-6xl px-6 py-20 sm:py-24 z-0">
       <AmbientBackground />
       <div className="mb-10">
         <AnimateIn>
+          <div>
+
           <h2 id="how-title" className="text-2xl font-semibold sm:text-3xl">
             How it works
           </h2>
+                <div className="line h-1 mt-1 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
+
+          </div>
         </AnimateIn>
         <AnimateIn delay={60}>
           <p className="mt-3 max-w-2xl text-zinc-300">
@@ -45,7 +50,7 @@ export default function HowItWorks() {
       <ol className="grid gap-6 md:grid-cols-3">
         {steps.map((s, i) => (
           <AnimateIn key={s.badge} delay={i * 90}>
-            <li className="group flex h-full flex-col rounded-2xl border border-white/10 bg-zinc-900/40 p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.12)]">
+            <li className="group flex h-full flex-col gap-4 rounded-2xl border border-white/10 bg-zinc-900/40 p-6 transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.12)]">
               <div className="mb-3 inline-flex items-center gap-2">
                 <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-300">
                   {s.badge}

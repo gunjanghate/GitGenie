@@ -17,7 +17,7 @@ export function CopyButton({ text }: { text: string }) {
           setTimeout(() => setCopied(false), 1500)
         } catch {}
       }}
-      className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-200 transition-colors hover:border-amber-400/40"
+      className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-200 transition-colors hover:border-amber-400/40"
     >
       {copied ? (
         <>

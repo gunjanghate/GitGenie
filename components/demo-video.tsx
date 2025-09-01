@@ -45,15 +45,21 @@ export default function DemoVideoSection() {
     <section
       id="demo"
       aria-labelledby="demo-heading"
-      className="relative mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8"
+      className="relative mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 z-0 py-12"
     >
+      
       {/* Background: unified AmbientBackground for cohesion */}
       <AmbientBackground variant="demo" />
 
-      <header className="mb-6 text-center">
+      <header className="py-12 text-center">
+        <div className="w-full flex flex-col justify-center items-center">
+
         <h2 id="demo-heading" className="text-pretty text-3xl font-semibold tracking-tight text-white sm:text-4xl">
           Watch a quick demo
         </h2>
+        <div className="line h-1 mt-2 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
+
+        </div>
         <p className="mx-auto mt-2 max-w-2xl text-balance text-base text-zinc-400 sm:text-lg">
           See how to stage, generate a Conventional Commit with AI, and push in one command.
         </p>
@@ -64,7 +70,7 @@ export default function DemoVideoSection() {
         <DialogTrigger asChild>
           <button
             type="button"
-            className="group relative mx-auto block aspect-video w-full overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-xl focus:outline-none focus:ring-2 focus:ring-amber-400/60"
+            className="group relative mx-auto block aspect-video w-3/4 overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-xl focus:outline-none focus:ring-2 focus:ring-amber-400/60"
             aria-label="Play demo video"
           >
             {/* Poster/thumbnail */}
@@ -111,9 +117,7 @@ export default function DemoVideoSection() {
         <DocsModal />
       </div>
 
-      <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-zinc-500">
-        Tip: set NEXT_PUBLIC_DEMO_VIDEO_URL to your MP4 or YouTube URL to replace this demo without code changes.
-      </p>
+
     </section>
   )
 }

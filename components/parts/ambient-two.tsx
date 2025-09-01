@@ -15,17 +15,22 @@ export default function AmbientBackground({
     <div className={cn("pointer-events-none absolute inset-0 -z-10 overflow-hidden", className)}>
       {variant === "default" && (
         <>
-          <span
-            className="absolute -top-1/3 left-1/4 h-[45vh] w-[45vh] rounded-full bg-amber-500/10 blur-3xl will-change-transform"
+          {/* <span
+            className="absolute -bottom-1/3 left-1/4 h-[45vh] w-[45vh] rounded-full bg-amber-500/10 blur-3xl will-change-transform"
             style={{ animation: "amb_blob1 26s ease-in-out infinite" }}
             aria-hidden="true"
-          />
+          /> */}
           <span
-            className="absolute -bottom-1/3 right-1/4 h-[40vh] w-[40vh] rounded-full bg-white/5 blur-3xl will-change-transform"
+            className="absolute -top-1/3 right-1/4 h-[40vh] w-[40vh] rounded-full bg-white/5 blur-3xl will-change-transform"
             style={{ animation: "amb_blob2 30s ease-in-out infinite" }}
             aria-hidden="true"
           />
-          <div className="absolute inset-0 bg-[radial-gradient(900px_420px_at_50%_-120px,rgba(245,158,11,0.06),transparent)]" />
+          <span
+            className="absolute top-1/2 left-1/4 h-[40vh] w-[40vh] rounded-full bg-white/5 blur-3xl will-change-transform"
+            style={{ animation: "amb_blob2 30s ease-in-out infinite" }}
+            aria-hidden="true"
+          />
+          {/* <div className="absolute inset-0 bg-[radial-gradient(900px_420px_at_50%_-120px,rgba(245,158,11,0.06),transparent)]" /> */}
         </>
       )}
 
@@ -34,7 +39,7 @@ export default function AmbientBackground({
           {/* soft focus behind CTA area */}
           <div className="absolute inset-0 bg-[radial-gradient(600px_260px_at_50%_70%,rgba(245,158,11,0.10),transparent)]" />
           <span
-            className="absolute -bottom-1/3 left-1/2 h-[40vh] w-[40vh] -translate-x-1/2 rounded-full bg-amber-500/10 blur-3xl will-change-transform"
+            className="absolute -bottom-1/4 left-1/2 h-[40vh] w-[40vh] -translate-x-1/2 rounded-full bg-amber-500/10 blur-3xl will-change-transform"
             style={{ animation: "amb_blob2 28s ease-in-out infinite" }}
             aria-hidden="true"
           />

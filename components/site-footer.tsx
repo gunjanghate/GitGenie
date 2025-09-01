@@ -10,7 +10,7 @@ export default function SiteFooter() {
         <FooterCol
           title="Git Genie"
           links={[
-            { href: "https://github.com/your-org/git-genie", label: "GitHub Repo" },
+            { href: "https://github.com/gunjanghate/git-genie", label: "GitHub Repo" },
             { href: "https://www.npmjs.com/package/@gunjanghate/git-genie", label: "NPM Package" },
             { href: "#", label: "Docs" },
           ]}
@@ -18,9 +18,9 @@ export default function SiteFooter() {
         <FooterCol
           title="Community"
           links={[
-            { href: "https://github.com/your-org/git-genie#contributing", label: "Contribute" },
-            { href: "https://github.com/your-org/git-genie/issues", label: "Report Issues" },
-            { href: "https://github.com/your-org/git-genie/discussions", label: "Discussion" },
+            { href: "https://github.com/gunjanghate/git-genie#contributing", label: "Contribute" },
+            { href: "https://github.com/gunjanghate/git-genie/issues", label: "Report Issues" },
+            { href: "https://github.com/gunjanghate/git-genie/discussions", label: "Discussion" },
           ]}
         />
         <FooterCol
@@ -36,7 +36,7 @@ export default function SiteFooter() {
           links={[
             { href: "https://twitter.com", label: "Twitter/X" },
             { href: "https://www.npmjs.com/package/@gunjanghate/git-genie", label: "NPM" },
-            { href: "https://github.com/your-org/git-genie", label: "GitHub" },
+            { href: "https://github.com/gunjanghate/git-genie", label: "GitHub" },
           ]}
         />
       </div>
