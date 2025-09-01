@@ -23,9 +23,12 @@ function getYouTubeEmbed(url: string) {
 }
 
 export default function DemoVideoSection() {
-  // Read at build/runtime for public env; fallback to demo mp4
-  const demoSrc =
-    process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+  // Options for video source:
+  // 1. YouTube URL (recommended): "https://www.youtube.com/watch?v=YOUR_VIDEO_ID"
+  // 2. Direct Google Drive download: "https://drive.google.com/uc?export=download&id=1WXQIao0jxiNrTvmY_0-Xq9kgO-K3KHfg"
+  // 3. Local video file: "/demo.mp4"
+
+  const demoSrc = "/demo.mp4" // Changed from "../public/demo.mp4" to "/demo.mp4" (correct public path)
   const youTubeOpenUrl = useMemo(() => getYouTubeEmbed(demoSrc), [demoSrc])
   const isYouTube = !!youTubeOpenUrl
 
@@ -47,17 +50,17 @@ export default function DemoVideoSection() {
       aria-labelledby="demo-heading"
       className="relative mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 z-0 py-12"
     >
-      
+
       {/* Background: unified AmbientBackground for cohesion */}
       <AmbientBackground variant="demo" />
 
       <header className="py-12 text-center">
         <div className="w-full flex flex-col justify-center items-center">
 
-        <h2 id="demo-heading" className="text-pretty text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-          Watch a quick demo
-        </h2>
-        <div className="line h-1 mt-2 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
+          <h2 id="demo-heading" className="text-pretty text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            Watch a quick demo
+          </h2>
+          <div className="line h-1 mt-2 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
 
         </div>
         <p className="mx-auto mt-2 max-w-2xl text-balance text-base text-zinc-400 sm:text-lg">

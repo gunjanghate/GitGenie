@@ -5,26 +5,27 @@ import { CopyButton } from "./parts/copy-button"
 import AmbientBackground from "./parts/ambient-three"
 
 export default function HowItWorks() {
-  const steps = [
-    {
-      badge: "Step 1",
-      title: "Install",
-      cmd: "npm i @gunjanghate/git-genie",
-      desc: "Add Git Genie to your repository.",
-    },
-    {
-      badge: "Step 2",
-      title: "Generate commit",
-      cmd: 'gg "your code changes"',
-      desc: "Stages changes and generates a Conventional Commit using AI.",
-    },
-    {
-      badge: "Step 3",
-      title: "Push & done",
-      cmd: "gg --push",
-      desc: "Push with optional merge depending on flags.",
-    },
-  ]
+const steps = [
+  {
+    badge: "Step 1",
+    title: "Install",
+    cmd: "npm install @gunjanghate/git-genie",
+    desc: "Add Git Genie to your project in seconds.",
+  },
+  {
+    badge: "Step 2",
+    title: "Generate commit",
+    cmd: 'gg "short description of your changes"',
+    desc: "Stages files and creates a clean Conventional Commit using AI.",
+  },
+  {
+    badge: "Step 3",
+    title: "Customize with flags",
+    cmd: "gg \"your changes\" --type feat --scope auth",
+    desc: "Control commit type, scope, and AI usage with flexible flags.",
+  },
+];
+
 
   return (
     <section id="how-it-works" aria-labelledby="how-title" className="relative mx-auto max-w-6xl px-6 py-20 sm:py-24 z-0">
