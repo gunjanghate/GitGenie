@@ -23,7 +23,7 @@ function getYouTubeEmbed(url: string) {
 }
 
 export default function DemoVideoSection() {
-  // Options for video source:
+
   // 1. YouTube URL (recommended): "https://www.youtube.com/watch?v=YOUR_VIDEO_ID"
   // 2. Direct Google Drive download: "https://drive.google.com/uc?export=download&id=1WXQIao0jxiNrTvmY_0-Xq9kgO-K3KHfg"
   // 3. Local video file: "/demo.mp4"
