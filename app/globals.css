@@ -168,3 +168,7 @@
     scrollbar-width: none;
   }
 }
+::selection {
+  background: #d9a403c8;
+  color: #ffffff;
+}

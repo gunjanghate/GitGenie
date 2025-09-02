@@ -24,7 +24,7 @@ export default function Features() {
   ]
 
   return (
-    <section aria-labelledby="features-title" className="relative mx-auto max-w-6xl px-6 py-20 sm:py-24 z-0 ">
+    <section aria-labelledby="features-title" className="relative mx-auto max-w-6xl px-6 py-20 sm:py-24  ">
       <AmbientBackground />
       <div className="mb-10">
 
@@ -33,7 +33,7 @@ export default function Features() {
       </h2>
       <div className="line h-1 mt-1 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
       </div>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 z-0">
         {items.map((it, idx) => (
           <AnimateIn key={it.title} delay={idx * 80}>
             <article className="group flex flex-col gap-1 rounded-2xl border border-white/10 bg-zinc-900/40 p-6 backdrop-blur transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.15)]">
