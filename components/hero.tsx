@@ -69,11 +69,11 @@ export default function Hero() {
                     className="block overflow-hidden text-ellipsis whitespace-nowrap pr-1"
                     title={"install command"}
                   >
-                    npm i @gunjanghate/git-genie
+                    npm i @gunjanghate/git-genie@latest
                   </code>
                 </div>
                 <div className="shrink-0">
-                  <CopyButton text={"npm i @gunjanghate/git-genie"} />
+                  <CopyButton text={"npm i @gunjanghate/git-genie@latest"} />
                 </div>
               </div>
         </AnimateIn>

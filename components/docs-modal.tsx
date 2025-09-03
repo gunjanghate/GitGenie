@@ -17,7 +17,7 @@ function CopyInline({ text }: { text: string }) {
       await navigator.clipboard.writeText(text)
       setCopied(true)
       setTimeout(() => setCopied(false), 1200)
-    } catch {}
+    } catch { }
   }
   return (
     <button
@@ -80,266 +80,197 @@ function SafeParagraph({ children }: { children: React.ReactNode }) {
   return containsBlock ? <div className={base}>{children}</div> : <p className={base}>{children}</p>
 }
 
-const DOCS_MD = `# Git Genie — Complete Usage Guide
+const DOCS_MD = `# Git Genie — Updated Usage Guide (Current Implementation)
 
-> **Short:** Git Genie (\`git-genie\` / \`gg\`) is an AI-powered CLI that automates staging, Conventional Commit generation (Gemini), branch flow, and push/merge in one command. This page is your one-stop reference.
+> **Essence:** \`gg\` automates staging, Conventional Commit creation (Gemini), branch flow, optional merge to main, and push. Now includes a persistent API key config command.
 
 ---
 
-## Table of contents
+## Contents
 - Quick start
 - Install & verify
-- Basic command syntax
-- Flags / Options (deep dive)
-- How Git Genie works (step-by-step)
-- Complete workflows (examples)
-- Advanced usage & edge cases
-- Hooks & CI tips
-- Troubleshooting & common errors
+- Configure Gemini API key
+- Command syntax & options
+- How it works (mapped to source)
+- Common workflows
+- Branch & merge behavior
+- AI commit generation details
+- Examples
+- Troubleshooting
 - Security & privacy
-- Contribution guide
-- FAQ
-- Changelog & releases
-- Contact & support
+- Contributing / roadmap
+- FAQ / Support
 
 ---
 
-## Quick start (30 seconds)
-Install (global):
+## Quick start
+Global install:
 \`\`\`bash
 npm install -g @gunjanghate/git-genie
-# or
-npm install -g git-genie-cli   # if you published under a different name
-Run a quick test:
 \`\`\`
 
+Configure your Gemini API key (one time):
 \`\`\`bash
-gg "fix readme typos" --genie
-# or
-git-genie "feat: add login" --type feat --scope auth
+gg config YOUR_GEMINI_API_KEY_HERE
+\`\`\`
+
+Make a commit with AI assist:
+\`\`\`bash
+gg "add user profile section" --type feat --scope ui --genie
 \`\`\`
 
 ## Install & verify
-
-Global install
 \`\`\`bash
-npm install -g @gunjanghate/git-genie
-\`\`\`
-
-One-line test without installing globally (npx)
-\`\`\`bash
-npx @gunjanghate/git-genie "fix typo" 
-\`\`\`
-
-Verify your install
-\`\`\`bash
-which gg       # macOS/Linux
-Get-Command gg # PowerShell
+which gg            # macOS / Linux
+Get-Command gg      # PowerShell
 gg --help
 \`\`\`
 
-## Basic command syntax
+Use ad‑hoc (no global install):
 \`\`\`bash
-gg "<short description>" [options]
+npx @gunjanghate/git-genie "fix typo" --genie
 \`\`\`
 
-Example:
+## Configure Gemini API key
+Priority order used by the CLI:
+1. \`GEMINI_API_KEY\` env var (process.env)
+2. Stored config file: \`~/.gitgenie/config.json\`
+
+Store key:
 \`\`\`bash
-gg "add new auth flow" --type feat --scope auth
+gg config <API_KEY>
 \`\`\`
 
-\`<short description>\` is a short human description used in fallback commit messages and optionally fed to AI as context.
-
-## Flags & options (full reference)
-\`\`\`bash
---type <type>        # Commit type (default: feat). Common: feat, fix, docs, style, refactor, test, chore, ci, build, perf
---scope <scope>      # Optional scope for Conventional Commit (e.g., auth, api, ui)
---genie             # Enable AI commit generation (force fallback)
---no-branch          # Skip interactive branch selection and commit directly to main
---push-to-main       # Merge current branch to main and push main (use carefully)
---remote <url>       # Add remote origin when initializing a new repo
---help               # Show usage
+Edit manually (optional):
+\`\`\`json
+{ "GEMINI_API_KEY": "sk-..." }
 \`\`\`
 
-Examples:
+Remove key: delete the file \`~/.gitgenie/config.json\`.
 
-Use fallback commit message:
+## Command syntax
 \`\`\`bash
-gg "update docs" 
+gg <desc> [options]
+\`\`\`
+\`<desc>\` = short human summary (used in fallback commit message if AI unavailable).
+
+### Subcommands
+\`config <apikey>\`  – Persist Gemini key.
+
+### Options
+\`--type <type>\`        Conventional Commit type (default: feat)
+\`--scope <scope>\`       Optional scope, e.g. auth, api, ui
+\`--genie\`               Enable AI commit generation (Gemini)
+\`--no-branch\`           Commit directly to main (skip prompt)
+\`--push-to-main\`        After commit: merge current branch into main & push
+\`--remote <url>\`        Add remote origin if repo just initialized
+\`--help\`                Show help
+
+Types: feat | fix | docs | style | refactor | test | chore | ci | build | perf
+
+Fallback commit format (no AI or failure): \`type(scope?): desc\`.
+
+## How it works (step mapping)
+1. Parse args via Commander (main action wrapper).
+2. Repo check: if not a git repo → \`git init\`.
+3. Remote: if \`--remote\` provided → attempt \`git remote add origin <url>\` (ignore if exists).
+4. Detect first commit (rev-parse HEAD).
+5. Branch logic:
+  - If \`--no-branch\` OR no commits → force/create main (\`git checkout -B main\`).
+  - Else interactive: current branch vs create new branch.
+  - Suggested new branch: \`<type>/<slugified-desc>-YYYY-MM-DD\`.
+6. Staging: if no staged diff → auto stage all (./*) → re-check; error if still empty.
+7. AI commit generation (if \`--genie\` & key): send staged diff to Gemini model \`gemini-2.0-flash\` with strict prompt; capture plain message.
+8. Commit: \`git commit "<message>"\`.
+9. Push flow:
+  - If \`--push-to-main\` and not on main → merge helper (see below).
+  - Else prompt to push; if yes → push with retry (2 retries).
+  - If pushed and branch != main → optional prompt to merge to main.
+10. Optional merge to main: checkout main → pull → merge feature → push → optional delete local + remote branch.
+
+## Common workflows
+Feature with AI + push:
+\`\`\`bash
+gg "add oauth flow" --type feat --scope auth --genie
 \`\`\`
 
-Create a feature branch with suggested name and use AI:
+Direct quick fix on main:
 \`\`\`bash
-gg "add oauth" --type feat --scope auth
+gg "fix typo in README" --no-branch --genie
 \`\`\`
 
-Initialize repo, set remote and commit to main:
+Initialize new repo + remote:
 \`\`\`bash
 gg "initial commit" --no-branch --remote https://github.com/you/repo.git --genie
 \`\`\`
 
-Auto-merge feature branch to main and push:
-\`\`\`bash
-gg "finish feature X" --push-to-main
-\`\`\`
-
-## How Git Genie works (end-to-end flow)
-
-**Parse CLI args**  
-Commander reads the short description and flags.
-
-**Repo check / init**  
-\`git checkIsRepo()\` — if not a repo, runs \`git init\` and sets up main.
-
-**Add remote (optional)**  
-If \`--remote <url>\` provided, tries \`git remote add origin <url>\`.
-
-**Has commits check**  
-If no commits yet, Git Genie can create initial branch/commit as required.
-
-**Branch decision**  
-If \`--no-branch\` or no commits: switch/create main.
-
-Otherwise: interactive prompt (commit to current branch or create new branch). New branch suggestion: \`{type}/{slug}-{YYYY-MM-DD}\`.
-
-**Staging**  
-Runs \`git diff --cached\`. If empty, auto runs \`git add ./\` and re-checks the diff. If still empty, aborts with “no changes”.
-
-**Commit message generation**  
-If AI enabled (and \`GEMINI_API_KEY\` present): send staged diff to Gemini \`gemini-1.5-flash\` with a concise prompt that requests a Conventional Commit message.
-
-If AI disabled or API fails: fallback message uses \`\${type}\${scope ? (\${scope}) : ''}: \${desc}\`.
-
-**Commit**  
-\`git commit "<message>"\`. Handles first-commit scenarios.
-
-**Push / Merge**  
-If user confirmed push, uses \`git push origin <branch>\` (with retry logic).
-
-If \`--push-to-main\` OR user accepted the merge prompt: checkout main, pull, \`git merge <branch>\`, push main, optionally delete the feature branch (offers remote deletion too).
-
-### Commit message generation – practical notes
-What is sent to AI? Only the staged diff (\`git diff --cached\`) — lines starting with +/- and file headers.
-
-Privacy: If sensitive, don't use \`--genie\`. Do not commit secrets. Always ensure \`.env\` is in \`.gitignore\`.
-
-Prompting rules: Git Genie requests a short Conventional Commit format \`type(scope): description\`, imperative mood, <50 char description, no trailing period.
-
-Example AI-generated message:
-\`\`\`bash
-feat(auth): add OAuth2 password grant support
-\`\`\`
-
-## Complete common workflows (step-by-step)
-
-1) Normal feature workflow (recommended)
-\`\`\`bash
-# Work locally, stage changes automatically if you forget
-gg "add user profile page" --type feat --scope ui
-# Confirm push when prompted; optionally merge to main afterward
-\`\`\`
-Outcome: feature branch created (if not on main), message generated by AI, commit done, pushed to remote.
-
-2) Quick fix directly to main
-\`\`\`bash
-gg "fix typo in README" --no-branch --genie
-\`\`\`
-Outcome: commit made directly on main with fallback message.
-
-3) First commit for a new repo + remote
-\`\`\`bash
-gg "initial commit" --no-branch --genie --remote https://github.com/you/repo.git
-\`\`\`
-Outcome: repo initialized, remote added, first commit on main, optional push when asked.
-
-4) Auto-merge after a feature
+Auto merge after finishing work:
 \`\`\`bash
 gg "implement payment flow" --push-to-main
 \`\`\`
-Outcome: commits on feature branch, then auto-merge into main and push (may prompt to delete the feature branch).
 
-## Advanced & edge-case guidance
+## Branch & merge behavior
+- New branch name slug = type + sanitized desc + date.
+- \`--push-to-main\` triggers: checkout main → pull (non-fatal if remote missing) → merge → push main → optional feature cleanup.
+- Branch cleanup: interactive confirm; deletes local + tries remote (ignored if absent).
 
-- Merge conflicts: \`--push-to-main\` will fail if merge conflicts exist. Resolve manually:
-  - \`git checkout main\`
-  - \`git merge <branch>\`
-  - Resolve conflicts, \`git add\` changed files, \`git commit\` and \`git push\`
-- Large diffs / token limits: If your staged diff is huge and AI provider errors, Git Genie falls back to a simple conventional message. Consider staging only essential files or passing a \`--stat\` mode (planned / future).
-- Monorepos: Not auto-scoped: use \`--scope\` to indicate package scope.
-- CI usage: You can call \`npx @gunjanghate/git-genie\` in CI, but CI environments should set environment variables and ensure proper git credentials (token-based) if pushing automatically.
+## AI commit generation
+Model: \`gemini-2.0-flash\`.
+Prompt enforces: Conventional Commit, max ~50 char description, imperative, lowercase first letter, no trailing period.
+Only staged diff is sent (added/removed lines & headers). No untracked / unstaged content.
+Failure path: logs warning + fallback commit string.
 
-## Hooks & local integration
-To use Git Genie with git commit hooks, you can add a \`prepare-commit-msg\` hook that uses a helper mode (if you add such a mode). Example baseline hook (safe fallback):
+## Examples
+Plain conventional commit (no AI):
 \`\`\`bash
-#!/usr/bin/env bash
-# skips merge commits
-if grep -qi 'merge' "$1" 2>/dev/null; then exit 0; fi
-DIFF=$(git diff --staged)
-if [ -z "$DIFF" ]; then exit 0; fi
-# Basic fallback subject for the hook:
-echo "chore: update files" > "$1"
-exit 0
+gg "add dark mode toggle" --type feat --scope ui
 \`\`\`
-Note: hooks are local to each dev. Provide a script \`scripts/install-hooks\` to distribute (optional).
 
-## Troubleshooting (common errors & fixes)
-- "Not a Git repository"  
-  Fix: run inside a repo or initialize: \`git init\` or use \`gg ... --no-branch --remote <url>\`.
+Force AI (if key missing → fallback + warning):
+\`\`\`bash
+gg "refactor data layer" --type refactor --genie
+\`\`\`
 
-- "No changes detected to commit even after staging."  
-  Cause: files ignored by \`.gitignore\` or nothing to commit. Check \`git status\`.
+Custom remote same run:
+\`\`\`bash
+gg "initial commit" --no-branch --remote https://github.com/you/new.git
+\`\`\`
 
-- Gemini/API fails or \`GEMINI_API_KEY\` missing  
-  Fix: set \`GEMINI_API_KEY\` in \`.env\` or OS env; otherwise use \`--genie\`.
-
-- Push failed (network/auth)  
-  Fix: check remote URL, authenticate (\`gh auth login\` or set git credentials), retry. If persistent, push manually: \`git push origin <branch>\`.
-
-- Publish / npm pitfalls  
-  If \`npm publish\` errors about name conflicts, publish under a scope: \`@username/git-genie\` and use \`npm publish --access public\`.
+## Troubleshooting
+"GEMINI_API_KEY not found" → Run \`gg config <key>\` or export env var.
+"No changes detected to commit" → Ensure edits; check \`git status\`; verify .gitignore.
+Push retries failing → validate remote URL & auth; run manual: \`git push origin <branch>\`.
+Merge conflicts (during \`--push-to-main\`): resolve manually, then commit & push main.
+Branch already exists (creating) → choose a different name.
 
 ## Security & privacy
-Only the staged diff is sent to Gemini; if that still contains secrets, do not use AI. Then Don't use \`--genie\` for this.
+- Only staged diff leaves machine when using AI.
+- Avoid staging secrets; keep \`.env\` out of git.
+- Delete config file if rotating keys.
 
-Don't commit credentials or \`.env\` files. Add \`.env\` to \`.gitignore\`.
+## Contributing / roadmap
+Planned: PR automation, partial diff selection, stats mode, model selection flag.
+Contribute: fork → branch → changes → \`gg "feat xyz" --genie\` → PR.
 
-Use private org policy for sensitive repos.
+## FAQ
+Q: Windows support?  A: Yes (PowerShell tested).  
+Q: Key storage secure?  A: Plain JSON in home dir; set perms yourself if needed.  
+Q: Can it open PRs?  A: Not yet (roadmap).  
+Q: Model configurable?  A: Currently fixed to \`gemini-2.0-flash\`.
 
-## Contributing
-To contribute:
-
-- Fork the repo → clone → \`npm install\`.
-- Create a feature branch: \`git checkout -b feat/cool\`.
-- Make changes, test locally: \`npm link\` to test CLI.
-- Run: \`gg "describe your change" --genie\` to make a commit for PR.\*
-- Open a PR against main, include a short description and testing steps.
-
-\* You can also commit manually for PR changes.
-
-## FAQ (short)
-- **Q: Can Git Genie auto-open a PR?**  
-  **A:** Not in the current release — PR autopilot is planned (requires \`gh\` CLI integration).
-
-- **Q: Will my code be shared with Google?**  
-  **A:** Staged diffs are sent to Gemini when AI is enabled. Use \`--genie\` for this.
-
-- **Q: Does it work on Windows?**  
-  **A:** Yes — tested on PowerShell. \`chmod\` is not required on Windows.
-
-## Changelog & releases (how you publish)
-Bump version and publish:
+## Publish (maintainers)
 \`\`\`bash
-npm version patch    # increments package.json
-npm publish --access public   # scoped packages require --access public
+npm version patch   # or minor / major
+npm publish --access public
 \`\`\`
 
-## Support & contact
+## Support
 - GitHub: https://github.com/gunjanghate/git-genie
 - Issues: https://github.com/gunjanghate/git-genie/issues
 - NPM: https://www.npmjs.com/package/@gunjanghate/git-genie
-- Twitter/X: @gunjanghate
+- X / Twitter: @gunjanghate11
 
-_End of docs_
+_End of updated docs_
 `
 
 export default function DocsModal() {
@@ -350,7 +281,7 @@ export default function DocsModal() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button
-        id="docs"
+          id="docs"
           type="button"
           className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/90 transition hover:bg-white/10"
         >

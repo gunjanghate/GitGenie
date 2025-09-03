@@ -5,39 +5,45 @@ import { CopyButton } from "./parts/copy-button"
 import AmbientBackground from "./parts/ambient-three"
 
 export default function HowItWorks() {
-const steps = [
-  {
-    badge: "Step 1",
-    title: "Install",
-    cmd: "npm install @gunjanghate/git-genie",
-    desc: "Add Git Genie to your project in seconds.",
-  },
-  {
-    badge: "Step 2",
-    title: "Generate commit",
-    cmd: 'gg "short description of your changes"',
-    desc: "Stages files and creates a clean Conventional Commit using AI.",
-  },
-  {
-    badge: "Step 3",
-    title: "Customize with flags",
-    cmd: "gg \"your changes\" --type feat --scope auth",
-    desc: "Control commit type, scope, and AI usage with flexible flags.",
-  },
-];
+  const steps = [
+    {
+      badge: "Step 1",
+      title: "Install",
+      cmd: "npm install -g @gunjanghate/git-genie",
+      desc: "Install Globally or Root of the project .",
+    },
+    {
+      badge: "Step 2",
+      title: "Configure AI (once)",
+      cmd: "gg config YOUR_GEMINI_API_KEY",
+      desc: "Saves key to ~/.gitgenie/config.json so --genie can generate commits.",
+    },
+    {
+      badge: "Step 3",
+      title: "Commit with AI",
+      cmd: 'gg "add user profile section" --type feat --scope ui --genie',
+      desc: "Auto stages (if needed), builds Conventional Commit via Gemini, commits.",
+    },
+    {
+      badge: "Step 4",
+      title: "Push / Merge",
+      cmd: 'gg "finish oauth flow" --push-to-main',
+      desc: "Either accept push prompts or auto merge to main & push in one go.",
+    },
+  ];
 
 
   return (
-    <section id="how-it-works" aria-labelledby="how-title" className="relative mx-auto max-w-6xl px-6 py-20 sm:py-24 z-0">
+    <section id="how-it-works" aria-labelledby="how-title" className="relative mx-auto lg:mx-32 max-w-6xl px-6 py-20 sm:py-24 z-0">
       <AmbientBackground />
       <div className="mb-10">
         <AnimateIn>
           <div>
 
-          <h2 id="how-title" className="text-2xl font-semibold sm:text-3xl">
-            How it works
-          </h2>
-                <div className="line h-1 mt-1 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
+            <h2 id="how-title" className="text-2xl font-semibold sm:text-3xl">
+              How it works
+            </h2>
+            <div className="line h-1 mt-1 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
 
           </div>
         </AnimateIn>

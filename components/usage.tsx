@@ -40,7 +40,7 @@ export default function Usage() {
   ]
 
   return (
-    <section id="usage" aria-labelledby="usage-title" className="relative mx-auto max-w-6xl px-6 py-20 sm:py-24 z-0">
+    <section id="usage" aria-labelledby="usage-title" className="relative mx-auto lg:mx-32 max-w-6xl px-6 py-20 sm:py-24 z-0">
       <AmbientBackground />
       <div className="mb-10">
         <AnimateIn>
