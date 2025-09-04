@@ -63,13 +63,13 @@ export default function Community() {
       <AnimateIn delay={180}>
         <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
         <a
-          href="https://github.com/gunjanghate/git-genie"
+          href="https://github.com/gunjanghate/GitGenie"
           className="inline-block rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black transition-transform hover:scale-[1.03] hover:shadow-[0_0_0_3px_rgba(245,158,11,0.25)] focus-visible:scale-[1.01]"
         >
           View on GitHub
         </a>
         <a
-          href="https://github.com/gunjanghate/git-genie/issues"
+          href="https://github.com/gunjanghate/GitGenie/issues"
           className="inline-block rounded-full border border-zinc-700 bg-zinc-800 px-5 py-2.5 text-sm font-medium text-white transition-transform hover:scale-[1.03] hover:shadow-[0_0_0_3px_rgba(245,158,11,0.25)] focus-visible:scale-[1.01]"
         >
           Report Issues

@@ -46,7 +46,7 @@ export default function Hero() {
         <AnimateIn delay={150}>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link
-              href="https://github.com/gunjanghate/git-genie"
+              href="https://github.com/gunjanghate/GitGenie"
               className="group inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black transition-transform duration-200 hover:scale-[1.03] hover:shadow-[0_0_0_3px_rgba(245,158,11,0.30)]"
               aria-label="Star on GitHub"
             >
@@ -54,7 +54,7 @@ export default function Hero() {
               <span>Star on GitHub</span>
             </Link>
             <Link
-              href="https://www.npmjs.com/package/@gunjanghate/git-genie"
+              href="https://www.npmjs.com/package/@gunjanghate/GitGenie"
               className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:scale-[1.03] hover:border-amber-400/40 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.18)]"
               aria-label="Install via npm"
             >

@@ -12,7 +12,7 @@ export default function SiteFooter() {
         <FooterCol
           title="GitGenie "
           links={[
-        { href: "https://github.com/gunjanghate/git-genie", label: "GitHub Repo" },
+        { href: "https://github.com/gunjanghate/GitGenie", label: "GitHub Repo" },
         { href: "https://www.npmjs.com/package/@gunjanghate/git-genie", label: "NPM Package" },
         { href: "#docs", label: "Docs" },
           ]}
@@ -20,9 +20,9 @@ export default function SiteFooter() {
         <FooterCol
           title="Community"
           links={[
-        { href: "https://github.com/gunjanghate/git-genie#contributing", label: "Contribute" },
-        { href: "https://github.com/gunjanghate/git-genie/issues", label: "Report Issues" },
-        { href: "https://github.com/gunjanghate/git-genie/discussions", label: "Discussion" },
+        { href: "https://github.com/gunjanghate/GitGenie#contributing", label: "Contribute" },
+        { href: "https://github.com/gunjanghate/GitGenie/issues", label: "Report Issues" },
+        { href: "https://github.com/gunjanghate/GitGenie/discussions", label: "Discussion" },
           ]}
         />
         <FooterCol

@@ -56,19 +56,19 @@ export default function AmbientBackground({
       {variant === "demo" && (
         <>
           {/* Top-center aurora glow */}
-          <div className="absolute inset-0 bg-[radial-gradient(800px_360px_at_50%_0%,rgba(245,158,11,0.10),transparent)]" />
+          {/* <div className="absolute inset-0 bg-[radial-gradient(800px_360px_at_50%_0%,rgba(245,158,11,0.10),transparent)]" /> */}
           {/* Left-bottom soft blob */}
           <span
-            className="absolute -bottom-1/4 left-1/6 h-[42vh] w-[42vh] rounded-full bg-amber-500/10 blur-3xl will-change-transform"
+            className="absolute -top-1/4 left-1/3 h-[60vh] w-[60vh] rounded-full bg-amber-500/10 blur-3xl will-change-transform"
             style={{ animation: "amb_blob1 26s ease-in-out infinite" }}
             aria-hidden="true"
           />
           {/* Right-mid soft blob */}
-          <span
-            className="absolute top-1/4 -right-1/6 h-[36vh] w-[36vh] rounded-full bg-white/6 blur-3xl will-change-transform"
+          {/* <span
+            className="absolute top-1/2 -right-1/6 h-[40vh] w-[40vh] rounded-full bg-white/5 blur-3xl will-change-transform"
             style={{ animation: "amb_blob2 30s ease-in-out infinite" }}
             aria-hidden="true"
-          />
+          /> */}
         </>
       )}
 

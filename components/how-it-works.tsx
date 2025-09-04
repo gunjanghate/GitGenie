@@ -2,7 +2,7 @@
 
 import { AnimateIn } from "./parts/animate-in"
 import { CopyButton } from "./parts/copy-button"
-import AmbientBackground from "./parts/ambient-three"
+import  AmbientBackground  from "./parts/ambient-two"
 
 export default function HowItWorks() {
   const steps = [
@@ -34,7 +34,7 @@ export default function HowItWorks() {
 
 
   return (
-    <section id="how-it-works" aria-labelledby="how-title" className="relative mx-auto lg:mx-32 max-w-6xl px-6 py-20 sm:py-24 z-0">
+    <section id="how-it-works" aria-labelledby="how-title" className="relative mx-auto lg:mx-32 max-w-6xl px-6 py-20 sm:py-24 ">
       <AmbientBackground />
       <div className="mb-10">
         <AnimateIn>
