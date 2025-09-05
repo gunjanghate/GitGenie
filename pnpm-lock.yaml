@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@gunjanghate/git-genie':
-        specifier: ^1.0.7
-        version: 1.0.7(@types/node@22.18.0)
+        specifier: ^1.0.12
+        version: 1.0.12(@types/node@22.18.0)
       '@hookform/resolvers':
         specifier: ^3.10.0
         version: 3.10.0(react-hook-form@7.62.0(react@19.1.1))
@@ -543,8 +543,8 @@ packages:
     resolution: {integrity: sha512-MqO+MLfM6kjxcKoy0p1wRzG3b4ZZXtPI+z2IE26UogS2Cm/XHO+7gGRBh6gcJsOiIVoH93UwKvW4HdgiOZCy9Q==}
     engines: {node: '>=18.0.0'}
 
-  '@gunjanghate/git-genie@1.0.7':
-    resolution: {integrity: sha512-hbWbDVY5/ypUM+Mmf1ICIBpy1ZtQsc8gEqzALjF4bIUO/RYdF2hFwMl81L/aniJb4sfTG217yzOOPOIHVEJygQ==}
+  '@gunjanghate/git-genie@1.0.12':
+    resolution: {integrity: sha512-68wBIXUNpaKQJbuIH6O57o3CrHOD+pzUOdlrThe0R9d7Vh+Vxguf1TOFrBPLLr+Gx7SKyklrhToGmf9me8W7gA==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -4319,7 +4319,7 @@ snapshots:
 
   '@google/generative-ai@0.24.1': {}
 
-  '@gunjanghate/git-genie@1.0.7(@types/node@22.18.0)':
+  '@gunjanghate/git-genie@1.0.12(@types/node@22.18.0)':
     dependencies:
       '@google/generative-ai': 0.24.1
       axios: 1.11.0
