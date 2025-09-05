@@ -1,6 +1,6 @@
 {
   "name": "@gunjanghate/git-genie",
-  "version": "1.0.7",
+  "version": "1.0.12",
   "description": "An intelligent Git CLI that automates staging, Conventional Commit messages (via Gemini), branch flow, and push/merge in one go.",
   "main": "index.js",
   "type": "module",
@@ -10,11 +10,13 @@
   },
   "files": [
     "index.js",
+    "scripts/",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "node ./scripts/postinstall.js"
   },
   "keywords": [
     "git",
@@ -41,6 +43,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@gunjanghate/git-genie": "^1.0.10",
     "axios": "^1.11.0",
     "chalk": "^5.5.0",
     "commander": "^14.0.0",

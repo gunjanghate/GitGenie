@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "Git Genie — AI-powered Git assistant",
   description:
     "Automate staging, commit messages, branch flow, and pushes in one command. Open-source NPM package to supercharge your Git workflow.",
-  alternates: { canonical: "https://git-genie.example.com" },
+  alternates: { canonical: "https://gitgenie.vercel.app" },
   openGraph: {
     title: "Git Genie — AI-powered Git assistant",
     description: "Automate staging, commit messages, branch flow, and pushes in one command. Open-source NPM package.",

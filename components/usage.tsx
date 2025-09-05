@@ -8,6 +8,11 @@ import { CopyButton } from "./parts/copy-button"
 export default function Usage() {
   const flags = [
     {
+      flag: "--help",
+      desc: "Show all commands, options, and how to get started in terminal.",
+      example: "gg --help",
+    },
+    {
       flag: "--genie",
       desc: "Enable AI-generated Conventional Commit messages (alias: --ai).",
       example: 'gg "oauth added" --ai',
@@ -46,10 +51,10 @@ export default function Usage() {
         <AnimateIn>
           <div>
 
-          <h2 id="usage-title" className="text-2xl font-semibold sm:text-3xl">
-            Usage & Flags
-          </h2>
-                <div className="line h-1 mt-1 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
+            <h2 id="usage-title" className="text-2xl font-semibold sm:text-3xl">
+              Usage & Flags
+            </h2>
+            <div className="line h-1 mt-1 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
 
           </div>
         </AnimateIn>

@@ -59,7 +59,7 @@ export default function AmbientBackground({
           {/* <div className="absolute inset-0 bg-[radial-gradient(800px_360px_at_50%_0%,rgba(245,158,11,0.10),transparent)]" /> */}
           {/* Left-bottom soft blob */}
           <span
-            className="absolute -top-1/4 left-1/3 h-[60vh] w-[60vh] rounded-full bg-amber-500/10 blur-3xl will-change-transform"
+            className="absolute -top-1/4 left-1/3 h-[60vh] w-[60vh] rounded-full bg-amber-500/20 blur-3xl will-change-transform"
             style={{ animation: "amb_blob1 26s ease-in-out infinite" }}
             aria-hidden="true"
           />
