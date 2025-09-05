@@ -8,42 +8,63 @@ export default function SiteFooter() {
       {/* Subtle amber glow for footer cohesion */}
       <AmbientBackground variant="footer" />
       <div className="mx-auto flex max-w-6xl flex-wrap justify-center items-center gap-8 lg:gap-32 px-6 py-12 text-center">
-        
+
         <FooterCol
           title="GitGenie "
           links={[
-        { href: "https://github.com/gunjanghate/GitGenie", label: "GitHub Repo" },
-        { href: "https://www.npmjs.com/package/@gunjanghate/git-genie", label: "NPM Package" },
-        { href: "#docs", label: "Docs" },
+            { href: "https://github.com/gunjanghate/GitGenie", label: "GitHub Repo" },
+            { href: "https://www.npmjs.com/package/@gunjanghate/git-genie", label: "NPM Package" },
+            { href: "#docs", label: "Docs" },
           ]}
         />
         <FooterCol
           title="Community"
           links={[
-        { href: "https://github.com/gunjanghate/GitGenie#contributing", label: "Contribute" },
-        { href: "https://github.com/gunjanghate/GitGenie/issues", label: "Report Issues" },
-        { href: "https://github.com/gunjanghate/GitGenie/discussions", label: "Discussion" },
+            { href: "https://github.com/gunjanghate/GitGenie#contributing", label: "Contribute" },
+            { href: "https://github.com/gunjanghate/GitGenie/issues", label: "Report Issues" },
+            { href: "https://github.com/gunjanghate/GitGenie/discussions", label: "Discussion" },
           ]}
         />
         <FooterCol
           title="Resources"
           links={[
-        { href: "#how-it-works", label: "Install" },
-        { href: "#usage", label: "Usage" },
-        { href: "#usage", label: "Flags" },
+            { href: "#how-it-works", label: "Install" },
+            { href: "#usage", label: "Usage" },
+            { href: "#usage", label: "Flags" },
           ]}
         />
         <FooterCol
           title="Follow"
           links={[
-        { href: "https://twitter.com/gunjanghate11", label: "Twitter/X" },
-        { href: "https://www.npmjs.com/package/@gunjanghate/git-genie", label: "NPM" },
-        { href: "https://github.com/gunjanghate/GitGenie", label: "GitHub" },
+            { href: "https://twitter.com/gunjanghate11", label: "Twitter/X" },
+            { href: "https://www.npmjs.com/package/@gunjanghate/git-genie", label: "NPM" },
+            { href: "https://github.com/gunjanghate/GitGenie", label: "GitHub" },
           ]}
         />
       </div>
-      <div className="px-6 flex gap-4 justify-center items-center pb-8 text-center text-xs text-zinc-400">
-       <Image src={chirag} width={18} height={18} alt="Chirag" className="h-8 w-8 rounded-full" /> <p>© {new Date().getFullYear()} GitGenie. MIT Licensed.</p>
+      <div className="px-6 flex flex-col gap-4 justify-center items-center pb-8 text-center text-xs text-zinc-400">
+        <div className="mb-2 flex justify-center">
+          <Link
+            href="https://www.producthunt.com/products/gitgenie?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-gitgenie"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitGenie on Product Hunt"
+            className="inline-block"
+          >
+            <Image
+              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1012878&theme=dark&t=1757106620847"
+              alt="GitGenie - Powered git assistant | Product Hunt"
+              width={250}
+              height={54}
+              style={{ width: "250px", height: "54px" }}
+              priority
+            />
+          </Link>
+        </div>
+        <div className="flex gap-4 justify-center items-center">
+          <Image src={chirag} width={18} height={18} alt="Chirag" className="h-8 w-8 rounded-full" />
+          <p>© {new Date().getFullYear()} GitGenie. MIT Licensed.</p>
+        </div>
       </div>
     </footer>
   )

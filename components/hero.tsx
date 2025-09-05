@@ -13,6 +13,7 @@ export default function Hero() {
   return (
     <header aria-label="Hero" className="relative overflow-hidden border-b border-white/5">
       <BackgroundParticles />
+
       <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center justify-center px-6 py-24 sm:py-28 md:py-32 min-h-[85svh]">
         <AnimateIn delay={40}>
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80 backdrop-blur">
@@ -62,20 +63,39 @@ export default function Hero() {
               <span>Install via npm</span>
             </Link>
           </div>
-                        <div className="my-12 flex w-full items-center gap-2 rounded-lg border border-white/10 hover:border-amber-500/50   bg-black/60 px-4 py-2.5 font-mono text-sm text-zinc-200 transition-all duration-200 group-hover:border-amber-400/40">
-                <div className="flex-1 min-w-0">
-                  <code
-                    aria-label={`install command`}
-                    className="block overflow-hidden text-ellipsis whitespace-nowrap pr-1"
-                    title={"install command"}
-                  >
-                    npm i @gunjanghate/git-genie@latest
-                  </code>
-                </div>
-                <div className="shrink-0">
-                  <CopyButton text={"npm i @gunjanghate/git-genie@latest"} />
-                </div>
-              </div>
+          <div className="my-12 flex w-full items-center gap-2 rounded-lg border border-white/10 hover:border-amber-500/50 bg-black/60 px-4 py-2.5 font-mono text-sm text-zinc-200 transition-all duration-200 group-hover:border-amber-400/40">
+            <div className="flex-1 min-w-0">
+              <code
+                aria-label={`install command`}
+                className="block overflow-hidden text-ellipsis whitespace-nowrap pr-1"
+                title={"install command"}
+              >
+                npm i @gunjanghate/git-genie@latest
+              </code>
+            </div>
+            <div className="shrink-0">
+              <CopyButton text={"npm i @gunjanghate/git-genie@latest"} />
+            </div>
+          </div>
+          {/* Product Hunt badge */}
+          <div className="mt-6 flex justify-center">
+            <Link
+              href="https://www.producthunt.com/products/gitgenie?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-gitgenie"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitGenie on Product Hunt"
+              className="inline-block"
+            >
+              <Image
+                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1012878&theme=dark&t=1757106620847"
+                alt="GitGenie - Powered git assistant | Product Hunt"
+                width={250}
+                height={54}
+                style={{ width: "250px", height: "54px" }}
+                priority
+              />
+            </Link>
+          </div>
         </AnimateIn>
       </div>
     </header>
