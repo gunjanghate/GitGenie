@@ -55,7 +55,7 @@ export default function Hero() {
               <span>Star on GitHub</span>
             </Link>
             <Link
-              href="https://www.npmjs.com/package/@gunjanghate/GitGenie"
+              href="https://www.npmjs.com/package/@gunjanghate/git-genie"
               className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:scale-[1.03] hover:border-amber-400/40 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.18)]"
               aria-label="Install via npm"
             >
