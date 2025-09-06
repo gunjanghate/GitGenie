@@ -28,7 +28,7 @@ export default function DemoVideoSection() {
   // 2. Direct Google Drive download: "https://drive.google.com/uc?export=download&id=1WXQIao0jxiNrTvmY_0-Xq9kgO-K3KHfg"
   // 3. Local video file: "/demo.mp4"
 
-  const demoSrc = "https://gunjanghate.github.io/demovideo/demo%20(1).mp4" // Changed from "../public/demo.mp4" to "/demo.mp4" (correct public path)
+  const demoSrc = "https://gunjanghate.github.io/demovideo/GitGenie-demo.mp4" // Changed from "../public/demo.mp4" to "/demo.mp4" (correct public path)
   const youTubeOpenUrl = useMemo(() => getYouTubeEmbed(demoSrc), [demoSrc])
   const isYouTube = !!youTubeOpenUrl
 

@@ -61,7 +61,7 @@
     "react-resizable-panels": "^2.1.7",
     "recharts": "2.15.4",
     "remark-gfm": "latest",
-    "shadcn": "^3.1.0",
+    "shadcn": "^3.2.1",
     "sonner": "^1.7.4",
     "svelte": "latest",
     "tailwind-merge": "^2.5.5",

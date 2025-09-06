@@ -8,6 +8,9 @@ import { BackgroundParticles } from "./parts/background-particles"
 import { AnimateIn } from "./parts/animate-in"
 import { CopyButton } from "./parts/copy-button"
 import Image from "next/image"
+import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text";
+import { ChevronRight } from "lucide-react";
+ 
 export default function Hero() {
   const words = ["origins", "staging", "commits", "pushes"];
   return (
@@ -16,10 +19,30 @@ export default function Hero() {
 
       <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center justify-center px-6 py-24 sm:py-28 md:py-32 min-h-[85svh]">
         <AnimateIn delay={40}>
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80 backdrop-blur">
-            <Sparkles className="h-4 w-4 text-amber-400" aria-hidden="true" />
-            <span className="tracking-wide">Your own Github Genie</span>
-          </div>
+
+             <div className="group relative mx-auto flex items-center justify-center rounded-full px-4 py-1.5 shadow-[inset_0_-8px_10px_#8fdfff1f] transition-shadow duration-500 ease-out hover:shadow-[inset_0_-5px_10px_#8fdfff3f] mb-5">
+      <span
+        className={cn(
+          "absolute inset-0 block h-full w-full animate-gradient rounded-[inherit] bg-gradient-to-r drop-shadow-2xl from-[#ffaa40]/50 via-[#ffff]/50 to-[#ffaa40]/50 bg-[length:300%_100%] p-[1px]",
+        )}
+        style={{
+          WebkitMask:
+            "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+          WebkitMaskComposite: "destination-out",
+          mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+          maskComposite: "subtract",
+          WebkitClipPath: "padding-box",
+        }}
+      />
+         <Sparkles className="h-4 w-4 text-amber-400" aria-hidden="true" /> <hr className="mx-2 h-4 w-px shrink-0 bg-neutral-500" />
+      <AnimatedGradientText className="text-xs font-medium">
+        Your own Github Genie | 1.1k+ downloads
+      </AnimatedGradientText>
+      <ChevronRight
+        className="ml-1 size-4 stroke-neutral-500 transition-transform
+ duration-300 ease-in-out group-hover:translate-x-0.5"
+      />
+    </div>
         </AnimateIn>
 
         <AnimateIn>
@@ -63,14 +86,14 @@ export default function Hero() {
               <span>Install via npm</span>
             </Link>
           </div>
-          <div className="my-12 flex w-full items-center gap-2 rounded-lg border border-white/10 hover:border-amber-500/50 bg-black/60 px-4 py-2.5 font-mono text-sm text-zinc-200 transition-all duration-200 group-hover:border-amber-400/40">
+          <div className="my-12 flex lg:w-full items-center gap-2 rounded-lg border border-white/10 hover:border-amber-500/50 bg-black/60 px-4 py-2.5 font-mono text-sm text-zinc-200 transition-all duration-200 group-hover:border-amber-400/40">
             <div className="flex-1 min-w-0">
               <code
                 aria-label={`install command`}
                 className="block overflow-hidden text-ellipsis whitespace-nowrap pr-1"
                 title={"install command"}
               >
-                npm i @gunjanghate/git-genie@latest
+                npm i @gunjanghate/git-genie
               </code>
             </div>
             <div className="shrink-0">
