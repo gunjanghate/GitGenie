@@ -36,7 +36,7 @@ export default function Hero() {
       />
          <Sparkles className="h-4 w-4 text-amber-400" aria-hidden="true" /> <hr className="mx-2 h-4 w-px shrink-0 bg-neutral-500" />
       <AnimatedGradientText className="text-xs font-medium">
-        Your own Github Genie | 1.1k+ downloads
+        Your own Github Genie | 1.2k+ downloads
       </AnimatedGradientText>
       <ChevronRight
         className="ml-1 size-4 stroke-neutral-500 transition-transform
@@ -55,6 +55,7 @@ export default function Hero() {
               width={50}
               height={50}
               priority
+              placeholder="blur"
               className="w-24"
             />
 

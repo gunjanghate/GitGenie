@@ -4,7 +4,7 @@ import { useMemo, useState } from "react"
 import { Dialog, DialogContent, DialogOverlay, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import DocsModal from "@/components/docs-modal"
 import AmbientBackground from "./parts/ambient-background" // Import AmbientBackground
-
+import Image from "next/image"
 function getYouTubeEmbed(url: string) {
   // Supports youtube.com or youtu.be → returns /embed/... with sane params
   try {
@@ -77,9 +77,12 @@ export default function DemoVideoSection() {
             aria-label="Play demo video"
           >
             {/* Poster/thumbnail */}
-            <img
+            <Image
               src="/git-genie-demo-poster.png"
               alt="Git Genie demo thumbnail"
+              height={315}
+              width={560}
+              priority
               className="h-full w-full transform object-cover transition duration-300 ease-out group-hover:scale-[1.02] will-change-transform"
             />
             {/* Dark gradient for readability */}
