@@ -82,7 +82,7 @@ function SafeParagraph({ children }: { children: React.ReactNode }) {
 
 const DOCS_MD = `# Git Genie — Updated Usage Guide (Current Implementation)
 
-> **Essence:** \`gg\` automates staging, Conventional Commit creation (Gemini), branch flow, optional merge to main, and push. Now includes a persistent API key config command.
+> **Essence:** \`gg\` automates staging, Conventional Commit creation (Gemini), branch flow, optional merge to main, and push. Now includes secure API key storage and AI-powered branch/PR naming.
 
 ---
 
@@ -95,6 +95,7 @@ const DOCS_MD = `# Git Genie — Updated Usage Guide (Current Implementation)
 - Common workflows
 - Branch & merge behavior
 - AI commit generation details
+- AI branch & PR generation
 - Examples
 - Troubleshooting
 - Security & privacy
@@ -123,7 +124,7 @@ gg "add user profile section" --type feat --scope ui --genie
 \`\`\`bash
 which gg            # macOS / Linux
 Get-Command gg      # PowerShell
-gg --help
+gg --help           # Shows banner + onboarding instructions
 \`\`\`
 
 Use ad‑hoc (no global install):
@@ -134,19 +135,23 @@ npx @gunjanghate/git-genie "fix typo" --genie
 ## Configure Gemini API key
 Priority order used by the CLI:
 1. \`GEMINI_API_KEY\` env var (process.env)
-2. Stored config file: \`~/.gitgenie/config.json\`
+2. OS keychain (macOS Keychain, Windows Credential Vault, Linux Secret Service)
+3. Encrypted fallback: \`~/.gitgenie/config.json\`
 
-Store key:
+Store key (overwrites existing):
 \`\`\`bash
 gg config <API_KEY>
 \`\`\`
 
-Edit manually (optional):
-\`\`\`json
-{ "GEMINI_API_KEY": "sk-..." }
+Remove stored key:
+\`\`\`bash
+# For OS keychain
+keytar delete git-genie api-key
+# For encrypted fallback, delete the file
+rm ~/.gitgenie/config.json
 \`\`\`
 
-Remove key: delete the file \`~/.gitgenie/config.json\`.
+Rotating keys: Simply run \`gg config <NEW_KEY>\` to overwrite the existing one (useful when hitting quota limits).
 
 ## Command syntax
 \`\`\`bash
@@ -155,7 +160,7 @@ gg <desc> [options]
 \`<desc>\` = short human summary (used in fallback commit message if AI unavailable).
 
 ### Subcommands
-\`config <apikey>\`  – Persist Gemini key.
+\`config <apikey>\`  – Securely store Gemini API key.
 
 ### Options
 \`--type <type>\`        Conventional Commit type (default: feat)
@@ -164,7 +169,7 @@ gg <desc> [options]
 \`--no-branch\`           Commit directly to main (skip prompt)
 \`--push-to-main\`        After commit: merge current branch into main & push
 \`--remote <url>\`        Add remote origin if repo just initialized
-\`--help\`                Show help
+\`--help\`                Show help banner with onboarding guide
 
 Types: feat | fix | docs | style | refactor | test | chore | ci | build | perf
 
@@ -178,7 +183,7 @@ Fallback commit format (no AI or failure): \`type(scope?): desc\`.
 5. Branch logic:
   - If \`--no-branch\` OR no commits → force/create main (\`git checkout -B main\`).
   - Else interactive: current branch vs create new branch.
-  - Suggested new branch: \`<type>/<slugified-desc>-YYYY-MM-DD\`.
+  - AI-generated branch name: \`<type>-<kebab-case-desc>\` (max 40 chars).
 6. Staging: if no staged diff → auto stage all (./*) → re-check; error if still empty.
 7. AI commit generation (if \`--genie\` & key): send staged diff to Gemini model \`gemini-2.0-flash\` with strict prompt; capture plain message.
 8. Commit: \`git commit "<message>"\`.
@@ -210,7 +215,7 @@ gg "implement payment flow" --push-to-main
 \`\`\`
 
 ## Branch & merge behavior
-- New branch name slug = type + sanitized desc + date.
+- AI-generated branch names: conventional type prefix + kebab-case description (max 40 chars).
 - \`--push-to-main\` triggers: checkout main → pull (non-fatal if remote missing) → merge → push main → optional feature cleanup.
 - Branch cleanup: interactive confirm; deletes local + tries remote (ignored if absent).
 
@@ -219,6 +224,17 @@ Model: \`gemini-2.0-flash\`.
 Prompt enforces: Conventional Commit, max ~50 char description, imperative, lowercase first letter, no trailing period.
 Only staged diff is sent (added/removed lines & headers). No untracked / unstaged content.
 Failure path: logs warning + fallback commit string.
+
+## AI branch & PR generation
+### Branch naming (\`generateBranchName\`)
+- Uses Gemini to create descriptive, kebab-case branch names.
+- Format: \`<type>-<descriptive-kebab-case>\` (under 40 characters).
+- Based on commit type and change description.
+
+### PR titles (\`generatePRTitle\`)
+- AI-generated pull request titles for cleaner GitHub integration.
+- Follows conventional commit style but optimized for PR context.
+- Generated from branch changes and commit history.
 
 ## Examples
 Plain conventional commit (no AI):
@@ -237,26 +253,55 @@ gg "initial commit" --no-branch --remote https://github.com/you/new.git
 \`\`\`
 
 ## Troubleshooting
-"GEMINI_API_KEY not found" → Run \`gg config <key>\` or export env var.
-"No changes detected to commit" → Ensure edits; check \`git status\`; verify .gitignore.
-Push retries failing → validate remote URL & auth; run manual: \`git push origin <branch>\`.
-Merge conflicts (during \`--push-to-main\`): resolve manually, then commit & push main.
-Branch already exists (creating) → choose a different name.
+**API Key Issues:**
+- "GEMINI_API_KEY not found" → Run \`gg config <key>\` or export env var.
+- Corrupted config file → Delete \`~/.gitgenie/config.json\` and re-run \`gg config <key>\`.
+- Invalid/empty encrypted key format → Re-configure with \`gg config <key>\`.
+
+**Git Issues:**
+- "No changes detected to commit" → Ensure edits; check \`git status\`; verify .gitignore.
+- Push retries failing → validate remote URL & auth; run manual: \`git push origin <branch>\`.
+- Merge conflicts (during \`--push-to-main\`): resolve manually, then commit & push main.
+- Branch already exists (creating) → choose a different name or delete existing branch.
+
+**Staging Issues:**
+- Files not staged → Check .gitignore rules; manually stage with \`git add <files>\`.
+- Large files causing issues → Use .gitignore or Git LFS for binary/large files.
 
 ## Security & privacy
-- Only staged diff leaves machine when using AI.
-- Avoid staging secrets; keep \`.env\` out of git.
-- Delete config file if rotating keys.
+**API Key Storage (Secure):**
+- Primary: OS keychain via \`keytar\` (macOS Keychain, Windows Credential Vault, Linux Secret Service).
+- Fallback: AES-256-CBC encryption in \`~/.gitgenie/config.json\`.
+- Encryption format: \`<random-iv>:<ciphertext>\` with unique per-user key.
+- Keys never leave your machine and are never hardcoded in source.
+
+**Data Privacy:**
+- Only staged diff is sent to Gemini AI (added/removed lines & file headers).
+- No untracked files, personal data, or full repository content is transmitted.
+- Avoid staging secrets; keep \`.env\` files in \`.gitignore\`.
 
 ## Contributing / roadmap
 Planned: PR automation, partial diff selection, stats mode, model selection flag.
 Contribute: fork → branch → changes → \`gg "feat xyz" --genie\` → PR.
 
 ## FAQ
-Q: Windows support?  A: Yes (PowerShell tested).  
-Q: Key storage secure?  A: Plain JSON in home dir; set perms yourself if needed.  
-Q: Can it open PRs?  A: Not yet (roadmap).  
-Q: Model configurable?  A: Currently fixed to \`gemini-2.0-flash\`.
+**Q: How do I rotate API keys?**  
+A: Just run \`gg config <new_key>\` to overwrite the existing one.
+
+**Q: What if I hit quota on my API key?**  
+A: Swap to another key using \`gg config <backup_key>\`.
+
+**Q: Is key storage secure?**  
+A: Yes—uses OS keychain when available, fallback to AES-256-CBC encryption with per-user keys.
+
+**Q: Windows support?**  
+A: Yes (PowerShell tested), uses Windows Credential Vault for secure storage.
+
+**Q: Can it open PRs?**  
+A: Not yet (roadmap), but generates PR titles for manual creation.
+
+**Q: Model configurable?**  
+A: Currently fixed to \`gemini-2.0-flash\`.
 
 ## Publish (maintainers)
 \`\`\`bash
