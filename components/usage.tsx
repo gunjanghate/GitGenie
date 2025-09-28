@@ -7,36 +7,13 @@ import { CopyButton } from "./parts/copy-button"
 
 export default function Usage() {
   const flags = [
-    {
-      flag: "--genie",
-      desc: "Enable AI-generated Conventional Commit messages (alias: --ai).",
-      example: 'gg "oauth added" --ai',
-    },
-    {
-      flag: "--type <type>",
-      desc: "Commit type (default: feat).",
-      example: 'gg "refactor: cleanup" --type feat',
-    },
-    {
-      flag: "--scope <scope>",
-      desc: "Commit scope.",
-      example: 'gg "fix(auth): token refresh" --scope auth',
-    },
-    {
-      flag: "--no-branch",
-      desc: "Skip branch selection.",
-      example: 'gg "chore: update deps" --no-branch',
-    },
-    {
-      flag: "--push-to-main",
-      desc: "Auto-merge with main & push.",
-      example: "gg --push-to-main",
-    },
-    {
-      flag: "--remote <url>",
-      desc: "Add remote origin if repo is new.",
-      example: "gg --remote https://github.com/you/repo.git",
-    },
+    { flag: "--genie", desc: "Generate AI commit (alias: --ai).", example: 'gg "oauth added" --ai' },
+    { flag: "--type <type>", desc: "Set commit type (default: feat).", example: 'gg "refactor: cleanup" --type feat' },
+    { flag: "--scope <scope>", desc: "Set commit scope.", example: 'gg "fix(auth): token refresh" --scope auth' },
+    { flag: "--no-branch", desc: "Skip branch selection.", example: 'gg "chore: update deps" --no-branch' },
+    { flag: "--push-to-main", desc: "Push to main.", example: "gg --push-to-main" },
+    { flag: "--remote <url>", desc: "Add remote.", example: "gg --remote https://github.com/you/repo.git" },
+    { flag: "--osc", desc: "Branch name for open source", example: 'gg "improve docs" --osc --type docs' },
   ]
 
   return (
@@ -46,10 +23,10 @@ export default function Usage() {
         <AnimateIn>
           <div>
 
-          <h2 id="usage-title" className="text-2xl font-semibold sm:text-3xl">
-            Usage & Flags
-          </h2>
-                <div className="line h-1 mt-1 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
+            <h2 id="usage-title" className="text-2xl font-semibold sm:text-3xl">
+              Usage & Flags
+            </h2>
+            <div className="line h-1 mt-1 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
 
           </div>
         </AnimateIn>
@@ -57,12 +34,12 @@ export default function Usage() {
           <p className="mt-3 max-w-2xl text-zinc-300">Configure Git Genie behavior with clean, human-friendly flags.</p>
         </AnimateIn>
       </div>
-      <Accordion type="multiple" className="grid auto-rows-fr items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <Accordion type="multiple" className="grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {flags.map((f, i) => (
           <AnimateIn key={`${f.flag}-${i}`} delay={i * 80}>
             <AccordionItem
               value={f.flag}
-              className="flex h-full min-h-44 flex-col rounded-2xl border border-white/10 bg-zinc-900/40 px-4 py-2"
+              className="flex min-h-0 flex-col rounded-2xl border border-white/10 bg-zinc-900/40 px-4 py-2"
             >
               <AccordionTrigger className="group w-full rounded-xl px-1 py-2 text-left no-underline hover:no-underline">
                 <div className="flex flex-col gap-1">
