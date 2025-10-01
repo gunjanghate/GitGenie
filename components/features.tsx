@@ -2,7 +2,7 @@
 
 import { TerminalSquare, MessageSquarePlus, Flag } from "lucide-react"
 import { AnimateIn } from "./parts/animate-in"
-
+ import TerminalDemo from "./Terminal";
 import  AmbientBackground  from "./parts/ambient-two"
 
 export default function Features() {
@@ -30,6 +30,7 @@ export default function Features() {
       <div className="mb-10 relative z-10">
 
       <h2 id="features-title" className="text-2xl font-semibold sm:text-3xl text-white">
+      {/* <TerminalDemo/> */}
       Features
       </h2>
       <div className="line h-1 mt-1 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
