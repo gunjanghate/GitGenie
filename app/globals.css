@@ -187,3 +187,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+*{
+  scrollbar-width: none;
+}
