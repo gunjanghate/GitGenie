@@ -5,7 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
 import { Plus_Jakarta_Sans } from "next/font/google"
-
+import SmoothScrollProvider from "@/components/SmoothScrollerProvider"
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   display: "swap",
@@ -37,8 +37,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark scroll-smooth">
       <body className={`font-sans ${plusJakarta.variable} ${GeistMono.variable}`}>
-        <Suspense fallback={null}>{children}</Suspense>
-        <Analytics />
+        <SmoothScrollProvider>
+          <Suspense fallback={null}>{children}</Suspense>
+          <Analytics />
+        </SmoothScrollProvider>
       </body>
     </html>
   )

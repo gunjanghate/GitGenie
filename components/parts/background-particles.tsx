@@ -108,7 +108,7 @@ export function BackgroundParticles() {
           aria-hidden="true"
         />
         <span
-          className="absolute -bottom-1/3 right-1/4 h-[50vh] w-[50vh] rounded-full bg-amber-500/10 blur-3xl will-change-transform"
+          className="absolute -bottom-1/3 right-1/4 h-[50vh] w-[50vh] rounded-full bg-amber-500/20 blur-3xl will-change-transform"
           style={{ animation: "blob2 28s ease-in-out infinite" }}
           aria-hidden="true"
         />
