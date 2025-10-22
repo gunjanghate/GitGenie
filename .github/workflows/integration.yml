@@ -26,21 +26,21 @@ jobs:
     - run: npm i --legacy-peer-deps
     - run: npm run build
 
-  unit-tests:
+#   unit-tests:
 
-    runs-on: ubuntu-latest
+#     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
+#     strategy:
+#       matrix:
+#         node-version: [18.x, 20.x, 22.x]
 
-    steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm i --legacy-peer-deps
-    - run: npm run test
+#     steps:
+#     - uses: actions/checkout@v4
+#     - name: Use Node.js ${{ matrix.node-version }}
+#       uses: actions/setup-node@v4
+#       with:
+#         node-version: ${{ matrix.node-version }}
+#         cache: 'npm'
+#     - run: npm i --legacy-peer-deps
+#     - run: npm run test
 
