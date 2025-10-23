@@ -28,3 +28,5 @@ jobs:
       # Step 5: Push image to Docker Hub
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKER_USERNAME }}/gitgenie-web:latest
+
+# make sure access token have permissions of read, write, delete
