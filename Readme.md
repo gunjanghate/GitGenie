@@ -1,4 +1,14 @@
+<img width="1319" height="423" alt="image" src="https://github.com/user-attachments/assets/1149290d-c196-4c1f-b5ab-a0caba45b10c" />
+<div align="center">
+
+  [![npm version](https://img.shields.io/npm/v/@gunjanghate/git-genie.svg)](https://www.npmjs.com/package/@gunjanghate/git-genie)
+  [![Downloads](https://img.shields.io/npm/dm/@gunjanghate/git-genie.svg)](https://www.npmjs.com/package/@gunjanghate/git-genie)
+
+</div>
+
 # GitGenie CLI - Complete Documentation
+
+
 
 ## Overview
 
