@@ -2,85 +2,8 @@
 "use client"
 
 import type React from "react"
-
-import { useMemo, useState } from "react"
-import ReactMarkdown from "react-markdown"
-import remarkGfm from "remark-gfm"
-import { Dialog, DialogContent, DialogOverlay, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Copy } from "lucide-react"
-import { isValidElement } from "react"
-
-function CopyInline({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false)
-  async function onCopy() {
-    try {
-      await navigator.clipboard.writeText(text)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1200)
-    } catch { }
-  }
-  return (
-    <button
-      type="button"
-      onClick={onCopy}
-      className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-white/90 transition hover:bg-white/10"
-      aria-label="Copy code"
-    >
-      <Copy size={14} className="opacity-80" />
-      <span>{copied ? "Copied" : "Copy"}</span>
-    </button>
-  )
-}
-
-function CodeBlock(props: any) {
-  const { inline, className, children } = props
-
-  // Normalize text
-  const raw = children ?? ""
-  const code = Array.isArray(raw) ? raw.join("") : String(raw)
-
-  // Treat as inline if:
-  // - inline is true, OR
-  // - no language-* class is present (ReactMarkdown sets language-* for fenced blocks)
-  const languageClass = (className || "").toString()
-  const isInline = (inline ?? true) && !/language-/.test(languageClass)
-
-  if (isInline) {
-    return <code className="rounded bg-white/10 px-1.5 py-0.5 text-[0.92em]">{code}</code>
-  }
-
-  const lang = languageClass.replace("language-", "")
-  return (
-    <div className="relative my-3 w-fit">
-      <div className="absolute right-2 top-2 z-10">
-        <CopyInline text={code} />
-      </div>
-      <pre className="text-wrap rounded-lg border border-white/10 bg-black/60 py-8 px-4 text-sm">
-        <code className={lang ? `language-${lang}` : undefined}>{code}</code>
-      </pre>
-    </div>
-  )
-}
-
-function SafeParagraph({ children }: { children: React.ReactNode }) {
-  const kids = Array.isArray(children) ? children : [children]
-
-  const containsBlock = kids.some(function check(node: any): boolean {
-    if (!isValidElement(node)) return false
-    const t = node.type
-    if (t === "pre" || t === "div" || t === "table" || t === "ul" || t === "ol" || t === "hr" || t === "blockquote") {
-      return true
-    }
-    const c = (node.props as any)?.children
-    const arr = Array.isArray(c) ? c : c ? [c] : []
-    return arr.some(check)
-  })
-
-  const base = "mb-4 leading-relaxed text-zinc-300"
-  return containsBlock ? <div className={base}>{children}</div> : <p className={base}>{children}</p>
-}
-
-const DOCS_MD = `# Git Genie — Updated Usage Guide (Current Implementation)
+import Link from "next/link"
+export const DOCS_MD = `# Git Genie — Usage Guide 
 
 > **Essence:** \`gg\` automates staging, Conventional Commit creation (Gemini), branch flow, optional merge to main, and push. Now includes secure API key storage and AI-powered branch/PR naming.
 
@@ -91,6 +14,7 @@ const DOCS_MD = `# Git Genie — Updated Usage Guide (Current Implementation)
 - Install & verify
 - Configure Gemini API key
 - Command syntax & options
+- Command palette (interactive)
 - How it works (mapped to source)
 - Common workflows
 - Branch & merge behavior
@@ -176,6 +100,24 @@ gg <desc> [options]
 Types: feat | fix | docs | style | refactor | test | chore | ci | build | perf
 
 Fallback commit format (no AI or failure): \`type(scope?): desc\`.
+
+## Command palette (interactive)
+Run \`gg\` (or start a supported action without enough context) to open the interactive Command Palette.
+
+Keyboard controls:
+- ↑ / ↓ — navigate
+- Enter — select highlighted action
+- Esc or Ctrl+C — cancel
+
+Available actions (subject to evolve):
+- \`commit\` — Commit changes with optional AI support
+- \`config\` — Save your Gemini API key securely
+- \`cl\` — Clone repository
+- \`b\` — Create & switch to new branch
+- \`s\` — Switch to a branch
+- \`wt\` — Create Git worktree (auto-creates branch if missing)
+
+Tip: See the “Command palette demo” section on the homepage for a visual walkthrough of the UI.
 
 ## How it works (step mapping)
 1. Parse args via Commander (main action wrapper).
@@ -360,72 +302,28 @@ npm publish --access public
 \`\`\`
 
 ## Support
-- GitHub: https://github.com/gunjanghate/git-genie
-- Issues: https://github.com/gunjanghate/git-genie/issues
+- GitHub: https://github.com/gunjanghate/GitGenie
+- Issues: https://github.com/gunjanghate/GitGenie/issues
 - NPM: https://www.npmjs.com/package/@gunjanghate/git-genie
 - X / Twitter: @gunjanghate11
 
-_End of updated docs_
+_End of docs_
 `
 
 export default function DocsModal() {
-  const [open, setOpen] = useState(false)
-  const content = useMemo(() => (open ? DOCS_MD : ""), [open])
+
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <button
+    
+        <Link
+        href={"/docs"}
           id="docs"
           type="button"
-          className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/90 transition hover:bg-white/10"
+          className="mx-auto my-10 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/90 transition hover:bg-white/10"
         >
           View full docs
-        </button>
-      </DialogTrigger>
-      <DialogOverlay className="fixed inset-0 bg-black/70 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0" />
-      <DialogContent className="fixed left-1/2 top-1/2 z-50 h-[86vh] w-[98vw] max-w-7xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-white/10 bg-black/80 p-0 shadow-2xl outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=open]:blur-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95">
-        <DialogTitle className="sr-only">Git Genie — Complete Usage Guide</DialogTitle>
-
-        {/* Ambient amber glow behind content */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute left-1/2 top-[-10%] h-[50%] w-[80%] -translate-x-1/2 rounded-full bg-amber-500/15 blur-3xl" />
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent" />
-        </div>
-
-        {/* Scrollable content with comfy padding and hidden scrollbar */}
-        <div className="relative h-full overflow-y-auto p-6 md:p-8 lg:p-12 scrollbar-none">
-          {/* Left vertical accent rule (subtle) */}
-          <div
-            aria-hidden
-            className="absolute left-0 top-0 h-full w-px bg-gradient-to-b from-amber-400/50 via-amber-400/20 to-transparent"
-          />
-
-          <article className="markdown text-zinc-200">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                code: CodeBlock,
-                h1: ({ children }) => <h1 className="mb-4 text-3xl md:text-4xl font-bold text-white">{children}</h1>,
-                h2: ({ children }) => <h2 className="mt-8 mb-3 text-2xl font-semibold text-white">{children}</h2>,
-                h3: ({ children }) => <h3 className="mt-6 mb-2 text-xl font-semibold text-white">{children}</h3>,
-                p: (props) => <SafeParagraph>{props.children}</SafeParagraph>,
-                ul: ({ children }) => <ul className="mb-4 ml-5 list-disc space-y-1">{children}</ul>,
-                ol: ({ children }) => <ol className="mb-4 ml-5 list-decimal space-y-1">{children}</ol>,
-                a: (props) => (
-                  <a {...props} className="text-amber-400 hover:underline" target="_blank" rel="noreferrer" />
-                ),
-                blockquote: ({ children }) => (
-                  <blockquote className="mb-4 border-l-2 border-amber-400/40 pl-4 text-zinc-300">{children}</blockquote>
-                ),
-                hr: () => <hr className="my-6 border-white/10" />,
-              }}
-            >
-              {content}
-            </ReactMarkdown>
-          </article>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </Link>
+    
+   
   )
 }

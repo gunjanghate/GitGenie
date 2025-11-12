@@ -14,7 +14,7 @@ export default function SiteFooter() {
           links={[
             { href: "https://github.com/gunjanghate/GitGenie", label: "GitHub Repo" },
             { href: "https://www.npmjs.com/package/@gunjanghate/git-genie", label: "NPM Package" },
-            { href: "#docs", label: "Docs" },
+            { href: "/docs", label: "Docs" },
           ]}
         />
         <FooterCol
