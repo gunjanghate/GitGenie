@@ -319,6 +319,7 @@ export default function DocsModal() {
         href={"/docs"}
           id="docs"
           type="button"
+          prefetch={true}
           className="mx-auto my-10 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/90 transition hover:bg-white/10"
         >
           View full docs
