@@ -1,0 +1,33 @@
+name: Bug report
+description: Please provide details to help reproduce and fix the issue.
+title: ""
+body:
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Description / Steps to Reproduce
+      description: Describe the steps to reproduce the problem. Be as specific as possible.
+      placeholder: "1. ...\n2. ...\n3. ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_vs_actual
+    attributes:
+      label: Expected vs Actual Behavior
+      description: Describe what you expected to happen and what actually happened.
+      placeholder: "Expected: ...\nActual: ..."
+
+  - type: textarea
+    id: screenshots_logs
+    attributes:
+      label: Screenshots / Logs
+      description: Attach screenshots or paste logs (remove sensitive info).
+      placeholder: "Paste logs or links to screenshots here"
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment details
+      description: OS, Node version, tool/version (optional)
+      placeholder: "e.g., Windows 10, Node 18.16.0, GitGenie v0.1.0"
