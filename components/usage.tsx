@@ -34,12 +34,12 @@ export default function Usage() {
           <p className="mt-3 max-w-2xl text-zinc-300">Configure Git Genie behavior with clean, human-friendly flags.</p>
         </AnimateIn>
       </div>
-      <Accordion type="multiple" className="grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <Accordion type="multiple" className="grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4 auto-rows-[1fr]">
         {flags.map((f, i) => (
           <AnimateIn key={`${f.flag}-${i}`} delay={i * 80}>
             <AccordionItem
               value={f.flag}
-              className="flex min-h-0 flex-col rounded-2xl border border-white/10 bg-zinc-900/40 px-4 py-2"
+              className="relative flex h-full flex-col justify-between rounded-2xl border border-white/10 bg-zinc-900/40 px-4 py-2"
             >
               <AccordionTrigger className="group w-full rounded-xl px-1 py-2 text-left no-underline hover:no-underline">
                 <div className="flex flex-col gap-1">
