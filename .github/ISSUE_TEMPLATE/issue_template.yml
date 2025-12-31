@@ -1,6 +1,6 @@
 name: Bug report
 description: Please provide details to help reproduce and fix the issue.
-title: ""
+title: "[Bug]: "
 body:
   - type: textarea
     id: reproduction
