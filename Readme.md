@@ -448,6 +448,139 @@ gg "test refactoring" --type refactor
 
 ---
 
+## 🤝 Contributing to GitGenie
+
+**GitGenie** is open source, and contributions are welcome 🎉
+This section is meant for first-time contributors who want to understand how the project works and how to get started safely.
+
+### 📌 How GitGenie Works (High-Level)
+
+At a high level, GitGenie works as follows:
+
++ Reads CLI input and flags using commander
++ Validates the current directory as a Git repository (or initializes one)
++ Handles branch selection (interactive or non-interactive)
++ Stages files automatically when needed
++ Generates a commit message:
+  * Manually (default)
+  * Or using Google Gemini when --genie is enabled
+  * Commits changes
+  * Optionally pushes or merges to main
+
+Most logic lives inside index.js, which orchestrates Git operations using simple-git and user prompts via inquirer.
+
+You do not need to understand the full internal flow to contribute documentation or small fixes.
+
+### 🛠️ How to Clone & Run GitGenie Locally
+***1️⃣ Fork the Repository***
+
+Click `Fork` on GitHub to create your own copy of the repository.
+
+***2️⃣ Clone Your Fork***
+``` bash
+git clone https://github.com/<your-username>/gitgenie-cli.git
+cd gitgenie-cli
+```
+
+***3️⃣ Install Dependencies***
+``` bash
+npm install
+```
+
+***4️⃣ Link the CLI Locally***
+
++ This allows you to run the gg command while developing:
+``` bash
+npm link
+```
+
++ Verify installation:
+` gg --help `
+
+**If the help output appears, GitGenie is running locally ✅**
+
+### 🧪 How to Test Changes
+
+It’s recommended to test GitGenie inside a temporary Git repository.
+```bash
+mkdir test-repo
+cd test-repo
+git init
+```
+
+Example test commands:
+
+# Basic commit (manual)
+` gg "test basic commit" --no-branch `
+
+# Test AI commit message
+` gg "test ai commit" --genie `
+
+# Test branch creation
+` gg "test branch flow" --type feat `
+
+# Test error handling (no changes)
+` gg "test no changes" --no-branch `
+
+
+### Make sure:
+
+* Commands execute without crashing
+* Prompts behave as expected
+* No unintended Git changes occur
+
+### 🐛 Opening Issues
+
+If you find a bug or want to suggest an improvement:
+
+* Go to the Issues tab on GitHub
+* Click New Issue
+* Choose the appropriate issue template (if available)
+* Clearly describe:
+  + What you expected
+  + What actually happened
+  + Steps to reproduce (if applicable)  
+  + Well-described issues help maintainers respond faster.
+
+### 🔁 Opening a Pull Request (PR)
+
++ ***Branching***
+
+* ***Do not commit directly to main.***
+* Create a feature branch:
+  `git checkout -b docs/improve-readme`
+* Commit Your Changes
+  - ``` bashgit add .```
+  - ``` bash git commit -m "docs: improve contributor onboarding section" ```
+* Push and Open a PR
+``` bash git push origin docs/improve-readme```
+* Then open a Pull Request on GitHub:
+  - Base branch → main
+  - Compare branch → your feature branch
+  - Fill out the PR template and clearly explain what you changed and why.
+
+### 🧩 Scope Guidelines (Important)
+
+***To keep contributions focused:***
+
+❌ Do NOT add new CLI features
+❌ Do NOT refactor existing CLI logic
+❌ Do NOT change default behaviors without discussion
+
+✅ Documentation improvements
+✅ Bug fixes
+✅ Small usability improvements
+
+***If unsure, open an issue first and ask.***
+
+### 🙌 Need Help?
+
+If you get stuck:
++ Comment on the issue you’re working on
++ Ask questions in the PR
++ Share error messages or screenshots
++ We would rather help than guess.
+
 ## Notes & Future Considerations
 
 - Add interactive guided mode for beginners (e.g., --wizard)
