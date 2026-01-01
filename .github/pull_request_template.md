@@ -4,10 +4,12 @@
 ## Related Issues
 <!-- Fixes #123 or Relates to #123 -->
 
+## Screenshots / Logs (if applicable)
+<!-- Add screenshots or logs to help reviewers understand the changes -->
+
 ## Checklist
 Please confirm the following before submitting:
 <!-- Mark completed items with [x] -->
-- [ ] Pulled latest changes from main
 - [ ] Branch is up to date with main
 - [ ] Ran `npm run build` successfully
 - [ ] Tested functionality locally
