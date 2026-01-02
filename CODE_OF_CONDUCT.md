@@ -54,4 +54,4 @@ The severity and duration of any action will be determined based on the nature a
 ## Attribution
 
 This Code of Conduct is adapted from the Contributor Covenant, version 2.1.  
-https://www.contributor-covenant.org/version/2/1/code_of_conduct.html
+[Contributor Covenant v2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html)
