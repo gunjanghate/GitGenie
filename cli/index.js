@@ -21,6 +21,10 @@ const { detectCommitType } = await import(
   new URL('./helpers/detectCommitType.js', import.meta.url)
 );
 
+const { displayGeminiError, getDebugModeTip } = await import(
+  new URL('./helpers/errorHandler.js', import.meta.url)
+);
+
 
 dotenv.config({ debug: false });
 const git = simpleGit();
@@ -406,9 +410,7 @@ async function generateCommitMessage(diff, opts, desc) {
     return result.response?.text()?.trim() || `${opts.type}: ${desc}`;
   } catch (err) {
     spinner.fail('AI commit message generation failed. Using manual message instead.');
-    console.error(chalk.red('Error from Gemini API:'), err.message);
-    console.error(chalk.yellow('Tip: Check your API key and network connection.'));
-    console.error(chalk.cyan('To set your API key: gg config <your_api_key>'));
+    displayGeminiError(err, 'commit message');
     return `${opts.type}${opts.scope ? `(${opts.scope})` : ''}: ${desc}`;
   }
 }
@@ -451,9 +453,7 @@ async function generatePRTitle(diff, opts, desc) {
     return result.response?.text()?.trim() || `${opts.type}: ${desc}`;
   } catch (err) {
     spinner.fail('AI PR title generation failed. Using manual title instead.');
-    console.error(chalk.red('Error from Gemini API:'), err.message);
-    console.error(chalk.yellow('Tip: Check your API key and network connection.'));
-    console.error(chalk.cyan('To set your API key: gg config <your_api_key>'));
+    displayGeminiError(err, 'PR title');
     return `${opts.type}${opts.scope ? `(${opts.scope})` : ''}: ${desc}`;
   }
 }
@@ -503,10 +503,7 @@ async function generateBranchName(diff, opts, desc) {
     }
   } catch (err) {
     spinner.fail('AI branch name generation failed. Using manual name instead.');
-    if (opts.genie) {
-      console.error(chalk.yellow('Tip: Check your API key and network connection.'));
-      console.error(chalk.cyan('To set your API key: gg config <your_api_key>'));
-    }
+    displayGeminiError(err, 'branch name');
     return `${opts.type}/${desc.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}`;
   }
 }
