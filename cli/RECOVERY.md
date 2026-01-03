@@ -1,6 +1,6 @@
-# Git Recovery Feature
+# Git Recovery Feature (GG)
 
-## Overview
+## Overview 
 The `gg recover` command provides safe Git recovery functionality for lost commits, with a focus on beginner safety and clear explanations.
 
 ## Commands
