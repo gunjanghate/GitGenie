@@ -40,6 +40,7 @@ export async function analyzeStagedChanges() {
                 let fileStatus = 'modified';
                 if (status.created.includes(file)) fileStatus = 'added';
                 if (status.deleted.includes(file)) fileStatus = 'deleted';
+                if (status.renamed.some(r => (r.to || r) === file)) fileStatus = 'renamed';
 
                 files.push({ path: file, status: fileStatus });
             } catch (err) {
@@ -120,7 +121,7 @@ IMPORTANT:
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds
 
-        const result = await model.generateContent(prompt);
+        const result = await model.generateContent(prompt, { signal: controller.signal });
         clearTimeout(timeoutId);
 
         spinner.succeed('✓ AI analysis complete');
@@ -254,9 +255,9 @@ export function groupFilesHeuristic(filesData, maxGroups = 5) {
 
         // Create groups for each directory (up to remaining maxGroups slots)
         const remainingSlots = maxGroups - groups.length;
-        const dirs = Object.keys(sourceByDir).slice(0, remainingSlots);
+        const allDirs = Object.keys(sourceByDir);
 
-        if (dirs.length === 1 || remainingSlots === 1) {
+        if (allDirs.length === 1 || remainingSlots === 1) {
             // All source files in one group
             groups.push({
                 files: filesByCategory.source.map(f => f.path),
@@ -266,8 +267,9 @@ export function groupFilesHeuristic(filesData, maxGroups = 5) {
                 rationale: 'Source code files grouped together'
             });
         } else {
+            const excessDirs = allDirs.slice(remainingSlots - 1);
             // Group by directory
-            dirs.forEach(dir => {
+            allDirs.slice(0, remainingSlots - 1).forEach(dir => { // Only iterate over dirs that will get their own group
                 groups.push({
                     files: sourceByDir[dir].map(f => f.path),
                     type: 'feat',
@@ -276,6 +278,17 @@ export function groupFilesHeuristic(filesData, maxGroups = 5) {
                     rationale: `Files in ${dir} directory grouped together`
                 });
             });
+            // Merge remaining directories into one group
+            if (excessDirs.length > 0) {
+                const excessFiles = excessDirs.flatMap(dir => sourceByDir[dir].map(f => f.path));
+                groups.push({
+                    files: excessFiles,
+                    type: 'feat',
+                    scope: '',
+                    description: 'update remaining source files',
+                    rationale: `Files from ${excessDirs.length} directories grouped together`
+                });
+            }
         }
     }
 
@@ -299,7 +312,7 @@ export async function generateCommitMessageForGroup(group, filesData, apiKey = n
 
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
         // Get diffs for files in this group
         const groupDiffs = group.files
@@ -390,6 +403,7 @@ export function validateGroups(groups, filesData) {
  * @returns {string} Formatted preview string
  */
 export function displayGroupPreview(groups) {
+
     let output = chalk.cyan.bold('\n📋 Detected Groups:\n');
 
     groups.forEach((group, idx) => {

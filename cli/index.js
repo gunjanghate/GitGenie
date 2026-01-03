@@ -347,8 +347,7 @@ program.command('wt')
 program
   .command('split')
   .description('Split staged changes into logical atomic commits')
-  .option('--genie', 'Use AI-powered grouping (default if API key exists)')
-  .option('--no-genie', 'Use heuristic grouping only')
+  .option('--genie', 'Enable AI-powered grouping (requires API key)')
   .option('--auto', 'Auto-commit all groups without confirmation')
   .option('--dry-run', 'Preview groups without committing')
   .option('--max-groups <n>', 'Maximum number of groups', '5')
@@ -410,8 +409,8 @@ program
       const maxGroups = parseInt(opts.maxGroups) || 5;
       const apiKey = await getApiKey();
 
-      // Determine if we should use AI
-      const useAI = opts.genie !== false && apiKey;
+      // Determine if we should use AI (only if explicitly requested and key exists)
+      const useAI = opts.genie && apiKey;
 
       if (useAI) {
         try {
@@ -431,7 +430,7 @@ program
           groups = groupFilesHeuristic(filesData, maxGroups);
         }
       } else {
-        if (!apiKey && opts.genie !== false) {
+        if (!apiKey && opts.genie) {
           console.warn(chalk.yellow('⚠ No API key found. Using heuristic grouping.'));
           console.warn(chalk.cyan('For AI-powered grouping, set your API key:'));
           console.warn(chalk.gray('Example: gg config <your_api_key>'));
@@ -455,8 +454,15 @@ program
         }
 
         // Generate commit messages for preview
-        for (const group of groups) {
-          group.previewMessage = await generateCommitMessageForGroup(group, filesData, apiKey);
+        const msgSpinner = opts.genie ? ora('🧞 Generating preview messages with AI...').start() : null;
+        try {
+          for (const group of groups) {
+            group.previewMessage = await generateCommitMessageForGroup(group, filesData, opts.genie ? apiKey : null);
+          }
+          if (msgSpinner) msgSpinner.succeed('AI messages generated');
+        } catch (err) {
+          if (msgSpinner) msgSpinner.fail('Failed to generate messages');
+          throw err;
         }
 
         console.log(chalk.cyan.bold('\n📋 Preview of Groups (Dry Run):\n'));
@@ -532,12 +538,13 @@ program
             }
 
             // Generate commit message
-            const message = group.customMessage || await generateCommitMessageForGroup(group, filesData, apiKey);
+            const message = group.customMessage || await generateCommitMessageForGroup(group, filesData, opts.genie ? apiKey : null);
 
             // Commit
             await git.commit(message);
             spinner.succeed(chalk.green(`✓ Committed: ${message}`));
             summary.committed++;
+            group.committed = true;
           } catch (err) {
             spinner.fail(chalk.red(`✗ Failed to commit group ${i + 1}`));
             console.error(chalk.yellow(`Error: ${err.message}`));
@@ -588,12 +595,13 @@ program
               }
 
               // Generate or use custom commit message
-              const message = updatedGroup.customMessage || await generateCommitMessageForGroup(updatedGroup, filesData, apiKey);
+              const message = updatedGroup.customMessage || await generateCommitMessageForGroup(updatedGroup, filesData, opts.genie ? apiKey : null);
 
               // Commit
               await git.commit(message);
               spinner.succeed(chalk.green(`✓ Committed: ${message}`));
               summary.committed++;
+              group.committed = true;
             } catch (err) {
               spinner.fail(chalk.red(`✗ Failed to commit group ${i + 1}`));
               console.error(chalk.yellow(`Error: ${err.message}`));
@@ -613,9 +621,19 @@ program
       showSplitSummary(summary);
 
       // Restage any uncommitted files
-      if (summary.committed < groups.length) {
-        console.log(chalk.cyan('\nRestaging uncommitted changes...'));
-        await git.add('./*');
+      if (summary.skipped > 0 || summary.failed > 0) {
+        console.log(chalk.cyan('\nRestaging uncommitted group files...'));
+        // Collect files from skipped/failed groups
+        const uncommittedFiles = groups
+          .filter(g => !g.committed)
+          .flatMap(g => g.files);
+        for (const file of uncommittedFiles) {
+          try {
+            await git.add(file);
+          } catch (e) {
+            // File may have been deleted
+          }
+        }
       }
 
     } catch (err) {
