@@ -70,25 +70,19 @@ export default function DemoVideoSection() {
 
       {/* Thumbnail only on the page; video plays in modal */}
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogTrigger asChild>
-          <button
-            type="button"
-            className="group relative mx-auto block aspect-video w-3/4 overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-xl focus:outline-none focus:ring-2 focus:ring-amber-400/60"
-            aria-label="Play demo video"
-          >
-            {/* Poster/thumbnail */}
+         <DialogTrigger asChild>
+              <button className="group relative mx-auto block aspect-[16/10] w-3/4 rounded-2xl border border-white/10 bg-black shadow-xl">
             <Image
               src="/git-genie-demo-poster.png"
               alt="Git Genie demo thumbnail"
-              height={315}
-              width={560}
+              fill
               priority
-              className="h-full w-full transform object-cover transition duration-300 ease-out group-hover:scale-[1.02] will-change-transform"
+              className="object-contain bg-black transition-transform duration-300 group-hover:scale-[1.01] "
             />
-            {/* Dark gradient for readability */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent" />
-            {/* Play button */}
-            <span className="absolute left-1/2 top-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-black shadow-md transition group-hover:scale-105">
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
+
+            <span className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-black shadow">
               ▶ Play demo
             </span>
           </button>
