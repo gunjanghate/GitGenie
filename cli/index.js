@@ -25,6 +25,22 @@ const { displayGeminiError, getDebugModeTip } = await import(
   new URL('./helpers/errorHandler.js', import.meta.url)
 );
 
+const { parseReflog, findLostCommits } = await import(
+  new URL('./helpers/reflogParser.js', import.meta.url)
+);
+
+const { confirmRecoveryAction } = await import(
+  new URL('./helpers/confirmationPrompt.js', import.meta.url)
+);
+
+const { handleRecoveryError, validateReflogIndex, formatNoRecoveryOptions } = await import(
+  new URL('./helpers/recoverErrors.js', import.meta.url)
+);
+
+const { createRecoveryBranch, getCommitInfo } = await import(
+  new URL('./helpers/safeBranchOps.js', import.meta.url)
+);
+
 
 dotenv.config({ debug: false });
 const git = simpleGit();
@@ -318,6 +334,34 @@ program.command('wt')
     await git.raw(['worktree', 'add', loc, branch]);
     console.log(chalk.green(`Worktree created at "${loc}"`));
   });
+
+// Recovery command with subcommands
+const recoverCmd = program.command('recover')
+  .description('Recover lost Git commits, files, or branches safely');
+
+recoverCmd.command('list')
+  .description('Show recoverable commits from reflog')
+  .option('-n, --count <number>', 'Number of reflog entries to scan', '20')
+  .action(async (options) => {
+    await handleRecoverList(parseInt(options.count));
+  });
+
+recoverCmd.command('explain <n>')
+  .description('Explain what happened at reflog entry N')
+  .action(async (n) => {
+    await handleRecoverExplain(parseInt(n));
+  });
+
+recoverCmd.command('apply <n>')
+  .description('Apply recovery for reflog entry N')
+  .action(async (n) => {
+    await handleRecoverApply(parseInt(n));
+  });
+
+// Default recover command (interactive mode)
+recoverCmd.action(async () => {
+  await handleRecoverInteractive();
+});
 
 
 // ------------------------------ MAIN COMMIT COMMAND ------------------------------
@@ -853,5 +897,198 @@ async function runMainFlow(desc, opts) {
     console.error(chalk.yellow('Tip: Review the error above and try the suggested command.'));
     console.error(chalk.cyan('To get help: gg --help'));
     process.exit(1);
+  }
+}
+
+// Recovery command handlers
+async function handleRecoverList(count) {
+  try {
+    console.log(chalk.blue('🔍 Scanning reflog for recovery options...'));
+    const entries = await parseReflog(count);
+    
+    if (entries.length === 0) {
+      formatNoRecoveryOptions();
+      return;
+    }
+
+    console.log(chalk.green(`\n📋 Found ${entries.length} reflog entries:\n`));
+    
+    entries.forEach((entry, index) => {
+      const num = chalk.cyan(`${index + 1}.`);
+      const hash = chalk.yellow(entry.hash);
+      const action = chalk.magenta(entry.action);
+      const time = chalk.gray(entry.timestamp);
+      const msg = entry.message.substring(0, 60) + (entry.message.length > 60 ? '...' : '');
+      
+      console.log(`${num} ${hash} ${action} ${time}`);
+      console.log(`   ${chalk.white(msg)}\n`);
+    });
+
+    console.log(chalk.cyan('💡 Use "gg recover explain <n>" to see details'));
+    console.log(chalk.cyan('💡 Use "gg recover apply <n>" to recover'));
+  } catch (error) {
+    handleRecoveryError(error);
+  }
+}
+
+async function handleRecoverExplain(n) {
+  try {
+    const entries = await parseReflog(50);
+    validateReflogIndex(n, entries.length);
+    
+    const entry = entries[n - 1];
+    const commitInfo = await getCommitInfo(entry.fullHash);
+    
+    console.log(chalk.blue('\n📖 Recovery Analysis\n'));
+    console.log(`${chalk.cyan('Entry:')} #${n}`);
+    console.log(`${chalk.cyan('Commit:')} ${commitInfo.hash} (${commitInfo.fullHash})`);
+    console.log(`${chalk.cyan('Action:')} ${entry.action}`);
+    console.log(`${chalk.cyan('When:')} ${entry.timestamp}`);
+    console.log(`${chalk.cyan('Author:')} ${commitInfo.author} <${commitInfo.email}>`);
+    console.log(`${chalk.cyan('Date:')} ${commitInfo.date}`);
+    console.log(`${chalk.cyan('Message:')} ${commitInfo.subject}`);
+    
+    if (commitInfo.files.length > 0) {
+      console.log(`${chalk.cyan('Files:')} ${commitInfo.files.length} files changed`);
+      commitInfo.files.slice(0, 10).forEach(file => {
+        console.log(`  ${chalk.gray('•')} ${file}`);
+      });
+      if (commitInfo.files.length > 10) {
+        console.log(`  ${chalk.gray('... and')} ${commitInfo.files.length - 10} ${chalk.gray('more files')}`);
+      }
+    }
+
+    console.log(chalk.yellow('\n⚠️  What this means:'));
+    if (entry.action === 'reset') {
+      console.log(chalk.gray('This commit was lost due to a git reset operation.'));
+      console.log(chalk.gray('Recovery will create a new branch with this commit.'));
+    } else if (entry.action === 'rebase') {
+      console.log(chalk.gray('This commit was modified/lost during a rebase operation.'));
+      console.log(chalk.gray('Recovery will restore the original commit to a new branch.'));
+    } else if (entry.action === 'commit') {
+      console.log(chalk.gray('This is a regular commit in your history.'));
+      console.log(chalk.gray('Recovery will create a branch from this point.'));
+    } else {
+      console.log(chalk.gray('This represents a state change in your repository.'));
+      console.log(chalk.gray('Recovery will create a branch from this commit.'));
+    }
+
+    console.log(chalk.cyan('\n💡 To recover: gg recover apply ' + n));
+  } catch (error) {
+    handleRecoveryError(error);
+  }
+}
+
+async function handleRecoverApply(n) {
+  try {
+    const entries = await parseReflog(50);
+    validateReflogIndex(n, entries.length);
+    
+    const entry = entries[n - 1];
+    const commitInfo = await getCommitInfo(entry.fullHash);
+    
+    console.log(chalk.blue('\n🔄 Recovery Application\n'));
+    console.log(`Recovering: ${chalk.yellow(commitInfo.hash)} - ${commitInfo.subject}`);
+    
+    const confirmed = await confirmRecoveryAction(
+      'safe',
+      `Create recovery branch from commit ${commitInfo.hash}`,
+      [
+        'Create a new branch with the recovered commit',
+        'Your current branch will remain unchanged',
+        'No existing work will be lost'
+      ]
+    );
+
+    if (!confirmed) {
+      console.log(chalk.yellow('Recovery cancelled.'));
+      return;
+    }
+
+    const branchName = await createRecoveryBranch(entry.fullHash);
+    
+    console.log(chalk.green('\n🎉 Recovery completed successfully!\n'));
+    console.log(chalk.cyan('Next steps:'));
+    console.log(chalk.gray(`  git checkout ${branchName}    # Switch to recovery branch`));
+    console.log(chalk.gray(`  git log --oneline -5          # Review recovered commits`));
+    console.log(chalk.gray(`  git checkout main             # Return to main branch`));
+    console.log(chalk.gray(`  git merge ${branchName}       # Merge if satisfied`));
+    
+  } catch (error) {
+    handleRecoveryError(error);
+  }
+}
+
+async function handleRecoverInteractive() {
+  try {
+    console.log(chalk.blue('🔮 Git Recovery Assistant\n'));
+    
+    const entries = await parseReflog(20);
+    
+    if (entries.length === 0) {
+      formatNoRecoveryOptions();
+      return;
+    }
+
+    console.log(chalk.green('Found potential recovery options:\n'));
+    
+    // Show first 5 entries for interactive selection
+    const displayEntries = entries.slice(0, 5);
+    displayEntries.forEach((entry, index) => {
+      const num = chalk.cyan(`${index + 1}.`);
+      const hash = chalk.yellow(entry.hash);
+      const time = chalk.gray(entry.timestamp);
+      const msg = entry.message.substring(0, 50) + (entry.message.length > 50 ? '...' : '');
+      
+      console.log(`${num} ${hash} ${time} - ${msg}`);
+    });
+
+    console.log(chalk.gray('\nMore options available with "gg recover list"\n'));
+
+    const { choice } = await inquirer.prompt([{
+      type: 'list',
+      name: 'choice',
+      message: 'What would you like to do?',
+      choices: [
+        { name: 'Explain a specific entry', value: 'explain' },
+        { name: 'Recover a specific entry', value: 'apply' },
+        { name: 'Show all entries', value: 'list' },
+        { name: 'Exit', value: 'exit' }
+      ]
+    }]);
+
+    if (choice === 'exit') {
+      console.log(chalk.gray('Recovery assistant closed.'));
+      return;
+    }
+
+    if (choice === 'list') {
+      await handleRecoverList(50);
+      return;
+    }
+
+    const { entryNumber } = await inquirer.prompt([{
+      type: 'input',
+      name: 'entryNumber',
+      message: 'Enter entry number:',
+      validate: (input) => {
+        const num = parseInt(input);
+        if (isNaN(num) || num < 1 || num > entries.length) {
+          return `Please enter a number between 1 and ${entries.length}`;
+        }
+        return true;
+      }
+    }]);
+
+    const n = parseInt(entryNumber);
+    
+    if (choice === 'explain') {
+      await handleRecoverExplain(n);
+    } else if (choice === 'apply') {
+      await handleRecoverApply(n);
+    }
+
+  } catch (error) {
+    handleRecoveryError(error);
   }
 }
