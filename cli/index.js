@@ -25,6 +25,46 @@ const { displayGeminiError, getDebugModeTip } = await import(
   new URL('./helpers/errorHandler.js', import.meta.url)
 );
 
+<<<<<<< HEAD
+const { parseReflog, findLostCommits } = await import(
+  new URL('./helpers/reflogParser.js', import.meta.url)
+);
+
+const { confirmRecoveryAction } = await import(
+  new URL('./helpers/confirmationPrompt.js', import.meta.url)
+);
+
+const { handleRecoveryError, validateReflogIndex, formatNoRecoveryOptions } = await import(
+  new URL('./helpers/recoverErrors.js', import.meta.url)
+);
+
+const { createRecoveryBranch, getCommitInfo } = await import(
+  new URL('./helpers/safeBranchOps.js', import.meta.url)
+=======
+const {
+  analyzeStagedChanges,
+  groupFilesWithAI,
+  groupFilesHeuristic,
+  generateCommitMessageForGroup,
+  validateGroups
+} = await import(
+  new URL('./helpers/splitLogic.js', import.meta.url)
+);
+
+const {
+  promptGroupActions,
+  promptGroupReview,
+  promptMergeGroups,
+  confirmCommitAll,
+  promptStageChanges,
+  promptContinueAfterError,
+  showSplitSummary,
+  promptDryRun
+} = await import(
+  new URL('./helpers/splitUI.js', import.meta.url)
+>>>>>>> 45060db1ec0b53fba9dbff96fc363275d495f017
+);
+
 
 dotenv.config({ debug: false });
 const git = simpleGit();
@@ -319,6 +359,340 @@ program.command('wt')
     console.log(chalk.green(`Worktree created at "${loc}"`));
   });
 
+// Recovery command with subcommands
+const recoverCmd = program.command('recover')
+  .description('Recover lost Git commits, files, or branches safely');
+
+recoverCmd.command('list')
+  .description('Show recoverable commits from reflog')
+  .option('-n, --count <number>', 'Number of reflog entries to scan', '20')
+  .action(async (options) => {
+    await handleRecoverList(parseInt(options.count));
+  });
+
+recoverCmd.command('explain <n>')
+  .description('Explain what happened at reflog entry N')
+  .action(async (n) => {
+    await handleRecoverExplain(parseInt(n));
+  });
+
+recoverCmd.command('apply <n>')
+  .description('Apply recovery for reflog entry N')
+  .action(async (n) => {
+    await handleRecoverApply(parseInt(n));
+  });
+
+// Default recover command (interactive mode)
+recoverCmd.action(async () => {
+  await handleRecoverInteractive();
+});
+
+
+// ------------------------------ SPLIT COMMAND ------------------------------
+program
+  .command('split')
+  .description('Split staged changes into logical atomic commits')
+  .option('--genie', 'Enable AI-powered grouping (requires API key)')
+  .option('--auto', 'Auto-commit all groups without confirmation')
+  .option('--dry-run', 'Preview groups without committing')
+  .option('--max-groups <n>', 'Maximum number of groups', '5')
+  .action(async (opts) => {
+    try {
+      // Handle Ctrl+C gracefully
+      process.on('SIGINT', () => {
+        console.log(chalk.yellow('\n\n⚠ Split operation cancelled by user.'));
+        console.log(chalk.cyan('Your staged changes remain unchanged.'));
+        console.log(chalk.gray('Tip: Run gg split again when ready'));
+        process.exit(0);
+      });
+
+      // 1️⃣ Analyze staged changes
+      let filesData = await analyzeStagedChanges();
+
+      // Handle no staged changes
+      if (filesData.files.length === 0) {
+        const shouldStage = await promptStageChanges();
+        if (shouldStage) {
+          await stageAllFiles();
+          filesData = await analyzeStagedChanges();
+
+          if (filesData.files.length === 0) {
+            console.error(chalk.red('No changes detected even after staging.'));
+            console.log(chalk.cyan('Tip: Make sure you have modified files. To check: git status'));
+            process.exit(1);
+          }
+        } else {
+          console.log(chalk.cyan('Tip: Stage changes with: git add <files>'));
+          process.exit(0);
+        }
+      }
+
+      // Handle single file edge case
+      if (filesData.files.length === 1) {
+        console.log(chalk.yellow('Only one file changed. No need to split.'));
+        console.log(chalk.cyan('Tip: Use regular commit: gg "your message"'));
+        process.exit(0);
+      }
+
+      // Warn about too many files
+      if (filesData.files.length > 50) {
+        console.log(chalk.yellow(`⚠ ${filesData.files.length} files changed. This may take a while.`));
+        const { shouldContinue } = await inquirer.prompt([{
+          type: 'confirm',
+          name: 'shouldContinue',
+          message: 'Continue with analysis?',
+          default: true
+        }]);
+
+        if (!shouldContinue) {
+          process.exit(0);
+        }
+      }
+
+      // 2️⃣ Group files (AI or heuristic)
+      let groups = [];
+      const maxGroups = parseInt(opts.maxGroups) || 5;
+      const apiKey = await getApiKey();
+
+      // Determine if we should use AI (only if explicitly requested and key exists)
+      const useAI = opts.genie && apiKey;
+
+      if (useAI) {
+        try {
+          groups = await groupFilesWithAI(filesData, apiKey, maxGroups);
+
+          // Validate AI-generated groups
+          const validationErrors = validateGroups(groups, filesData);
+          if (validationErrors) {
+            console.error(chalk.red('AI grouping validation failed:'));
+            validationErrors.forEach(err => console.error(chalk.yellow(`  - ${err}`)));
+            console.log(chalk.cyan('Falling back to heuristic grouping...'));
+            groups = groupFilesHeuristic(filesData, maxGroups);
+          }
+        } catch (err) {
+          displayGeminiError(err, 'file grouping');
+          console.log(chalk.yellow('Falling back to heuristic grouping...'));
+          groups = groupFilesHeuristic(filesData, maxGroups);
+        }
+      } else {
+        if (!apiKey && opts.genie) {
+          console.warn(chalk.yellow('⚠ No API key found. Using heuristic grouping.'));
+          console.warn(chalk.cyan('For AI-powered grouping, set your API key:'));
+          console.warn(chalk.gray('Example: gg config <your_api_key>'));
+        }
+        groups = groupFilesHeuristic(filesData, maxGroups);
+      }
+
+      // Handle empty groups
+      groups = groups.filter(g => g.files && g.files.length > 0);
+      if (groups.length === 0) {
+        console.error(chalk.red('No valid groups created. This is unexpected.'));
+        console.log(chalk.cyan('Tip: Try staging specific files or use regular commit'));
+        process.exit(1);
+      }
+
+      // 3️⃣ Dry run mode
+      if (opts.dryRun) {
+        const confirmed = await promptDryRun();
+        if (!confirmed) {
+          process.exit(0);
+        }
+
+        // Generate commit messages for preview
+        const msgSpinner = opts.genie ? ora('🧞 Generating preview messages with AI...').start() : null;
+        try {
+          for (const group of groups) {
+            group.previewMessage = await generateCommitMessageForGroup(group, filesData, opts.genie ? apiKey : null);
+          }
+          if (msgSpinner) msgSpinner.succeed('AI messages generated');
+        } catch (err) {
+          if (msgSpinner) msgSpinner.fail('Failed to generate messages');
+          throw err;
+        }
+
+        console.log(chalk.cyan.bold('\n📋 Preview of Groups (Dry Run):\n'));
+        groups.forEach((group, idx) => {
+          console.log(chalk.gray('─'.repeat(60)));
+          console.log(chalk.yellow.bold(`[Group ${idx + 1}]`));
+          console.log(chalk.green(`Message: ${group.previewMessage}`));
+          console.log(chalk.gray(`Files (${group.files.length}):`));
+          group.files.forEach(file => console.log(chalk.white(`  • ${file}`)));
+        });
+        console.log(chalk.gray('─'.repeat(60)));
+        console.log(chalk.cyan('\nDry run complete. No commits were made.'));
+        process.exit(0);
+      }
+
+      // 4️⃣ Interactive or auto mode
+      let action = opts.auto ? 'commit-all' : await promptGroupActions(groups);
+
+      // Handle merge action
+      if (action === 'merge') {
+        const mergeResult = await promptMergeGroups(groups);
+        if (mergeResult) {
+          // Remove merged groups and add new merged group
+          groups = groups.filter((_, idx) => !mergeResult.indicesToRemove.includes(idx));
+          groups.push(mergeResult.mergedGroup);
+
+          console.log(chalk.green(`\n✓ Merged ${mergeResult.indicesToRemove.length} groups`));
+          action = await promptGroupActions(groups);
+        } else {
+          action = await promptGroupActions(groups);
+        }
+      }
+
+      // Handle cancel
+      if (action === 'cancel') {
+        console.log(chalk.yellow('Split operation cancelled.'));
+        process.exit(0);
+      }
+
+      // 5️⃣ Commit groups
+      const summary = { committed: 0, skipped: 0, failed: 0 };
+
+      if (action === 'commit-all') {
+        // Confirm before committing all
+        if (!opts.auto) {
+          const confirmed = await confirmCommitAll(groups);
+          if (!confirmed) {
+            console.log(chalk.yellow('Operation cancelled.'));
+            process.exit(0);
+          }
+        }
+
+        // Commit each group
+        for (let i = 0; i < groups.length; i++) {
+          const group = groups[i];
+          const spinner = ora(`Committing group ${i + 1}/${groups.length}...`).start();
+
+          try {
+            // Unstage all files first (but keep committed changes)
+            // Check if repository has commits (HEAD exists)
+            try {
+              await git.revparse(['--verify', 'HEAD']);
+              // HEAD exists, use it for reset
+              await git.reset(['HEAD']);
+            } catch {
+              // No commits yet, just remove all from staging
+              await git.raw(['rm', '--cached', '-r', '.']);
+            }
+
+            // Stage only files for this group
+            for (const file of group.files) {
+              await git.add(file);
+            }
+
+            // Generate commit message
+            const message = group.customMessage || await generateCommitMessageForGroup(group, filesData, opts.genie ? apiKey : null);
+
+            // Commit
+            await git.commit(message);
+            spinner.succeed(chalk.green(`✓ Committed: ${message}`));
+            summary.committed++;
+            group.committed = true;
+          } catch (err) {
+            spinner.fail(chalk.red(`✗ Failed to commit group ${i + 1}`));
+            console.error(chalk.yellow(`Error: ${err.message}`));
+            summary.failed++;
+
+            const shouldContinue = await promptContinueAfterError(`Failed to commit group: ${group.description}`);
+            if (!shouldContinue) {
+              console.log(chalk.cyan('Tip: Fix the issue and run gg split again'));
+              break;
+            }
+          }
+        }
+      } else if (action === 'review') {
+        // Review each group individually
+        for (let i = 0; i < groups.length; i++) {
+          const group = groups[i];
+          const { action: reviewAction, updatedGroup } = await promptGroupReview(group, i, groups.length);
+
+          if (reviewAction === 'cancel') {
+            console.log(chalk.yellow('Operation cancelled.'));
+            break;
+          }
+
+          if (reviewAction === 'skip') {
+            console.log(chalk.yellow(`⏭️  Skipped group ${i + 1}`));
+            summary.skipped++;
+            continue;
+          }
+
+          if (reviewAction === 'commit') {
+            const spinner = ora(`Committing group ${i + 1}...`).start();
+
+            try {
+              // Unstage all files first (but keep committed changes)
+              // Check if repository has commits (HEAD exists)
+              try {
+                await git.revparse(['--verify', 'HEAD']);
+                // HEAD exists, use it for reset
+                await git.reset(['HEAD']);
+              } catch {
+                // No commits yet, just remove all from staging
+                await git.raw(['rm', '--cached', '-r', '.']);
+              }
+
+              // Stage only files for this group
+              for (const file of updatedGroup.files) {
+                await git.add(file);
+              }
+
+              // Generate or use custom commit message
+              const message = updatedGroup.customMessage || await generateCommitMessageForGroup(updatedGroup, filesData, opts.genie ? apiKey : null);
+
+              // Commit
+              await git.commit(message);
+              spinner.succeed(chalk.green(`✓ Committed: ${message}`));
+              summary.committed++;
+              group.committed = true;
+            } catch (err) {
+              spinner.fail(chalk.red(`✗ Failed to commit group ${i + 1}`));
+              console.error(chalk.yellow(`Error: ${err.message}`));
+              summary.failed++;
+
+              const shouldContinue = await promptContinueAfterError(`Failed to commit group: ${updatedGroup.description}`);
+              if (!shouldContinue) {
+                console.log(chalk.cyan('Tip: Fix the issue and run gg split again'));
+                break;
+              }
+            }
+          }
+        }
+      }
+
+      // 6️⃣ Show summary
+      showSplitSummary(summary);
+
+      // Restage any uncommitted files
+      if (summary.skipped > 0 || summary.failed > 0) {
+        console.log(chalk.cyan('\nRestaging uncommitted group files...'));
+        // Collect files from skipped/failed groups
+        const uncommittedFiles = groups
+          .filter(g => !g.committed)
+          .flatMap(g => g.files);
+        for (const file of uncommittedFiles) {
+          try {
+            await git.add(file);
+          } catch (e) {
+            // File may have been deleted
+          }
+        }
+      }
+
+    } catch (err) {
+      console.error(chalk.red('Error during split operation: ' + err.message));
+      console.error(chalk.yellow('Tip: Review the error above and try again.'));
+      console.error(chalk.cyan('To get help: gg split --help'));
+      if (process.env.GITGENIE_DEBUG) {
+        console.error(chalk.gray('\nStack trace:'));
+        console.error(err.stack);
+      }
+      process.exit(1);
+    }
+  });
+
 
 // ------------------------------ MAIN COMMIT COMMAND ------------------------------
 program
@@ -349,7 +723,7 @@ program
     const first = process.argv[2];
 
     // 🚫 If first arg is a known subcommand, do nothing here
-    if (['commit', 'b', 's', 'wt', 'cl', 'config'].includes(first)) return;
+    if (['commit', 'b', 's', 'wt', 'cl', 'config', 'split'].includes(first)) return;
 
     // No args → open menu
     if (!desc) {
@@ -853,5 +1227,198 @@ async function runMainFlow(desc, opts) {
     console.error(chalk.yellow('Tip: Review the error above and try the suggested command.'));
     console.error(chalk.cyan('To get help: gg --help'));
     process.exit(1);
+  }
+}
+
+// Recovery command handlers
+async function handleRecoverList(count) {
+  try {
+    console.log(chalk.blue('🔍 Scanning reflog for recovery options...'));
+    const entries = await parseReflog(count);
+    
+    if (entries.length === 0) {
+      formatNoRecoveryOptions();
+      return;
+    }
+
+    console.log(chalk.green(`\n📋 Found ${entries.length} reflog entries:\n`));
+    
+    entries.forEach((entry, index) => {
+      const num = chalk.cyan(`${index + 1}.`);
+      const hash = chalk.yellow(entry.hash);
+      const action = chalk.magenta(entry.action);
+      const time = chalk.gray(entry.timestamp);
+      const msg = entry.message.substring(0, 60) + (entry.message.length > 60 ? '...' : '');
+      
+      console.log(`${num} ${hash} ${action} ${time}`);
+      console.log(`   ${chalk.white(msg)}\n`);
+    });
+
+    console.log(chalk.cyan('💡 Use "gg recover explain <n>" to see details'));
+    console.log(chalk.cyan('💡 Use "gg recover apply <n>" to recover'));
+  } catch (error) {
+    handleRecoveryError(error);
+  }
+}
+
+async function handleRecoverExplain(n) {
+  try {
+    const entries = await parseReflog(50);
+    validateReflogIndex(n, entries.length);
+    
+    const entry = entries[n - 1];
+    const commitInfo = await getCommitInfo(entry.fullHash);
+    
+    console.log(chalk.blue('\n📖 Recovery Analysis\n'));
+    console.log(`${chalk.cyan('Entry:')} #${n}`);
+    console.log(`${chalk.cyan('Commit:')} ${commitInfo.hash} (${commitInfo.fullHash})`);
+    console.log(`${chalk.cyan('Action:')} ${entry.action}`);
+    console.log(`${chalk.cyan('When:')} ${entry.timestamp}`);
+    console.log(`${chalk.cyan('Author:')} ${commitInfo.author} <${commitInfo.email}>`);
+    console.log(`${chalk.cyan('Date:')} ${commitInfo.date}`);
+    console.log(`${chalk.cyan('Message:')} ${commitInfo.subject}`);
+    
+    if (commitInfo.files.length > 0) {
+      console.log(`${chalk.cyan('Files:')} ${commitInfo.files.length} files changed`);
+      commitInfo.files.slice(0, 10).forEach(file => {
+        console.log(`  ${chalk.gray('•')} ${file}`);
+      });
+      if (commitInfo.files.length > 10) {
+        console.log(`  ${chalk.gray('... and')} ${commitInfo.files.length - 10} ${chalk.gray('more files')}`);
+      }
+    }
+
+    console.log(chalk.yellow('\n⚠️  What this means:'));
+    if (entry.action === 'reset') {
+      console.log(chalk.gray('This commit was lost due to a git reset operation.'));
+      console.log(chalk.gray('Recovery will create a new branch with this commit.'));
+    } else if (entry.action === 'rebase') {
+      console.log(chalk.gray('This commit was modified/lost during a rebase operation.'));
+      console.log(chalk.gray('Recovery will restore the original commit to a new branch.'));
+    } else if (entry.action === 'commit') {
+      console.log(chalk.gray('This is a regular commit in your history.'));
+      console.log(chalk.gray('Recovery will create a branch from this point.'));
+    } else {
+      console.log(chalk.gray('This represents a state change in your repository.'));
+      console.log(chalk.gray('Recovery will create a branch from this commit.'));
+    }
+
+    console.log(chalk.cyan('\n💡 To recover: gg recover apply ' + n));
+  } catch (error) {
+    handleRecoveryError(error);
+  }
+}
+
+async function handleRecoverApply(n) {
+  try {
+    const entries = await parseReflog(50);
+    validateReflogIndex(n, entries.length);
+    
+    const entry = entries[n - 1];
+    const commitInfo = await getCommitInfo(entry.fullHash);
+    
+    console.log(chalk.blue('\n🔄 Recovery Application\n'));
+    console.log(`Recovering: ${chalk.yellow(commitInfo.hash)} - ${commitInfo.subject}`);
+    
+    const confirmed = await confirmRecoveryAction(
+      'safe',
+      `Create recovery branch from commit ${commitInfo.hash}`,
+      [
+        'Create a new branch with the recovered commit',
+        'Your current branch will remain unchanged',
+        'No existing work will be lost'
+      ]
+    );
+
+    if (!confirmed) {
+      console.log(chalk.yellow('Recovery cancelled.'));
+      return;
+    }
+
+    const branchName = await createRecoveryBranch(entry.fullHash);
+    
+    console.log(chalk.green('\n🎉 Recovery completed successfully!\n'));
+    console.log(chalk.cyan('Next steps:'));
+    console.log(chalk.gray(`  git checkout ${branchName}    # Switch to recovery branch`));
+    console.log(chalk.gray(`  git log --oneline -5          # Review recovered commits`));
+    console.log(chalk.gray(`  git checkout main             # Return to main branch`));
+    console.log(chalk.gray(`  git merge ${branchName}       # Merge if satisfied`));
+    
+  } catch (error) {
+    handleRecoveryError(error);
+  }
+}
+
+async function handleRecoverInteractive() {
+  try {
+    console.log(chalk.blue('🔮 Git Recovery Assistant\n'));
+    
+    const entries = await parseReflog(20);
+    
+    if (entries.length === 0) {
+      formatNoRecoveryOptions();
+      return;
+    }
+
+    console.log(chalk.green('Found potential recovery options:\n'));
+    
+    // Show first 5 entries for interactive selection
+    const displayEntries = entries.slice(0, 5);
+    displayEntries.forEach((entry, index) => {
+      const num = chalk.cyan(`${index + 1}.`);
+      const hash = chalk.yellow(entry.hash);
+      const time = chalk.gray(entry.timestamp);
+      const msg = entry.message.substring(0, 50) + (entry.message.length > 50 ? '...' : '');
+      
+      console.log(`${num} ${hash} ${time} - ${msg}`);
+    });
+
+    console.log(chalk.gray('\nMore options available with "gg recover list"\n'));
+
+    const { choice } = await inquirer.prompt([{
+      type: 'list',
+      name: 'choice',
+      message: 'What would you like to do?',
+      choices: [
+        { name: 'Explain a specific entry', value: 'explain' },
+        { name: 'Recover a specific entry', value: 'apply' },
+        { name: 'Show all entries', value: 'list' },
+        { name: 'Exit', value: 'exit' }
+      ]
+    }]);
+
+    if (choice === 'exit') {
+      console.log(chalk.gray('Recovery assistant closed.'));
+      return;
+    }
+
+    if (choice === 'list') {
+      await handleRecoverList(50);
+      return;
+    }
+
+    const { entryNumber } = await inquirer.prompt([{
+      type: 'input',
+      name: 'entryNumber',
+      message: 'Enter entry number:',
+      validate: (input) => {
+        const num = parseInt(input);
+        if (isNaN(num) || num < 1 || num > entries.length) {
+          return `Please enter a number between 1 and ${entries.length}`;
+        }
+        return true;
+      }
+    }]);
+
+    const n = parseInt(entryNumber);
+    
+    if (choice === 'explain') {
+      await handleRecoverExplain(n);
+    } else if (choice === 'apply') {
+      await handleRecoverApply(n);
+    }
+
+  } catch (error) {
+    handleRecoveryError(error);
   }
 }
