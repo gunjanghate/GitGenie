@@ -6,6 +6,7 @@ import { Suspense } from "react"
 import "./globals.css"
 import { Plus_Jakarta_Sans } from "next/font/google"
 import SmoothScrollProvider from "@/components/SmoothScrollerProvider"
+import { ScrollToTop } from "@/components/ScrollToTop"
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   display: "swap",
@@ -40,6 +41,7 @@ export default function RootLayout({
         <SmoothScrollProvider>
           <Suspense fallback={null}>{children}</Suspense>
           <Analytics />
+          <ScrollToTop />
         </SmoothScrollProvider>
       </body>
     </html>
