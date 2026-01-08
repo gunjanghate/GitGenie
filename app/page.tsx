@@ -6,6 +6,7 @@ import Usage from "@/components/usage"
 import Community from "@/components/community"
 import SiteFooter from "@/components/site-footer"
 import DemoVideoSection from "@/components/demo-video"
+import FAQ from "@/components/faq"
 
 export const metadata: Metadata = {
   title: "Git Genie — AI-powered Git assistant",
@@ -32,8 +33,10 @@ export default function Page() {
       <HowItWorks />
       <DemoVideoSection />
       <Usage />
+      <FAQ/>
       <Community />
       <SiteFooter />
+      
     </main>
   )
 }
