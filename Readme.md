@@ -151,6 +151,92 @@ gg
 
 These shortcuts make branch and worktree management faster and easier, especially for advanced workflows and multi-branch development.
 
+### Interactive Commit Categorization (`gg split`)
+
+GitGenie now includes an intelligent commit splitting feature that analyzes your staged changes and groups them into logical, atomic commits.
+
+**Problem it solves:** Developers often work on multiple things simultaneously—fixing a bug, refactoring a function, and updating documentation—before running `git commit`. Committing all these changes together (the "Mega-Commit") leads to messy history, hard code reviews, and risky reverts.
+
+**Solution:** `gg split` uses AI to detect semantic relationships between files and suggests breaking them down by feature, refactor, or file dependency.
+
+#### Usage
+
+```bash
+# Basic usage (AI-powered if API key configured)
+gg split
+
+# Force heuristic grouping (no AI)
+gg split --no-genie
+
+# Preview groups without committing
+gg split --dry-run
+
+# Auto-commit all groups without confirmation
+gg split --auto
+
+# Limit maximum number of groups
+gg split --max-groups 3
+```
+
+#### Workflow Example
+
+```bash
+# You have multiple changes staged
+git add src/auth.js src/auth.test.js src/components/Navbar.css README.md
+
+# Run split
+gg split
+
+# Output:
+# 📋 Detected Groups:
+# 
+# [Group 1] feat(auth): add login session handling
+#   Files (2):
+#   • src/auth.js
+#   • src/auth.test.js
+# 
+# [Group 2] fix(ui): resolve navbar z-index issue
+#   Files (1):
+#   • src/components/Navbar.css
+# 
+# [Group 3] docs: update installation guide
+#   Files (1):
+#   • README.md
+#
+# ? How would you like to proceed?
+#   ✓ Commit all groups as suggested
+#   ✏️  Review and edit each group
+#   🔀 Merge groups together
+#   ❌ Cancel
+```
+
+#### Options
+
+- `--genie`: Use AI-powered grouping (default if API key exists)
+- `--no-genie`: Use heuristic grouping only (groups by file type and directory)
+- `--auto`: Auto-commit all groups without confirmation (non-interactive mode)
+- `--dry-run`: Preview groups without committing
+- `--max-groups <n>`: Limit maximum number of groups (default: 5)
+
+#### Features
+
+- **AI-Powered Grouping**: Uses Google Gemini to analyze semantic relationships
+- **Heuristic Fallback**: Works without API key using smart file categorization
+- **Interactive Review**: Edit commit messages, merge groups, or skip groups
+- **Error Handling**: Graceful handling of all edge cases and failures
+- **Atomic Commits**: Creates clean, logical commit history
+
+#### Error Handling
+
+The split command handles all error scenarios gracefully:
+- No staged changes → prompts to stage
+- Single file → suggests using regular commit
+- API failures → falls back to heuristic grouping
+- Network timeouts → automatic fallback
+- Git operation failures → option to continue or abort
+- User cancellation (Ctrl+C) → clean exit
+
+
 ### Main Command
 
 ```bash
