@@ -50,3 +50,20 @@ If you believe an API key or sensitive configuration is being handled insecurely
 Please allow the maintainers reasonable time to investigate and address reported issues before any public disclosure.
 
 We appreciate your efforts in helping keep GitGenie safe, reliable, and secure.
+
+## API Key & Configuration Security
+
+GitGenie may require an API key (e.g., for Gemini integration during `gg config`).
+
+To protect sensitive credentials:
+
+- API keys are **not stored in plain text**
+- API keys are **encrypted locally** before being written to disk
+- GitGenie uses **AES-256-CBC encryption** with a per-user encryption key
+- The encryption key is stored securely using the system’s credential manager via **Keytar**
+- The encrypted API key is stored in a local config file:
+  - `~/.gitgenie/config.json`
+
+If Keytar is unavailable or fails, GitGenie falls back to generating a unique encryption key based on machine/user-specific data.
+
+> Note: Users should avoid committing local configuration files and should rotate/revoke API keys immediately if exposure is suspected.
