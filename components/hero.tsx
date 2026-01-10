@@ -15,12 +15,19 @@ import { motion } from "motion/react"
 export default function Hero() {
   const words = ["origins", "staging", "commits", "pushes"];
   return (
-    <header aria-label="Hero" className="relative overflow-hidden border-b border-white/5">
+    <header
+      aria-label="Hero"
+      className="relative overflow-hidden border-b border-white/5"
+    >
       <BackgroundParticles />
-      <div className="absolute top-5 w-screen left-0 z-[100] px-6 right-0 flex flex-wrap items-center justify-between  gap-4">
+      <div
+        className="absolute top-5 left-0 right-0 z-[100] px-6
+  flex flex-row items-center justify-center gap-3
+  md:justify-between"
+      >
         <Link
           href="https://github.com/gunjanghate/GitGenie"
-          className="group inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black transition-transform duration-200 hover:scale-[1.03] hover:shadow-[0_0_0_3px_rgba(245,158,11,0.30)]"
+          className="group inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black transition-transform duration-200 hover:scale-[1.03] hover:shadow-[0_0_0_3px_rgba(245,158,11,0.30)]"
           aria-label="Star on GitHub"
         >
           <Star className="h-4 w-4 text-amber-500" aria-hidden="true" />
@@ -28,7 +35,7 @@ export default function Hero() {
         </Link>
         <Link
           href="https://www.npmjs.com/package/@gunjanghate/git-genie"
-          className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:scale-[1.03] hover:border-amber-400/40 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.18)]"
+          className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:scale-[1.03] hover:border-amber-400/40 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.18)]"
           aria-label="Install via npm"
         >
           <Package className="h-4 w-4 text-amber-400" aria-hidden="true" />
@@ -36,14 +43,12 @@ export default function Hero() {
         </Link>
       </div>
 
-      <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center justify-center px-6 py-24 sm:py-28 md:py-32 min-h-[85svh]">
+      <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center justify-center px-6 py-24 sm:py-28 md:py-32 min-h-[85svh] pt-40 md:pt-35">
         <AnimateIn delay={40}>
-
-
           <div className="group relative mx-auto flex items-center justify-center rounded-full px-4 py-1.5 shadow-[inset_0_-8px_10px_#8fdfff1f] transition-shadow duration-500 ease-out hover:shadow-[inset_0_-5px_10px_#8fdfff3f] mb-5">
             <span
               className={cn(
-                "absolute inset-0 block h-full w-full animate-gradient rounded-[inherit] bg-gradient-to-r drop-shadow-2xl from-[#ffaa40]/50 via-[#ffff]/50 to-[#ffaa40]/50 bg-[length:300%_100%] p-[1px]",
+                "absolute inset-0 block h-full w-full animate-gradient rounded-[inherit] bg-gradient-to-r drop-shadow-2xl from-[#ffaa40]/50 via-[#ffff]/50 to-[#ffaa40]/50 bg-[length:300%_100%] p-[1px]"
               )}
               style={{
                 WebkitMask:
@@ -54,7 +59,8 @@ export default function Hero() {
                 WebkitClipPath: "padding-box",
               }}
             />
-            <Sparkles className="h-4 w-4 text-amber-400" aria-hidden="true" /> <hr className="mx-2 h-4 w-px shrink-0 bg-neutral-500" />
+            <Sparkles className="h-4 w-4 text-amber-400" aria-hidden="true" />{" "}
+            <hr className="mx-2 h-4 w-px shrink-0 bg-neutral-500" />
             <AnimatedGradientText className="text-xs font-medium">
               Your own Github Genie | 2.5k+ downloads
             </AnimatedGradientText>
@@ -66,8 +72,15 @@ export default function Hero() {
         </AnimateIn>
 
         <AnimateIn>
-          <h1 className={cn("text-balance text-center text-4xl font-semibold sm:text-5xl md:text-6xl leading-tight flex gap-3 justify-center items-center")}>
-            Meet <span className="text-transparent bg-clip-text bg-gradient-to-bl from-amber-400 to-amber-800">GitGenie</span>{" "}
+          <h1
+            className={cn(
+              "text-balance text-center text-4xl font-semibold sm:text-5xl md:text-6xl leading-tight flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center"
+            )}
+          >
+            Meet{" "}
+            <span className="text-transparent bg-clip-text bg-linear-to-bl from-amber-400 to-amber-800">
+              GitGenie
+            </span>{" "}
             {/* <Sparkles className="inline-block align-middle h-[1em] w-[1em] text-white" aria-hidden="true" /> */}
             <Image
               src={chirag}
@@ -76,22 +89,23 @@ export default function Hero() {
               height={50}
               priority
               placeholder="blur"
-              className="w-24"
+              className="w-16 sm:w-20 md:w-24"
             />
-
           </h1>
         </AnimateIn>
 
         <AnimateIn delay={100}>
           <article className="text-pretty mx-auto mt-6 max-w-3xl text-center text-lg leading-relaxed text-zinc-300 sm:text-xl mb-6">
-            Your AI-powered Git assistant — automate  <FlipWords words={words} /> <br />  with just one command.
+            Your AI-powered Git assistant — automate <FlipWords words={words} />{" "}
+            <br /> with just one command.
           </article>
         </AnimateIn>
         <motion.div
           initial={{ opacity: 0, y: 20, filter: "blur(4px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="my-2 flex lg:w-96 items-center gap-2 rounded-lg border border-white/10 hover:border-amber-500/50 bg-black/60 px-4 py-2.5 font-mono text-sm text-zinc-200 transition-all duration-200 group-hover:border-amber-400/40">
+          className="my-2 flex lg:w-96 items-center gap-2 rounded-lg border border-white/10 hover:border-amber-500/50 bg-black/60 px-4 py-2.5 font-mono text-sm text-zinc-200 transition-all duration-200 group-hover:border-amber-400/40"
+        >
           <div className="flex-1 min-w-0">
             <code
               aria-label={`install command`}
@@ -111,13 +125,10 @@ export default function Hero() {
           transition={{ delay: 0.2, duration: 0.5 }}
           className="w-full lg:flex lg:justify-center mt-3"
         >
-
           <TerminalDemo />
         </motion.div>
 
         <AnimateIn delay={150}>
-
-
           {/* Product Hunt badge */}
           <div className="mt-6 flex justify-center">
             <Link
@@ -140,5 +151,5 @@ export default function Hero() {
         </AnimateIn>
       </div>
     </header>
-  )
+  );
 }
