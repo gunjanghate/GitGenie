@@ -9,6 +9,7 @@ import DemoVideoSection from "@/components/demo-video"
 import FAQ from "@/components/faq"
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://gitgenie.vercel.app"),
   title: "Git Genie — AI-powered Git assistant",
   description:
     "Automate staging, commit messages, branch flow, and pushes in one command. Open-source NPM package to supercharge your Git workflow.",
@@ -17,11 +18,20 @@ export const metadata: Metadata = {
     title: "Git Genie — AI-powered Git assistant",
     description: "Automate staging, commit messages, branch flow, and pushes in one command. Open-source NPM package.",
     type: "website",
+    images: [
+      {
+        url: "/gitgenie_logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Git Genie - AI-powered Git assistant",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Git Genie — AI-powered Git assistant",
     description: "Automate staging, commit messages, branch flow, and pushes in one command.",
+    images: ["/gitgenie_logo.png"]
   },
 }
 
