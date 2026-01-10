@@ -68,15 +68,27 @@ Store key (overwrites existing):
 gg config <API_KEY>
 \`\`\`
 
-Remove stored key:
+Remove or rotate stored key:
+
 \`\`\`bash
-# For OS keychain
-keytar delete git-genie api-key
-# For encrypted fallback, delete the file
+# Recommended: rotate (overwrite existing key)
+gg config <NEW_GEMINI_API_KEY>
+\`\`\`
+
+To completely remove the key GitGenie uses:
+
+- Delete the encrypted fallback file (if it exists):
+
+\`\`\`bash
 rm ~/.gitgenie/config.json
 \`\`\`
 
-Rotating keys: Simply run \`gg config <NEW_KEY>\` to overwrite the existing one (useful when hitting quota limits).
+- Remove the entry from your OS keychain using your OS tooling (Keychain Access, Credential Manager, Secret Service, etc.).
+  GitGenie stores the key in the OS keychain under:
+  - service: GitGenie
+  - account: gemini_api_key
+
+Rotating keys: you can always run \`gg config <NEW_GEMINI_API_KEY>\` again to overwrite the existing one (useful when hitting quota limits).
 
 ## Command syntax
 \`\`\`bash
