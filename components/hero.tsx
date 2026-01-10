@@ -21,10 +21,9 @@ export default function Hero() {
     >
       <BackgroundParticles />
       <div
-        className="absolute top-5 w-screen left-0 z-[100] px-6 right-0 flex flex-col
-+   items-stretch sm:items-center
-+   gap-3 sm:gap-4
-+   sm:justify-between"
+        className="absolute top-5 left-0 right-0 z-[100] px-6
+  flex flex-row items-center justify-center gap-3
+  md:justify-between"
       >
         <Link
           href="https://github.com/gunjanghate/GitGenie"
