@@ -34,6 +34,7 @@ export default function SiteFooter() {
             { href: "#how-it-works", label: "Install" },
             { href: "#usage", label: "Usage" },
             { href: "#usage", label: "Flags" },
+            { href: "/contact", label: "Contact Us" },
           ]}
         />
 
