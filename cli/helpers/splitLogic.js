@@ -1,5 +1,4 @@
 import simpleGit from 'simple-git';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import chalk from 'chalk';
 import ora from 'ora';
 
@@ -59,115 +58,16 @@ export async function analyzeStagedChanges() {
 /**
  * Group files using AI-powered analysis
  * @param {Object} filesData - { files, diffs } from analyzeStagedChanges
- * @param {string} apiKey - Gemini API key
+ * @param {AIProvider} provider - AI provider instance
  * @param {number} maxGroups - Maximum number of groups to create
  * @returns {Promise<Array>} Array of group objects
  */
-export async function groupFilesWithAI(filesData, apiKey, maxGroups = 5) {
-    if (!apiKey) {
-        throw new Error('API key is required for AI grouping');
+export async function groupFilesWithAI(filesData, provider, maxGroups = 5) {
+    if (!provider) {
+        throw new Error('Provider instance is required for AI grouping');
     }
 
-    const spinner = ora('🧞 Analyzing changes with AI...').start();
-
-    try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-
-        // Prepare file summary for AI (limit diff size to avoid token limits)
-        const fileSummary = filesData.files.map(f => {
-            const diff = filesData.diffs[f.path] || '';
-            const truncatedDiff = diff.length > 500 ? diff.substring(0, 500) + '\n... (truncated)' : diff;
-            return {
-                path: f.path,
-                status: f.status,
-                diff: truncatedDiff
-            };
-        });
-
-        const prompt = `You are a senior software engineer analyzing git changes to create logical, atomic commits.
-
-TASK: Analyze the following staged files and group them into separate commits based on semantic relationships.
-
-RULES:
-1. Each group should represent ONE logical change (feature, fix, refactor, etc.)
-2. Related files should be grouped together (e.g., component + test + styles)
-3. Unrelated changes should be in separate groups
-4. Maximum ${maxGroups} groups
-5. Each group must have a clear purpose
-6. Follow Conventional Commits specification for types
-
-FILES AND CHANGES:
-${JSON.stringify(fileSummary, null, 2)}
-
-Return a JSON array of groups with this structure:
-[
-  {
-    "files": ["path/to/file1.js", "path/to/file2.test.js"],
-    "type": "feat|fix|docs|style|refactor|test|chore|ci|build|perf",
-    "scope": "component/module name (optional)",
-    "description": "brief description of this group's changes",
-    "rationale": "why these files belong together"
-  }
-]
-
-IMPORTANT: 
-- Every file must be assigned to exactly one group
-- Groups should be ordered by importance (most significant first)
-- Return ONLY valid JSON, no explanations or markdown code blocks
-- If scope is not applicable, use empty string ""`;
-
-        // Set timeout for AI request
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds
-
-        const result = await model.generateContent(prompt, { signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        spinner.succeed('✓ AI analysis complete');
-
-        const responseText = result.response?.text()?.trim() || '';
-
-        // Try to extract JSON from response (handle markdown code blocks)
-        let jsonText = responseText;
-        const jsonMatch = responseText.match(/```(?:json)?\s*(\[[\s\S]*\])\s*```/);
-        if (jsonMatch) {
-            jsonText = jsonMatch[1];
-        }
-
-        const groups = JSON.parse(jsonText);
-
-        // Validate groups structure
-        if (!Array.isArray(groups)) {
-            throw new Error('AI response is not an array');
-        }
-
-        // Ensure all required fields exist
-        groups.forEach((group, idx) => {
-            if (!group.files || !Array.isArray(group.files)) {
-                throw new Error(`Group ${idx} missing files array`);
-            }
-            if (!group.type) group.type = 'chore';
-            if (!group.scope) group.scope = '';
-            if (!group.description) group.description = 'changes';
-            if (!group.rationale) group.rationale = '';
-        });
-
-        return groups;
-    } catch (err) {
-        spinner.fail('AI analysis failed');
-
-        // Check for specific error types
-        if (err.name === 'AbortError') {
-            throw new Error('Network timeout: AI request took too long');
-        }
-
-        if (err instanceof SyntaxError) {
-            throw new Error('Failed to parse AI response as JSON');
-        }
-
-        throw err;
-    }
+    return await provider.groupFilesWithAI(filesData, maxGroups);
 }
 
 /**
@@ -299,62 +199,19 @@ export function groupFilesHeuristic(filesData, maxGroups = 5) {
  * Generate commit message for a specific group
  * @param {Object} group - Group object with files, type, scope, description
  * @param {Object} filesData - Original files data with diffs
- * @param {string} apiKey - Optional Gemini API key for AI generation
+ * @param {AIProvider} provider - Optional AI provider instance for AI generation
  * @returns {Promise<string>} Commit message
  */
-export async function generateCommitMessageForGroup(group, filesData, apiKey = null) {
+export async function generateCommitMessageForGroup(group, filesData, provider = null) {
     // Manual fallback format
     const manualMessage = `${group.type}${group.scope ? `(${group.scope})` : ''}: ${group.description}`;
 
-    if (!apiKey) {
+    if (!provider) {
         return manualMessage;
     }
 
     try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-
-        // Get diffs for files in this group
-        const groupDiffs = group.files
-            .map(file => {
-                const diff = filesData.diffs[file] || '';
-                const truncated = diff.length > 300 ? diff.substring(0, 300) + '\n... (truncated)' : diff;
-                return `File: ${file}\n${truncated}`;
-            })
-            .join('\n---\n');
-
-        const prompt = `You are a senior software engineer creating a git commit message.
-
-Generate a professional commit message following Conventional Commits specification.
-
-REQUIREMENTS:
-- Format: type(scope): description
-- Description under 50 characters
-- Imperative mood (add, fix, update)
-- Lowercase description
-- No period at end
-- Type: ${group.type}
-${group.scope ? `- Scope: ${group.scope}` : ''}
-
-FILES IN THIS COMMIT:
-${group.files.join('\n')}
-
-CHANGES:
-${groupDiffs}
-
-CONTEXT: ${group.description}
-
-Return ONLY the commit message, no quotes or explanations.`;
-
-        const result = await model.generateContent(prompt);
-        const message = result.response?.text()?.trim() || manualMessage;
-
-        // Validate format
-        if (message.length > 72 || !message.includes(':')) {
-            return manualMessage;
-        }
-
-        return message;
+        return await provider.generateCommitMessageForGroup(group, filesData);
     } catch (err) {
         // Silently fall back to manual message
         return manualMessage;
