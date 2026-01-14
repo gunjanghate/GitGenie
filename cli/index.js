@@ -5,7 +5,6 @@ import simpleGit from 'simple-git';
 import dotenv from 'dotenv';
 import chalk from 'chalk';
 import ora from 'ora';
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import inquirer from 'inquirer';
 import { execaCommand } from 'execa';
 import fs from 'fs';
@@ -25,22 +24,6 @@ const { displayGeminiError, getDebugModeTip } = await import(
   new URL('./helpers/errorHandler.js', import.meta.url)
 );
 
-<<<<<<< HEAD
-const { parseReflog, findLostCommits } = await import(
-  new URL('./helpers/reflogParser.js', import.meta.url)
-);
-
-const { confirmRecoveryAction } = await import(
-  new URL('./helpers/confirmationPrompt.js', import.meta.url)
-);
-
-const { handleRecoveryError, validateReflogIndex, formatNoRecoveryOptions } = await import(
-  new URL('./helpers/recoverErrors.js', import.meta.url)
-);
-
-const { createRecoveryBranch, getCommitInfo } = await import(
-  new URL('./helpers/safeBranchOps.js', import.meta.url)
-=======
 const {
   analyzeStagedChanges,
   groupFilesWithAI,
@@ -62,7 +45,6 @@ const {
   promptDryRun
 } = await import(
   new URL('./helpers/splitUI.js', import.meta.url)
->>>>>>> 45060db1ec0b53fba9dbff96fc363275d495f017
 );
 
 
@@ -147,64 +129,205 @@ async function decrypt(text) {
   }
 }
 
-async function getApiKey() {
-  // First check environment variable
-  if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
+/**
+ * Migrate old config format to new multi-provider format
+ * @param {Object} oldConfig - Old config with GEMINI_API_KEY
+ * @returns {Object} New config format
+ */
+async function migrateConfig(oldConfig) {
+  if (oldConfig.providers) {
+    // Already in new format
+    return oldConfig;
+  }
 
+  // Backup old config
+  const backupFile = path.join(configDir, 'config.json.backup');
+  if (!fs.existsSync(backupFile)) {
+    fs.writeFileSync(backupFile, JSON.stringify(oldConfig, null, 2));
+  }
+
+  // Migrate to new format
+  const newConfig = {
+    providers: {},
+    activeProvider: 'gemini'
+  };
+
+  if (oldConfig.GEMINI_API_KEY) {
+    newConfig.providers.gemini = {
+      apiKey: oldConfig.GEMINI_API_KEY,
+      configuredAt: new Date().toISOString()
+    };
+  }
+
+  return newConfig;
+}
+
+/**
+ * Get provider configuration
+ * @returns {Promise<Object>} Config object with providers and activeProvider
+ */
+async function getProviderConfig() {
+  // Check if config file exists
+  if (fs.existsSync(configFile)) {
+    try {
+      const config = JSON.parse(fs.readFileSync(configFile, 'utf-8'));
+
+      // Migrate old format if needed
+      const migratedConfig = await migrateConfig(config);
+
+      // Save migrated config if it was changed
+      if (!config.providers && migratedConfig.providers) {
+        fs.writeFileSync(configFile, JSON.stringify(migratedConfig, null, 2));
+      }
+
+      return migratedConfig;
+    } catch (jsonError) {
+      // If JSON parsing fails, return empty config
+      return { providers: {}, activeProvider: null };
+    }
+  }
+
+  return { providers: {}, activeProvider: null };
+}
+
+/**
+ * Get API key for a specific provider
+ * @param {string} providerName - Provider name (gemini, mistral)
+ * @returns {Promise<string|null>} Decrypted API key or null
+ */
+async function getProviderApiKey(providerName) {
+  // First check environment variable for Gemini (backward compatibility)
+  if (providerName === 'gemini' && process.env.GEMINI_API_KEY) {
+    return process.env.GEMINI_API_KEY;
+  }
+
+  // Check keytar (secure storage)
   try {
-    // Try to get from keytar (secure storage)
-    const keyFromKeytar = await keytar.getPassword(SERVICE_NAME, ACCOUNT_NAME);
+    const keytarAccount = `${providerName}_api_key`;
+    const keyFromKeytar = await keytar.getPassword(SERVICE_NAME, keytarAccount);
     if (keyFromKeytar) return keyFromKeytar;
   } catch (error) {
     // Keytar failed, continue to config.json fallback
   }
 
   // Fallback to config.json (encrypted)
-  if (fs.existsSync(configFile)) {
+  const config = await getProviderConfig();
+  const providerConfig = config.providers[providerName];
+
+  if (providerConfig && providerConfig.apiKey) {
     try {
-      const config = JSON.parse(fs.readFileSync(configFile, 'utf-8'));
-      if (config.GEMINI_API_KEY) {
-        try {
-          // Decrypt before returning (now async with error handling)
-          return await decrypt(config.GEMINI_API_KEY);
-        } catch (decryptError) {
-          // If decryption fails, the config file might be corrupted
-          console.warn(chalk.yellow('⚠ Config file appears corrupted. Please reconfigure your API key.'));
-          return null;
-        }
-      }
-      return null;
-    } catch (jsonError) {
-      // If JSON parsing fails, config file is corrupted
+      // Decrypt before returning
+      return await decrypt(providerConfig.apiKey);
+    } catch (decryptError) {
+      // If decryption fails, the config file might be corrupted
+      console.warn(chalk.yellow(`⚠ ${providerName} API key appears corrupted. Please reconfigure.`));
       return null;
     }
   }
+
   return null;
 }
 
-async function saveApiKey(apikey) {
+/**
+ * Save API key for a specific provider
+ * @param {string} providerName - Provider name (gemini, mistral)
+ * @param {string} apikey - API key to save
+ */
+async function saveProviderApiKey(providerName, apikey) {
   // Validate input
   if (!apikey || typeof apikey !== 'string' || apikey.trim().length === 0) {
     throw new Error('API key must be a non-empty string');
   }
 
   const trimmedApiKey = apikey.trim();
+  const keytarAccount = `${providerName}_api_key`;
 
   try {
     // Try to save to keytar first (secure storage)
-    await keytar.setPassword(SERVICE_NAME, ACCOUNT_NAME, trimmedApiKey);
-    return true;
+    await keytar.setPassword(SERVICE_NAME, keytarAccount, trimmedApiKey);
   } catch (error) {
     // Keytar failed, fallback to config.json (encrypted)
-    try {
-      if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
-      const encryptedKey = await encrypt(trimmedApiKey);
-      fs.writeFileSync(configFile, JSON.stringify({ GEMINI_API_KEY: encryptedKey }, null, 2));
-      return true;
-    } catch (err) {
-      throw new Error(`Failed to save API key: ${err.message}`);
-    }
   }
+
+  // Also save to config.json for persistence
+  try {
+    if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
+
+    const config = await getProviderConfig();
+
+    // Initialize providers object if it doesn't exist
+    if (!config.providers) config.providers = {};
+
+    // Encrypt and save API key
+    const encryptedKey = await encrypt(trimmedApiKey);
+    config.providers[providerName] = {
+      apiKey: encryptedKey,
+      configuredAt: new Date().toISOString()
+    };
+
+    // Set as active provider (last configured wins)
+    config.activeProvider = providerName;
+
+    fs.writeFileSync(configFile, JSON.stringify(config, null, 2));
+    return true;
+  } catch (err) {
+    throw new Error(`Failed to save API key: ${err.message}`);
+  }
+}
+
+/**
+ * Get the active provider name
+ * @returns {Promise<string|null>} Active provider name or null
+ */
+async function getActiveProvider() {
+  const config = await getProviderConfig();
+  return config.activeProvider || null;
+}
+
+/**
+ * Set the active provider
+ * @param {string} providerName - Provider name to set as active
+ */
+async function setActiveProvider(providerName) {
+  const config = await getProviderConfig();
+
+  // Check if provider is configured
+  if (!config.providers[providerName]) {
+    throw new Error(`Provider "${providerName}" is not configured. Please configure it first with: gg config <apikey> --provider ${providerName}`);
+  }
+
+  config.activeProvider = providerName;
+  fs.writeFileSync(configFile, JSON.stringify(config, null, 2));
+}
+
+/**
+ * Get active provider instance
+ * @returns {Promise<AIProvider|null>} Provider instance or null
+ */
+async function getActiveProviderInstance() {
+  const { ProviderFactory } = await import(new URL('./providers/index.js', import.meta.url));
+
+  const activeProviderName = await getActiveProvider();
+  if (!activeProviderName) return null;
+
+  const apiKey = await getProviderApiKey(activeProviderName);
+  if (!apiKey) return null;
+
+  try {
+    return ProviderFactory.getProvider(activeProviderName, apiKey);
+  } catch (err) {
+    console.error(chalk.red(`Failed to initialize ${activeProviderName} provider: ${err.message}`));
+    return null;
+  }
+}
+
+// Legacy function for backward compatibility
+async function getApiKey() {
+  return await getProviderApiKey('gemini');
+}
+
+async function saveApiKey(apikey) {
+  return await saveProviderApiKey('gemini', apikey);
 }
 
 const program = new Command();
@@ -274,14 +397,57 @@ ${banner}
 // Register `config`
 program
   .command('config <apikey>')
-  .description('Save your Gemini API key for unlocking genie powers ✨')
-  .action(async (apikey) => {
+  .description('Save your AI provider API key for unlocking genie powers ✨')
+  .option('--provider <name>', 'Provider name (gemini, mistral)', 'gemini')
+  .action(async (apikey, options) => {
     try {
-      await saveApiKey(apikey);
-      console.log(chalk.green('✨ Gemini API key saved successfully!'));
+      const { ProviderFactory } = await import(new URL('./providers/index.js', import.meta.url));
+      const providerName = options.provider.toLowerCase();
+
+      // Validate provider is supported
+      if (!ProviderFactory.isProviderSupported(providerName)) {
+        console.error(chalk.red(`❌ Unknown provider: ${providerName}`));
+        console.log(chalk.cyan(`Supported providers: ${ProviderFactory.getSupportedProviders().join(', ')}`));
+        process.exit(1);
+      }
+
+      await saveProviderApiKey(providerName, apikey);
+      console.log(chalk.green(`✨ ${providerName.charAt(0).toUpperCase() + providerName.slice(1)} API key saved successfully!`));
+      console.log(chalk.cyan(`🎯 ${providerName} is now your active AI provider`));
     } catch (err) {
       console.error(chalk.red('Failed to save API key.'));
       console.error(chalk.yellow(err.message));
+    }
+    process.exit(0);
+  });
+
+// Register `use` command for switching providers
+program
+  .command('use')
+  .description('Switch between AI providers')
+  .option('--gemini', 'Switch to Gemini AI')
+  .option('--mistral', 'Switch to Mistral AI')
+  .action(async (options) => {
+    try {
+      let providerName = null;
+
+      if (options.gemini) providerName = 'gemini';
+      else if (options.mistral) providerName = 'mistral';
+
+      if (!providerName) {
+        console.error(chalk.red('Please specify a provider:'));
+        console.log(chalk.cyan('  gg use --gemini'));
+        console.log(chalk.cyan('  gg use --mistral'));
+        process.exit(1);
+      }
+
+      await setActiveProvider(providerName);
+      console.log(chalk.green(`✨ Switched to ${providerName.charAt(0).toUpperCase() + providerName.slice(1)} AI`));
+      console.log(chalk.cyan(`All AI-powered features will now use ${providerName}`));
+    } catch (err) {
+      console.error(chalk.red('Failed to switch provider.'));
+      console.error(chalk.yellow(err.message));
+      process.exit(1);
     }
     process.exit(0);
   });
@@ -452,14 +618,15 @@ program
       // 2️⃣ Group files (AI or heuristic)
       let groups = [];
       const maxGroups = parseInt(opts.maxGroups) || 5;
-      const apiKey = await getApiKey();
+      const provider = await getActiveProviderInstance();
+      const providerName = await getActiveProvider();
 
-      // Determine if we should use AI (only if explicitly requested and key exists)
-      const useAI = opts.genie && apiKey;
+      // Determine if we should use AI (only if explicitly requested and provider exists)
+      const useAI = opts.genie && provider;
 
       if (useAI) {
         try {
-          groups = await groupFilesWithAI(filesData, apiKey, maxGroups);
+          groups = await groupFilesWithAI(filesData, provider, maxGroups);
 
           // Validate AI-generated groups
           const validationErrors = validateGroups(groups, filesData);
@@ -470,15 +637,16 @@ program
             groups = groupFilesHeuristic(filesData, maxGroups);
           }
         } catch (err) {
-          displayGeminiError(err, 'file grouping');
+          const { displayProviderError } = await import(new URL('./helpers/errorHandler.js', import.meta.url));
+          displayProviderError(err, providerName || 'gemini', 'file grouping');
           console.log(chalk.yellow('Falling back to heuristic grouping...'));
           groups = groupFilesHeuristic(filesData, maxGroups);
         }
       } else {
-        if (!apiKey && opts.genie) {
-          console.warn(chalk.yellow('⚠ No API key found. Using heuristic grouping.'));
-          console.warn(chalk.cyan('For AI-powered grouping, set your API key:'));
-          console.warn(chalk.gray('Example: gg config <your_api_key>'));
+        if (!provider && opts.genie) {
+          console.warn(chalk.yellow('⚠ No AI provider configured. Using heuristic grouping.'));
+          console.warn(chalk.cyan('For AI-powered grouping, configure an API key:'));
+          console.warn(chalk.gray('Example: gg config <your_api_key> --provider gemini'));
         }
         groups = groupFilesHeuristic(filesData, maxGroups);
       }
@@ -502,7 +670,7 @@ program
         const msgSpinner = opts.genie ? ora('🧞 Generating preview messages with AI...').start() : null;
         try {
           for (const group of groups) {
-            group.previewMessage = await generateCommitMessageForGroup(group, filesData, opts.genie ? apiKey : null);
+            group.previewMessage = await generateCommitMessageForGroup(group, filesData, opts.genie ? provider : null);
           }
           if (msgSpinner) msgSpinner.succeed('AI messages generated');
         } catch (err) {
@@ -583,7 +751,7 @@ program
             }
 
             // Generate commit message
-            const message = group.customMessage || await generateCommitMessageForGroup(group, filesData, opts.genie ? apiKey : null);
+            const message = group.customMessage || await generateCommitMessageForGroup(group, filesData, opts.genie ? provider : null);
 
             // Commit
             await git.commit(message);
@@ -640,7 +808,7 @@ program
               }
 
               // Generate or use custom commit message
-              const message = updatedGroup.customMessage || await generateCommitMessageForGroup(updatedGroup, filesData, opts.genie ? apiKey : null);
+              const message = updatedGroup.customMessage || await generateCommitMessageForGroup(updatedGroup, filesData, opts.genie ? provider : null);
 
               // Commit
               await git.commit(message);
@@ -746,139 +914,76 @@ program.parse(process.argv);
 
 /** Generate commit message */
 async function generateCommitMessage(diff, opts, desc) {
-  const apiKey = await getApiKey();
+  const provider = await getActiveProviderInstance();
+  const providerName = await getActiveProvider();
 
-  if (!opts.genie || !apiKey) {
-    if (opts.genie && !apiKey) {
-      console.warn(chalk.yellow('⚠ GEMINI_API_KEY not found. Falling back to manual commit message.'));
-      console.warn(chalk.cyan('To enable AI commit messages, set your API key:'));
-      console.warn(chalk.gray('Example: gg config <your_api_key>'));
+  if (!opts.genie || !provider) {
+    if (opts.genie && !provider) {
+      console.warn(chalk.yellow('⚠ AI provider not configured. Falling back to manual commit message.'));
+      console.warn(chalk.cyan('To enable AI commit messages, configure an API key:'));
+      console.warn(chalk.gray('Example: gg config <your_api_key> --provider gemini'));
     }
     return `${opts.type}${opts.scope ? `(${opts.scope})` : ''}: ${desc}`;
   }
 
-  const spinner = ora('🧞 Generating commit message with genie...').start();
+  const spinner = ora(`🧞 Generating commit message with ${provider.getName()}...`).start();
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-    const prompt = `You are a senior software engineer at a Fortune 500 company. Generate a professional git commit message following strict industry standards.
-
-    REQUIREMENTS:
-    - Follow Conventional Commits specification exactly
-    - Format: type(scope): description
-    - Description must be under 50 characters
-    - Use imperative mood (add, fix, update, not adds, fixes, updates)
-    - First letter of description lowercase
-    - No period at the end
-    - Choose appropriate type: feat, fix, docs, style, refactor, test, chore, ci, build, perf
-    - Include scope when relevant (component/module/area affected)
-
-    Code diff to analyze:
-    ${diff}
-
-    Return ONLY the commit message, no explanations or quotes.`;
-
-    const result = await model.generateContent(prompt);
-    spinner.succeed(' Commit message generated by Gemini');
-    return result.response?.text()?.trim() || `${opts.type}: ${desc}`;
+    const message = await provider.generateCommitMessage(diff, opts, desc);
+    spinner.succeed(` Commit message generated by ${provider.getName()}`);
+    return message;
   } catch (err) {
     spinner.fail('AI commit message generation failed. Using manual message instead.');
-    displayGeminiError(err, 'commit message');
+    const { displayProviderError } = await import(new URL('./helpers/errorHandler.js', import.meta.url));
+    displayProviderError(err, providerName || 'gemini', 'commit message');
     return `${opts.type}${opts.scope ? `(${opts.scope})` : ''}: ${desc}`;
   }
 }
 
 async function generatePRTitle(diff, opts, desc) {
-  const apiKey = await getApiKey();
+  const provider = await getActiveProviderInstance();
+  const providerName = await getActiveProvider();
 
-  if (!opts.genie || !apiKey) {
-    if (opts.genie && !apiKey) {
-      console.warn(chalk.yellow('⚠ GEMINI_API_KEY not found. Falling back to manual PR title.'));
-      console.warn(chalk.cyan('To enable AI PR titles, set your API key:'));
-      console.warn(chalk.gray('Example: gg config <your_api_key>'));
+  if (!opts.genie || !provider) {
+    if (opts.genie && !provider) {
+      console.warn(chalk.yellow('⚠ AI provider not configured. Falling back to manual PR title.'));
+      console.warn(chalk.cyan('To enable AI PR titles, configure an API key:'));
+      console.warn(chalk.gray('Example: gg config <your_api_key> --provider gemini'));
     }
     return `${opts.type}${opts.scope ? `(${opts.scope})` : ''}: ${desc}`;
   }
 
-  const spinner = ora('🧞 Generating PR title with genie...').start();
+  const spinner = ora(`🧞 Generating PR title with ${provider.getName()}...`).start();
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-    const prompt = `You are a senior software engineer at a Fortune 500 company. Generate a professional Pull Request title following industry best practices.
-
-    REQUIREMENTS:
-    - Clear, descriptive title that summarizes the changes
-    - Start with action verb (Add, Fix, Update, Implement, etc.)
-    - Keep under 72 characters
-    - Use sentence case
-    - Focus on the "what" and "why" of the change
-    - No period at the end
-    - Be specific about the feature/fix being introduced
-
-    Code diff to analyze:
-    ${diff}
-
-    Return ONLY the PR title, no explanations or quotes.`;
-
-    const result = await model.generateContent(prompt);
-    spinner.succeed(' PR title generated by Gemini');
-    return result.response?.text()?.trim() || `${opts.type}: ${desc}`;
+    const title = await provider.generatePRTitle(diff, opts, desc);
+    spinner.succeed(` PR title generated by ${provider.getName()}`);
+    return title;
   } catch (err) {
-    spinner.fail('AI PR title generation failed. Using manual title instead.');
-    displayGeminiError(err, 'PR title');
+    spinner.fail('AI PR title generation failed.');
+    const { displayProviderError } = await import(new URL('./helpers/errorHandler.js', import.meta.url));
+    displayProviderError(err, providerName || 'gemini', 'PR title');
     return `${opts.type}${opts.scope ? `(${opts.scope})` : ''}: ${desc}`;
   }
 }
 
 async function generateBranchName(diff, opts, desc) {
-  const apiKey = await getApiKey();
+  const provider = await getActiveProviderInstance();
+  const providerName = await getActiveProvider();
 
-  if (!opts.genie || !apiKey) {
+  if (!opts.genie || !provider) {
     // Silently fall back to manual branch naming without warnings
-    return `${opts.type}/${desc.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}`;
+    return `feature/${desc.toLowerCase().replace(/\s+/g, '-')}`;
   }
 
-  const spinner = ora('🧞 Generating branch name with genie...').start();
+  const spinner = ora(`🧞 Generating branch name with ${provider.getName()}...`).start();
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-    const prompt = `You are a senior software engineer. Generate a professional git branch name following industry best practices.
-
-    REQUIREMENTS:
-    - Follow git branch naming conventions
-    - Format: type/short-descriptive-name
-    - Use kebab-case (dashes between words)
-    - Keep under 40 characters total
-    - Use appropriate type: feature, fix, hotfix, chore, docs, style, refactor, test
-    - Be descriptive but concise
-    - No special characters except dashes and forward slash
-    - Focus on what the change accomplishes
-
-    Code diff to analyze:
-    ${diff}
-
-    Description provided: ${desc}
-
-    Return ONLY the branch name, no explanations or quotes.
-    Example format: feature/user-authentication or fix/login-validation`;
-
-    const result = await model.generateContent(prompt);
-    spinner.succeed(' Branch name generated by Gemini');
-    const aiGeneratedName = result.response?.text()?.trim();
-
-    // Ensure the AI result follows our expected format, fallback if not
-    if (aiGeneratedName && aiGeneratedName.includes('/') && aiGeneratedName.length <= 50) {
-      return aiGeneratedName;
-    } else {
-      return `${opts.type}/${desc.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}`;
-    }
+    const branchName = await provider.generateBranchName(desc, opts);
+    spinner.succeed(` Branch name generated by ${provider.getName()}`);
+    return branchName;
   } catch (err) {
-    spinner.fail('AI branch name generation failed. Using manual name instead.');
-    displayGeminiError(err, 'branch name');
-    return `${opts.type}/${desc.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}`;
+    spinner.fail('AI branch name generation failed.');
+    const { displayProviderError } = await import(new URL('./helpers/errorHandler.js', import.meta.url));
+    displayProviderError(err, providerName || 'unknown provider', 'branch name');
+    return `feature/${desc.toLowerCase().replace(/\s+/g, '-')}`;
   }
 }
 
@@ -1235,21 +1340,21 @@ async function handleRecoverList(count) {
   try {
     console.log(chalk.blue('🔍 Scanning reflog for recovery options...'));
     const entries = await parseReflog(count);
-    
+
     if (entries.length === 0) {
       formatNoRecoveryOptions();
       return;
     }
 
     console.log(chalk.green(`\n📋 Found ${entries.length} reflog entries:\n`));
-    
+
     entries.forEach((entry, index) => {
       const num = chalk.cyan(`${index + 1}.`);
       const hash = chalk.yellow(entry.hash);
       const action = chalk.magenta(entry.action);
       const time = chalk.gray(entry.timestamp);
       const msg = entry.message.substring(0, 60) + (entry.message.length > 60 ? '...' : '');
-      
+
       console.log(`${num} ${hash} ${action} ${time}`);
       console.log(`   ${chalk.white(msg)}\n`);
     });
@@ -1265,10 +1370,10 @@ async function handleRecoverExplain(n) {
   try {
     const entries = await parseReflog(50);
     validateReflogIndex(n, entries.length);
-    
+
     const entry = entries[n - 1];
     const commitInfo = await getCommitInfo(entry.fullHash);
-    
+
     console.log(chalk.blue('\n📖 Recovery Analysis\n'));
     console.log(`${chalk.cyan('Entry:')} #${n}`);
     console.log(`${chalk.cyan('Commit:')} ${commitInfo.hash} (${commitInfo.fullHash})`);
@@ -1277,7 +1382,7 @@ async function handleRecoverExplain(n) {
     console.log(`${chalk.cyan('Author:')} ${commitInfo.author} <${commitInfo.email}>`);
     console.log(`${chalk.cyan('Date:')} ${commitInfo.date}`);
     console.log(`${chalk.cyan('Message:')} ${commitInfo.subject}`);
-    
+
     if (commitInfo.files.length > 0) {
       console.log(`${chalk.cyan('Files:')} ${commitInfo.files.length} files changed`);
       commitInfo.files.slice(0, 10).forEach(file => {
@@ -1313,13 +1418,13 @@ async function handleRecoverApply(n) {
   try {
     const entries = await parseReflog(50);
     validateReflogIndex(n, entries.length);
-    
+
     const entry = entries[n - 1];
     const commitInfo = await getCommitInfo(entry.fullHash);
-    
+
     console.log(chalk.blue('\n🔄 Recovery Application\n'));
     console.log(`Recovering: ${chalk.yellow(commitInfo.hash)} - ${commitInfo.subject}`);
-    
+
     const confirmed = await confirmRecoveryAction(
       'safe',
       `Create recovery branch from commit ${commitInfo.hash}`,
@@ -1336,14 +1441,14 @@ async function handleRecoverApply(n) {
     }
 
     const branchName = await createRecoveryBranch(entry.fullHash);
-    
+
     console.log(chalk.green('\n🎉 Recovery completed successfully!\n'));
     console.log(chalk.cyan('Next steps:'));
     console.log(chalk.gray(`  git checkout ${branchName}    # Switch to recovery branch`));
     console.log(chalk.gray(`  git log --oneline -5          # Review recovered commits`));
     console.log(chalk.gray(`  git checkout main             # Return to main branch`));
     console.log(chalk.gray(`  git merge ${branchName}       # Merge if satisfied`));
-    
+
   } catch (error) {
     handleRecoveryError(error);
   }
@@ -1352,16 +1457,16 @@ async function handleRecoverApply(n) {
 async function handleRecoverInteractive() {
   try {
     console.log(chalk.blue('🔮 Git Recovery Assistant\n'));
-    
+
     const entries = await parseReflog(20);
-    
+
     if (entries.length === 0) {
       formatNoRecoveryOptions();
       return;
     }
 
     console.log(chalk.green('Found potential recovery options:\n'));
-    
+
     // Show first 5 entries for interactive selection
     const displayEntries = entries.slice(0, 5);
     displayEntries.forEach((entry, index) => {
@@ -1369,7 +1474,7 @@ async function handleRecoverInteractive() {
       const hash = chalk.yellow(entry.hash);
       const time = chalk.gray(entry.timestamp);
       const msg = entry.message.substring(0, 50) + (entry.message.length > 50 ? '...' : '');
-      
+
       console.log(`${num} ${hash} ${time} - ${msg}`);
     });
 
@@ -1411,7 +1516,7 @@ async function handleRecoverInteractive() {
     }]);
 
     const n = parseInt(entryNumber);
-    
+
     if (choice === 'explain') {
       await handleRecoverExplain(n);
     } else if (choice === 'apply') {

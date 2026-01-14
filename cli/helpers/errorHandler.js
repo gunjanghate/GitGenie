@@ -4,7 +4,7 @@ import path from 'path';
 import os from 'os';
 
 /**
- * Error types for Gemini API failures
+ * Error types for AI provider API failures
  */
 export const ErrorType = {
     QUOTA_EXCEEDED: 'QUOTA_EXCEEDED',
@@ -16,14 +16,43 @@ export const ErrorType = {
 };
 
 /**
- * Parse Gemini API error and return user-friendly information
- * @param {Error} error - The error object from Gemini API
+ * Get provider-specific error patterns
+ * @param {string} providerName - Provider name (gemini, mistral)
+ * @returns {Object} Error patterns for the provider
+ */
+function getProviderErrorPatterns(providerName) {
+    const patterns = {
+        gemini: {
+            quotaExceeded: ['quota exceeded', 'quota_exceeded', 'resource_exhausted', 'too many requests', '429'],
+            rateLimit: ['rate limit', 'rate_limit'],
+            invalidKey: ['invalid api key', 'invalid_api_key', 'api key not valid', 'authentication', 'unauthorized'],
+            docsUrl: 'https://ai.google.dev/gemini-api/docs',
+            rateLimitUrl: 'https://ai.google.dev/gemini-api/docs/rate-limits'
+        },
+        mistral: {
+            quotaExceeded: ['quota exceeded', 'resource_exhausted', 'too many requests', '429'],
+            rateLimit: ['rate limit', 'rate_limit'],
+            invalidKey: ['invalid api key', 'invalid_api_key', 'authentication failed', 'unauthorized'],
+            docsUrl: 'https://docs.mistral.ai/',
+            rateLimitUrl: 'https://docs.mistral.ai/api/#rate-limiting'
+        }
+    };
+
+    return patterns[providerName] || patterns.gemini;
+}
+
+/**
+ * Parse AI provider API error and return user-friendly information
+ * @param {Error} error - The error object from AI provider API
+ * @param {string} providerName - Provider name (gemini, mistral, etc.)
  * @returns {Object} - { type, message, helpfulAction }
  */
-export function parseGeminiError(error) {
+export function parseProviderError(error, providerName = 'gemini') {
     const errorMessage = error?.message?.toLowerCase() || '';
     const errorString = error?.toString?.()?.toLowerCase() || '';
     const statusCode = error?.status || error?.statusCode;
+    const patterns = getProviderErrorPatterns(providerName);
+    const providerDisplayName = providerName.charAt(0).toUpperCase() + providerName.slice(1);
 
     // Detect error type based on patterns
     let errorType = ErrorType.UNKNOWN_ERROR;
@@ -31,44 +60,37 @@ export function parseGeminiError(error) {
     let helpfulAction = '';
 
     // Check for quota exceeded errors
-    if (
-        errorMessage.includes('quota exceeded') ||
-        errorMessage.includes('quota_exceeded') ||
-        errorMessage.includes('resource_exhausted') ||
-        errorMessage.includes('too many requests') ||
-        errorString.includes('429')
-    ) {
+    const hasQuotaError = patterns.quotaExceeded.some(pattern =>
+        errorMessage.includes(pattern) || errorString.includes(pattern)
+    );
+
+    if (hasQuotaError) {
         errorType = ErrorType.QUOTA_EXCEEDED;
-        userMessage = 'AI generation failed due to Gemini API quota limit.';
+        userMessage = `AI generation failed due to ${providerDisplayName} API quota limit.`;
         helpfulAction = `Your free tier quota has been exceeded. Please check your quota at:
-   ${chalk.cyan('https://ai.google.dev/gemini-api/docs/rate-limits')}`;
+   ${chalk.cyan(patterns.rateLimitUrl)}`;
     }
     // Check for rate limit errors
     else if (
-        errorMessage.includes('rate limit') ||
-        errorMessage.includes('rate_limit') ||
+        patterns.rateLimit.some(pattern => errorMessage.includes(pattern)) ||
         statusCode === 429
     ) {
         errorType = ErrorType.RATE_LIMIT;
-        userMessage = 'AI generation failed due to Gemini API rate limiting.';
+        userMessage = `AI generation failed due to ${providerDisplayName} API rate limiting.`;
         helpfulAction = `You're sending requests too quickly. Please wait a moment and try again.
-   ${chalk.cyan('https://ai.google.dev/gemini-api/docs/rate-limits')}`;
+   ${chalk.cyan(patterns.rateLimitUrl)}`;
     }
     // Check for invalid API key errors
     else if (
-        errorMessage.includes('invalid api key') ||
-        errorMessage.includes('invalid_api_key') ||
-        errorMessage.includes('api key not valid') ||
-        errorMessage.includes('authentication') ||
-        errorMessage.includes('unauthorized') ||
+        patterns.invalidKey.some(pattern => errorMessage.includes(pattern)) ||
         statusCode === 401 ||
         statusCode === 403
     ) {
         errorType = ErrorType.INVALID_API_KEY;
         userMessage = 'AI generation failed: Invalid or missing API key.';
-        helpfulAction = `Please reconfigure your Gemini API key:
-   ${chalk.gray('gg config <your_api_key>')}
-   Get your key at: ${chalk.cyan('https://ai.google.dev/gemini-api/docs')}`;
+        helpfulAction = `Please reconfigure your ${providerDisplayName} API key:
+   ${chalk.gray(`gg config <your_api_key> --provider ${providerName}`)}
+   Get your key at: ${chalk.cyan(patterns.docsUrl)}`;
     }
     // Check for network errors
     else if (
@@ -84,7 +106,7 @@ export function parseGeminiError(error) {
         errorType = ErrorType.NETWORK_ERROR;
         userMessage = 'AI generation failed due to network timeout.';
         helpfulAction = `Check your internet connection and try again.
-   If the issue persists, the Gemini API may be temporarily unavailable.`;
+   If the issue persists, the ${providerDisplayName} API may be temporarily unavailable.`;
     }
     // Generic API error
     else if (
@@ -95,14 +117,14 @@ export function parseGeminiError(error) {
         errorType = ErrorType.GENERIC_API_ERROR;
         userMessage = 'AI generation failed due to an API error.';
         helpfulAction = `Check your API key and network connection:
-   ${chalk.gray('gg config <your_api_key>')}`;
+   ${chalk.gray(`gg config <your_api_key> --provider ${providerName}`)}`;
     }
     // Unknown error
     else {
         errorType = ErrorType.UNKNOWN_ERROR;
         userMessage = 'AI generation failed unexpectedly.';
         helpfulAction = `Please check your configuration and try again:
-   ${chalk.gray('gg config <your_api_key>')}`;
+   ${chalk.gray(`gg config <your_api_key> --provider ${providerName}`)}`;
     }
 
     return {
@@ -114,12 +136,13 @@ export function parseGeminiError(error) {
 }
 
 /**
- * Display user-friendly error message for Gemini API failures
- * @param {Error} error - The error object from Gemini API
+ * Display user-friendly error message for AI provider API failures
+ * @param {Error} error - The error object from AI provider API
+ * @param {string} providerName - Provider name (gemini, mistral, etc.)
  * @param {string} context - Context string (e.g., 'commit message', 'PR title', 'branch name')
  */
-export function displayGeminiError(error, context = 'generation') {
-    const { message, helpfulAction } = parseGeminiError(error);
+export function displayProviderError(error, providerName = 'gemini', context = 'generation') {
+    const { message, helpfulAction } = parseProviderError(error, providerName);
 
     console.error(chalk.red(`❌ ${message}`));
     console.error(chalk.yellow(`💡 ${helpfulAction}`));
@@ -149,9 +172,10 @@ function logErrorToDebugFile(error, context) {
         }
 
         const timestamp = new Date().toISOString();
+        const providerDisplayName = providerName || 'AI Provider';
         const logEntry = `
 ================================================================================
-[${timestamp}] Gemini API Error - ${context}
+[${timestamp}] ${providerDisplayName} API Error - ${context}
 ================================================================================
 Error Message: ${error?.message || 'No message'}
 Error Name: ${error?.name || 'Unknown'}
@@ -179,4 +203,13 @@ export function getDebugModeTip() {
         return chalk.gray(`Debug mode enabled. Detailed errors logged to: ${logPath}`);
     }
     return chalk.gray('For detailed error logs, set: GITGENIE_DEBUG=true');
+}
+
+// Backward compatibility exports (for legacy code)
+export function parseGeminiError(error) {
+    return parseProviderError(error, 'gemini');
+}
+
+export function displayGeminiError(error, context = 'generation') {
+    return displayProviderError(error, 'gemini', context);
 }
