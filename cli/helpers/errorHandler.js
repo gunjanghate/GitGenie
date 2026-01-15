@@ -17,7 +17,7 @@ export const ErrorType = {
 
 /**
  * Get provider-specific error patterns
- * @param {string} providerName - Provider name (gemini, mistral)
+ * @param {string} providerName - Provider name (gemini, mistral, groq)
  * @returns {Object} Error patterns for the provider
  */
 function getProviderErrorPatterns(providerName) {
@@ -35,6 +35,13 @@ function getProviderErrorPatterns(providerName) {
             invalidKey: ['invalid api key', 'invalid_api_key', 'authentication failed', 'unauthorized'],
             docsUrl: 'https://docs.mistral.ai/',
             rateLimitUrl: 'https://docs.mistral.ai/api/#rate-limiting'
+        },
+        groq: {
+            quotaExceeded: ['quota exceeded', 'resource_exhausted', 'too many requests', '429'],
+            rateLimit: ['rate limit', 'rate_limit', 'rate_limit_exceeded'],
+            invalidKey: ['invalid api key', 'invalid_api_key', 'authentication failed', 'unauthorized', 'invalid_request_error'],
+            docsUrl: 'https://console.groq.com/docs',
+            rateLimitUrl: 'https://console.groq.com/docs/rate-limits'
         }
     };
 
