@@ -1,5 +1,6 @@
 import { GeminiProvider } from './gemini.js';
 import { MistralProvider } from './mistral.js';
+import { GroqProvider } from './groq.js';
 
 /**
  * Provider registry and factory
@@ -8,6 +9,7 @@ export class ProviderFactory {
     static providers = {
         gemini: GeminiProvider,
         mistral: MistralProvider,
+        groq: GroqProvider,
     };
 
     /**

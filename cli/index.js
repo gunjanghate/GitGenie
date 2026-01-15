@@ -398,7 +398,7 @@ ${banner}
 program
   .command('config <apikey>')
   .description('Save your AI provider API key for unlocking genie powers ✨')
-  .option('--provider <name>', 'Provider name (gemini, mistral)', 'gemini')
+  .option('--provider <name>', 'Provider name (gemini, mistral, groq)', 'gemini')
   .action(async (apikey, options) => {
     try {
       const { ProviderFactory } = await import(new URL('./providers/index.js', import.meta.url));
@@ -427,17 +427,20 @@ program
   .description('Switch between AI providers')
   .option('--gemini', 'Switch to Gemini AI')
   .option('--mistral', 'Switch to Mistral AI')
+  .option('--groq', 'Switch to Groq AI')
   .action(async (options) => {
     try {
       let providerName = null;
 
       if (options.gemini) providerName = 'gemini';
       else if (options.mistral) providerName = 'mistral';
+      else if (options.groq) providerName = 'groq';
 
       if (!providerName) {
         console.error(chalk.red('Please specify a provider:'));
         console.log(chalk.cyan('  gg use --gemini'));
         console.log(chalk.cyan('  gg use --mistral'));
+        console.log(chalk.cyan('  gg use --groq'));
         process.exit(1);
       }
 
