@@ -3,12 +3,14 @@
 import type React from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
-import { Copy } from "lucide-react"
+import { Copy, Menu } from "lucide-react"
 import { isValidElement, useMemo, useState, useEffect, useRef } from "react"
 import AmbientBackground from "@/components/parts/ambient-background"
 import { DOCS_MD } from "@/components/docs-modal"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Button } from "@/components/ui/button"
 
 // Table of Contents sections
 const TOC_ITEMS = [
@@ -85,29 +87,60 @@ function SafeParagraph({ children }: { children: React.ReactNode }) {
     return containsBlock ? <div className={base}>{children}</div> : <p className={base}>{children}</p>
 }
 
-function Sidebar({ activeSection }: { activeSection: string }) {
+function SidebarNav({ activeSection, onItemClick }: { activeSection: string; onItemClick?: () => void }) {
     return (
-        <aside className="hidden lg:block w-64 shrink-0">
-            <div className="sticky top-6 h-[calc(100vh-3rem)]">
-                <nav className="space-y-1">
-                    <h2 className="mb-3 text-sm font-semibold text-white">On This Page</h2>
-                    {TOC_ITEMS.map((item) => (
-                        <a
-                            key={item.id}
-                            href={`#${item.id}`}
-                            className={cn(
-                                "block py-1.5 px-3 text-sm transition-colors rounded-md",
-                                activeSection === item.id
-                                    ? "text-amber-400 bg-amber-400/10 font-medium"
-                                    : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
-                            )}
-                        >
-                            {item.label}
-                        </a>
-                    ))}
-                </nav>
-            </div>
-        </aside>
+        <nav className="space-y-1">
+            <h2 className="mb-3 text-sm font-semibold text-white">On This Page</h2>
+            {TOC_ITEMS.map((item) => (
+                <a
+                    key={item.id}
+                    href={`#${item.id}`}
+                    onClick={onItemClick}
+                    className={cn(
+                        "block py-1.5 px-3 text-sm transition-colors rounded-md",
+                        activeSection === item.id
+                            ? "text-amber-400 bg-amber-400/10 font-medium"
+                            : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                    )}
+                >
+                    {item.label}
+                </a>
+            ))}
+        </nav>
+    )
+}
+
+function Sidebar({ activeSection }: { activeSection: string }) {
+    const [open, setOpen] = useState(false)
+
+    return (
+        <>
+            {/* Mobile TOC Drawer */}
+            <Sheet open={open} onOpenChange={setOpen}>
+                <SheetTrigger asChild>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className="lg:hidden fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full border-white/10 bg-black/60 backdrop-blur-sm hover:bg-black/80"
+                        aria-label="Open table of contents"
+                    >
+                        <Menu className="h-5 w-5" />
+                    </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-64 bg-zinc-900/95 backdrop-blur-sm border-white/10">
+                    <div className="mt-8">
+                        <SidebarNav activeSection={activeSection} onItemClick={() => setOpen(false)} />
+                    </div>
+                </SheetContent>
+            </Sheet>
+
+            {/* Desktop Sidebar */}
+            <aside className="hidden lg:block w-64 shrink-0">
+                <div className="sticky top-6 h-[calc(100vh-3rem)]">
+                    <SidebarNav activeSection={activeSection} />
+                </div>
+            </aside>
+        </>
     )
 }
 
@@ -150,12 +183,14 @@ export default function DocsPage() {
             <header className="relative z-10 border-b border-white/5 bg-black/20 backdrop-blur-sm">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
                     <h1 className="text-2xl md:text-3xl font-bold">
-                        <span 
-                            className="cursor-pointer text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 transition-all" 
+                        <button
+                            type="button"
+                            className="text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:ring-offset-2 focus:ring-offset-zinc-950 rounded"
                             onClick={() => router.push("/")}
+                            aria-label="Navigate to home page"
                         >
                             Git Genie
-                        </span>
+                        </button>
                         <span className="text-zinc-400 font-normal ml-2">/ Documentation</span>
                     </h1>
                 </div>
