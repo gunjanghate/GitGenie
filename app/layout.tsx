@@ -36,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark scroll-smooth">
+    <html lang="en" className="dark scroll-smooth" data-scroll-behavior="smooth">
       <body className={`font-sans ${plusJakarta.variable} ${GeistMono.variable}`}>
         <SmoothScrollProvider>
           <Suspense fallback={null}>{children}</Suspense>
