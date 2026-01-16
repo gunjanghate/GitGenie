@@ -2,7 +2,6 @@
 
 import { TerminalSquare, MessageSquarePlus, Flag } from "lucide-react";
 import { AnimateIn } from "./parts/animate-in";
-import TerminalDemo from "./Terminal";
 import AmbientBackground from "./parts/ambient-two";
 
 export default function Features() {
@@ -35,6 +34,7 @@ export default function Features() {
       ),
       title: "gg split",
       body: "Split large staged changes into smaller, logical commits using auto or interactive modes.",
+      isNew: true,
     },
   ];
 
@@ -50,7 +50,6 @@ export default function Features() {
           id="features-title"
           className="text-2xl font-semibold sm:text-3xl text-white"
         >
-          {/* <TerminalDemo /> */}
           Features
         </h2>
         <div className="line h-1 mt-1 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
@@ -63,7 +62,16 @@ export default function Features() {
               <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
                 {it.icon}
               </div>
-              <h3 className="text-lg font-semibold">{it.title}</h3>
+
+              <h3 className="flex items-center gap-2 text-lg font-semibold">
+                {it.title}
+                {it.isNew && (
+                  <span className="rounded-full bg-amber-400 px-2 py-0.5 text-xs font-semibold text-black">
+                    NEW
+                  </span>
+                )}
+              </h3>
+
               <p className="mt-2 text-zinc-300">{it.body}</p>
             </article>
           </AnimateIn>
