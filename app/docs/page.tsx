@@ -4,10 +4,22 @@ import type React from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { Copy } from "lucide-react"
-import { isValidElement, useMemo, useState } from "react"
+import { isValidElement, useMemo, useState, useEffect, useRef } from "react"
 import AmbientBackground from "@/components/parts/ambient-background"
 import { DOCS_MD } from "@/components/docs-modal"
 import { useRouter } from "next/navigation"
+import { cn } from "@/lib/utils"
+
+// Table of Contents sections
+const TOC_ITEMS = [
+    { id: "installation", label: "Installation" },
+    { id: "usage", label: "Usage" },
+    { id: "command-palette", label: "Command Palette" },
+    { id: "commit-types", label: "Commit Types" },
+    { id: "advanced-features", label: "Advanced Features" },
+    { id: "troubleshooting", label: "Troubleshooting" },
+    { id: "contributing", label: "Contributing" },
+]
 
 function CopyInline({ text }: { text: string }) {
     const [copied, setCopied] = useState(false)
@@ -22,10 +34,10 @@ function CopyInline({ text }: { text: string }) {
         <button
             type="button"
             onClick={onCopy}
-            className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-white/90 transition hover:bg-white/10"
+            className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/90 transition hover:bg-white/10"
             aria-label="Copy code"
         >
-            <Copy size={14} className="opacity-80" />
+            <Copy size={12} className="opacity-80" />
             <span>{copied ? "Copied" : "Copy"}</span>
         </button>
     )
@@ -39,16 +51,16 @@ function CodeBlock(props: any) {
     const isInline = (inline ?? true) && !/language-/.test(languageClass)
 
     if (isInline) {
-        return <code className="rounded bg-white/10 px-1.5 py-0.5 text-[0.92em]">{code}</code>
+        return <code className="rounded bg-white/10 px-1.5 py-0.5 text-[0.875em] font-mono">{code}</code>
     }
 
     const lang = languageClass.replace("language-", "")
     return (
-        <div className="relative my-3 w-fit">
-            <div className="absolute right-2 top-2 z-10">
+        <div className="group relative my-4 rounded-lg border border-white/10 bg-black/40 overflow-hidden">
+            <div className="absolute right-2 top-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                 <CopyInline text={code} />
             </div>
-            <pre className="text-wrap rounded-lg border border-white/10 bg-black/60 py-8 px-4 text-sm">
+            <pre className="overflow-x-auto p-4 text-[0.875rem] leading-relaxed">
                 <code className={lang ? `language-${lang}` : undefined}>{code}</code>
             </pre>
         </div>
@@ -69,49 +81,148 @@ function SafeParagraph({ children }: { children: React.ReactNode }) {
         return arr.some(check)
     })
 
-    const base = "mb-4 leading-relaxed text-zinc-300"
+    const base = "mb-4 leading-7 text-zinc-300/90"
     return containsBlock ? <div className={base}>{children}</div> : <p className={base}>{children}</p>
+}
+
+function Sidebar({ activeSection }: { activeSection: string }) {
+    return (
+        <aside className="hidden lg:block w-64 shrink-0">
+            <div className="sticky top-6 h-[calc(100vh-3rem)]">
+                <nav className="space-y-1">
+                    <h2 className="mb-3 text-sm font-semibold text-white">On This Page</h2>
+                    {TOC_ITEMS.map((item) => (
+                        <a
+                            key={item.id}
+                            href={`#${item.id}`}
+                            className={cn(
+                                "block py-1.5 px-3 text-sm transition-colors rounded-md",
+                                activeSection === item.id
+                                    ? "text-amber-400 bg-amber-400/10 font-medium"
+                                    : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                            )}
+                        >
+                            {item.label}
+                        </a>
+                    ))}
+                </nav>
+            </div>
+        </aside>
+    )
 }
 
 export default function DocsPage() {
     const router = useRouter()
     const content = useMemo(() => DOCS_MD, [])
-    return (
-        <main className="relative min-h-screen text-white">
-            {/* Ambient background */}
-           
-          
+    const [activeSection, setActiveSection] = useState("")
+    const observerRef = useRef<IntersectionObserver | null>(null)
 
-            {/* Top heading */}
-            <header className="relative z-10 mx-auto max-w-6xl px-6 pt-16 pb-6 text-center">
-                <h1 className="text-3xl md:text-4xl font-bold"><span className="cursor-pointer text-transparent bg-clip-text bg-gradient-to-bl from-amber-400 to-amber-800" onClick={()=>{
-                    router.push("/");
-                }}>Git Genie</span> — Documentation</h1>
-                <div className="mx-auto mt-2 h-1 w-24 bg-gradient-to-br from-amber-400 to-amber-800" />
-                <p className="mx-auto mt-3 max-w-2xl text-zinc-300">Full reference for installation, usage, command palette, and advanced workflows.</p>
+    useEffect(() => {
+        // Set up intersection observer for active section highlighting
+        observerRef.current = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        setActiveSection(entry.target.id)
+                    }
+                })
+            },
+            { rootMargin: "-100px 0px -80% 0px" }
+        )
+
+        // Observe all h2 elements (main sections)
+        const headings = document.querySelectorAll("article h2[id]")
+        headings.forEach((heading) => observerRef.current?.observe(heading))
+
+        return () => {
+            observerRef.current?.disconnect()
+        }
+    }, [content])
+
+    return (
+        <main className="relative min-h-screen text-white bg-linear-to-b from-zinc-950 via-zinc-900 to-zinc-950">
+            {/* Ambient background - subtle */}
+            <div className="absolute inset-0 opacity-30">
+                <AmbientBackground />
+            </div>
+
+            {/* Top header - compact */}
+            <header className="relative z-10 border-b border-white/5 bg-black/20 backdrop-blur-sm">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+                    <h1 className="text-2xl md:text-3xl font-bold">
+                        <span 
+                            className="cursor-pointer text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 transition-all" 
+                            onClick={() => router.push("/")}
+                        >
+                            Git Genie
+                        </span>
+                        <span className="text-zinc-400 font-normal ml-2">/ Documentation</span>
+                    </h1>
+                </div>
             </header>
 
-            {/* Scrollable content */}
-            <div className="relative z-10 mx-auto max-w-6xl px-6 pb-16">
-                <div className="relative h-full overflow-y-visible p-0 md:p-2 lg:p-4">
-                    <article className="markdown text-zinc-200 mx-auto max-w-3xl">
+            {/* Main content with sidebar */}
+            <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+                <div className="flex gap-8 lg:gap-12">
+                    {/* Sidebar navigation */}
+                    <Sidebar activeSection={activeSection} />
+
+                    {/* Main article content */}
+                    <article className="flex-1 min-w-0 max-w-3xl markdown text-zinc-200 pb-16">
                         <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={{
                                 code: CodeBlock,
-                                h1: ({ children }) => <h1 className="mb-4 text-3xl md:text-4xl font-bold">{children}</h1>,
-                                h2: ({ children }) => <h2 className="mt-8 mb-3 text-2xl font-semibold text-yellow-700">{children}</h2>,
-                                h3: ({ children }) => <h3 className="mt-6 mb-2 text-xl font-semibold text-white">{children}</h3>,
+                                h1: ({ children }) => {
+                                    const id = String(children).toLowerCase().replace(/\s+/g, "-")
+                                    return <h1 id={id} className="mb-4 text-3xl md:text-4xl font-bold text-white">{children}</h1>
+                                },
+                                h2: ({ children }) => {
+                                    const id = String(children).toLowerCase().replace(/\s+/g, "-")
+                                    return (
+                                        <h2 
+                                            id={id} 
+                                            className="mt-12 mb-4 pb-2 text-2xl font-semibold text-white border-b border-white/10 scroll-mt-20"
+                                        >
+                                            {children}
+                                        </h2>
+                                    )
+                                },
+                                h3: ({ children }) => {
+                                    const id = String(children).toLowerCase().replace(/\s+/g, "-")
+                                    return <h3 id={id} className="mt-8 mb-3 text-xl font-semibold text-white/95 scroll-mt-20">{children}</h3>
+                                },
+                                h4: ({ children }) => {
+                                    return <h4 className="mt-6 mb-2 text-lg font-semibold text-white/90">{children}</h4>
+                                },
                                 p: (props) => <SafeParagraph>{props.children}</SafeParagraph>,
-                                ul: ({ children }) => <ul className="mb-4 ml-5 list-disc space-y-1">{children}</ul>,
-                                ol: ({ children }) => <ol className="mb-4 ml-5 list-decimal space-y-1">{children}</ol>,
+                                ul: ({ children }) => <ul className="mb-4 ml-5 list-disc space-y-2 text-zinc-300/90 leading-7">{children}</ul>,
+                                ol: ({ children }) => <ol className="mb-4 ml-5 list-decimal space-y-2 text-zinc-300/90 leading-7">{children}</ol>,
+                                li: ({ children }) => <li className="pl-1">{children}</li>,
                                 a: (props) => (
-                                    <a {...props} className="text-amber-400 hover:underline" target="_blank" rel="noreferrer" />
+                                    <a 
+                                        {...props} 
+                                        className="text-amber-400 hover:text-amber-300 underline decoration-amber-400/30 hover:decoration-amber-300 transition-colors" 
+                                        target="_blank" 
+                                        rel="noreferrer" 
+                                    />
                                 ),
                                 blockquote: ({ children }) => (
-                                    <blockquote className="mb-4 border-l-2 border-amber-400/40 pl-4 text-zinc-300">{children}</blockquote>
+                                    <blockquote className="my-4 border-l-4 border-amber-400/40 bg-amber-400/5 pl-4 py-2 text-zinc-300/90 rounded-r">
+                                        {children}
+                                    </blockquote>
                                 ),
-                                hr: () => <hr className="my-6 border-white/10" />,
+                                hr: () => <hr className="my-8 border-white/10" />,
+                                table: ({ children }) => (
+                                    <div className="my-4 overflow-x-auto">
+                                        <table className="w-full border-collapse text-sm">{children}</table>
+                                    </div>
+                                ),
+                                thead: ({ children }) => <thead className="border-b border-white/10">{children}</thead>,
+                                tbody: ({ children }) => <tbody className="divide-y divide-white/5">{children}</tbody>,
+                                tr: ({ children }) => <tr>{children}</tr>,
+                                th: ({ children }) => <th className="px-4 py-2 text-left font-semibold text-white/90">{children}</th>,
+                                td: ({ children }) => <td className="px-4 py-2 text-zinc-300/90">{children}</td>,
                             }}
                         >
                             {content}
