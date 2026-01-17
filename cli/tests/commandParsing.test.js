@@ -46,15 +46,10 @@ async function runTests() {
         const { output } = await runCliCommand('--help');
         const lowerOutput = output.toLowerCase();
 
-        // Debug output for CI
-        if (!lowerOutput.includes('config')) {
-            console.log('DEBUG: Output length:', output.length);
-            console.log('DEBUG: First 500 chars:', output.substring(0, 500));
-        }
-
-        assert(lowerOutput.includes('config'), `Help should mention config command. Got: ${output.substring(0, 200)}`);
-        assert(lowerOutput.includes('use'), `Help should mention use command. Got: ${output.substring(0, 200)}`);
-        assert(lowerOutput.includes('gitgenie') || lowerOutput.includes('git'), `Help should mention GitGenie. Got: ${output.substring(0, 200)}`);
+        // Check for Commands section and specific commands
+        assert(lowerOutput.includes('commands'), `Help should have Commands section. Got: ${output.substring(0, 300)}`);
+        assert(lowerOutput.includes('config'), `Help should list config command. Got: ${output.substring(0, 300)}`);
+        assert(lowerOutput.includes('use'), `Help should list use command. Got: ${output.substring(0, 300)}`);
 
         console.log('✅ Test 1 PASSED: Main help command shows available commands');
         passed++;
@@ -68,8 +63,9 @@ async function runTests() {
         const { output } = await runCliCommand('config --help');
         const lowerOutput = output.toLowerCase();
 
-        assert(lowerOutput.includes('apikey') || lowerOutput.includes('api'), 'Config help should mention API key');
-        assert(lowerOutput.includes('provider'), 'Config help should mention provider option');
+        // Check for config-specific help content
+        assert(lowerOutput.includes('apikey') || lowerOutput.includes('<apikey>'), `Config help should mention apikey. Got: ${output.substring(0, 300)}`);
+        assert(lowerOutput.includes('provider'), `Config help should mention provider option. Got: ${output.substring(0, 300)}`);
 
         console.log('✅ Test 2 PASSED: Config command help is accessible');
         passed++;
@@ -83,9 +79,10 @@ async function runTests() {
         const { output } = await runCliCommand('use --help');
         const lowerOutput = output.toLowerCase();
 
-        assert(lowerOutput.includes('gemini'), 'Use help should mention Gemini');
-        assert(lowerOutput.includes('mistral'), 'Use help should mention Mistral');
-        assert(lowerOutput.includes('groq'), 'Use help should mention Groq');
+        // Check for all three provider options
+        assert(lowerOutput.includes('gemini'), `Use help should mention Gemini. Got: ${output.substring(0, 300)}`);
+        assert(lowerOutput.includes('mistral'), `Use help should mention Mistral. Got: ${output.substring(0, 300)}`);
+        assert(lowerOutput.includes('groq'), `Use help should mention Groq. Got: ${output.substring(0, 300)}`);
 
         console.log('✅ Test 3 PASSED: Use command help shows provider options');
         passed++;
@@ -99,9 +96,9 @@ async function runTests() {
         const { output } = await runCliCommand('-h');
         const lowerOutput = output.toLowerCase();
 
-        assert(output.length > 0, 'Help output should not be empty');
-        assert(lowerOutput.includes('usage') || lowerOutput.includes('commands') || lowerOutput.includes('options'),
-            'Help should show usage information');
+        assert(output.length > 100, `Help output should not be empty. Length: ${output.length}`);
+        assert(lowerOutput.includes('usage') && lowerOutput.includes('options'),
+            `Help should show usage and options. Got: ${output.substring(0, 300)}`);
 
         console.log('✅ Test 4 PASSED: Help flag works with -h');
         passed++;

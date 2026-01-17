@@ -15,7 +15,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "node tests/errorHandler.test.js && node tests/providerFactory.test.js && node tests/commandParsing.test.js",
+    "test": "node tests/errorHandler.test.js && node tests/providerFactory.test.js && node tests/commandParsing.test.js && node tests/commandStructure.test.js",
     "postinstall": "node ./scripts/postinstall.js"
   },
   "keywords": [
