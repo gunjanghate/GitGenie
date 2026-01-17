@@ -44,9 +44,15 @@ async function runTests() {
         const { output } = await runCliCommand('--help');
         const lowerOutput = output.toLowerCase();
 
-        assert(lowerOutput.includes('config'), 'Help should mention config command');
-        assert(lowerOutput.includes('use'), 'Help should mention use command');
-        assert(lowerOutput.includes('gitgenie') || lowerOutput.includes('git'), 'Help should mention GitGenie');
+        // Debug output for CI
+        if (!lowerOutput.includes('config')) {
+            console.log('DEBUG: Output length:', output.length);
+            console.log('DEBUG: First 500 chars:', output.substring(0, 500));
+        }
+
+        assert(lowerOutput.includes('config'), `Help should mention config command. Got: ${output.substring(0, 200)}`);
+        assert(lowerOutput.includes('use'), `Help should mention use command. Got: ${output.substring(0, 200)}`);
+        assert(lowerOutput.includes('gitgenie') || lowerOutput.includes('git'), `Help should mention GitGenie. Got: ${output.substring(0, 200)}`);
 
         console.log('✅ Test 1 PASSED: Main help command shows available commands');
         passed++;
