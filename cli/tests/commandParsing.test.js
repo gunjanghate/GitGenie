@@ -19,17 +19,19 @@ const cliPath = join(__dirname, '..', 'index.js');
 // Helper function to run CLI command and get output
 async function runCliCommand(args) {
     try {
-        const { stdout, stderr } = await execaCommand(`node "${cliPath}" ${args}`, {
+        const result = await execaCommand(`node "${cliPath}" ${args}`, {
             reject: false,
             shell: true,
-            all: true
+            all: true,
+            env: { ...process.env, FORCE_COLOR: '0' } // Disable colors for cleaner output
         });
-        // Combine stdout and stderr as CLI might output to either
-        const output = (stdout || '') + (stderr || '');
-        return { output, stdout, stderr, success: true };
+
+        // Use 'all' which combines stdout and stderr in order
+        const output = result.all || result.stdout || result.stderr || '';
+        return { output, success: result.exitCode === 0 };
     } catch (error) {
-        const output = (error.stdout || '') + (error.stderr || '');
-        return { output, stdout: error.stdout || '', stderr: error.stderr || '', success: false };
+        const output = error.all || error.stdout || error.stderr || error.message || '';
+        return { output, success: false };
     }
 }
 
