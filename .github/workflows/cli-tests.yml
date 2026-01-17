@@ -1,0 +1,42 @@
+name: CLI Tests
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'cli/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'cli/**'
+
+jobs:
+  test-cli:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      
+      - name: Install CLI dependencies
+        working-directory: ./cli
+        run: npm ci
+      
+      - name: Run CLI tests
+        working-directory: ./cli
+        run: npm test
+      
+      - name: Test CLI installation
+        working-directory: ./cli
+        run: |
+          npm link
+          gg --help
+          gg config --help
+          gg use --help
