@@ -19,13 +19,17 @@ const cliPath = join(__dirname, '..', 'index.js');
 // Helper function to run CLI command and get output
 async function runCliCommand(args) {
     try {
-        const { stdout, stderr } = await execaCommand(`node ${cliPath} ${args}`, {
+        const { stdout, stderr } = await execaCommand(`node "${cliPath}" ${args}`, {
             reject: false,
-            shell: true
+            shell: true,
+            all: true
         });
-        return { stdout, stderr, success: true };
+        // Combine stdout and stderr as CLI might output to either
+        const output = (stdout || '') + (stderr || '');
+        return { output, stdout, stderr, success: true };
     } catch (error) {
-        return { stdout: error.stdout || '', stderr: error.stderr || '', success: false };
+        const output = (error.stdout || '') + (error.stderr || '');
+        return { output, stdout: error.stdout || '', stderr: error.stderr || '', success: false };
     }
 }
 
@@ -37,11 +41,12 @@ async function runTests() {
 
     // Test 1: Main help command shows available commands
     try {
-        const { stdout } = await runCliCommand('--help');
+        const { output } = await runCliCommand('--help');
+        const lowerOutput = output.toLowerCase();
 
-        assert(stdout.includes('config'), 'Help should mention config command');
-        assert(stdout.includes('use'), 'Help should mention use command');
-        assert(stdout.includes('GitGenie') || stdout.includes('Git'), 'Help should mention GitGenie');
+        assert(lowerOutput.includes('config'), 'Help should mention config command');
+        assert(lowerOutput.includes('use'), 'Help should mention use command');
+        assert(lowerOutput.includes('gitgenie') || lowerOutput.includes('git'), 'Help should mention GitGenie');
 
         console.log('✅ Test 1 PASSED: Main help command shows available commands');
         passed++;
@@ -52,10 +57,11 @@ async function runTests() {
 
     // Test 2: Config command help is accessible
     try {
-        const { stdout } = await runCliCommand('config --help');
+        const { output } = await runCliCommand('config --help');
+        const lowerOutput = output.toLowerCase();
 
-        assert(stdout.includes('apikey') || stdout.includes('API'), 'Config help should mention API key');
-        assert(stdout.includes('provider') || stdout.includes('Provider'), 'Config help should mention provider option');
+        assert(lowerOutput.includes('apikey') || lowerOutput.includes('api'), 'Config help should mention API key');
+        assert(lowerOutput.includes('provider'), 'Config help should mention provider option');
 
         console.log('✅ Test 2 PASSED: Config command help is accessible');
         passed++;
@@ -66,11 +72,12 @@ async function runTests() {
 
     // Test 3: Use command help shows provider options
     try {
-        const { stdout } = await runCliCommand('use --help');
+        const { output } = await runCliCommand('use --help');
+        const lowerOutput = output.toLowerCase();
 
-        assert(stdout.includes('gemini') || stdout.includes('Gemini'), 'Use help should mention Gemini');
-        assert(stdout.includes('mistral') || stdout.includes('Mistral'), 'Use help should mention Mistral');
-        assert(stdout.includes('groq') || stdout.includes('Groq'), 'Use help should mention Groq');
+        assert(lowerOutput.includes('gemini'), 'Use help should mention Gemini');
+        assert(lowerOutput.includes('mistral'), 'Use help should mention Mistral');
+        assert(lowerOutput.includes('groq'), 'Use help should mention Groq');
 
         console.log('✅ Test 3 PASSED: Use command help shows provider options');
         passed++;
@@ -81,10 +88,11 @@ async function runTests() {
 
     // Test 4: Help flag works with -h
     try {
-        const { stdout } = await runCliCommand('-h');
+        const { output } = await runCliCommand('-h');
+        const lowerOutput = output.toLowerCase();
 
-        assert(stdout.length > 0, 'Help output should not be empty');
-        assert(stdout.includes('Usage') || stdout.includes('Commands') || stdout.includes('Options'),
+        assert(output.length > 0, 'Help output should not be empty');
+        assert(lowerOutput.includes('usage') || lowerOutput.includes('commands') || lowerOutput.includes('options'),
             'Help should show usage information');
 
         console.log('✅ Test 4 PASSED: Help flag works with -h');
@@ -96,10 +104,10 @@ async function runTests() {
 
     // Test 5: Version command is accessible
     try {
-        const { stdout } = await runCliCommand('--version');
+        const { output } = await runCliCommand('--version');
 
         // Version should be a number like 1.0.12
-        assert(stdout.match(/\d+\.\d+\.\d+/), 'Version should be in semver format');
+        assert(output.match(/\d+\.\d+\.\d+/), 'Version should be in semver format');
 
         console.log('✅ Test 5 PASSED: Version command is accessible');
         passed++;
@@ -110,10 +118,11 @@ async function runTests() {
 
     // Test 6: CLI displays banner/logo in help
     try {
-        const { stdout } = await runCliCommand('--help');
+        const { output } = await runCliCommand('--help');
+        const lowerOutput = output.toLowerCase();
 
         // Check for GitGenie branding
-        assert(stdout.includes('GitGenie') || stdout.includes('Git') || stdout.includes('🔮'),
+        assert(lowerOutput.includes('gitgenie') || lowerOutput.includes('git') || output.includes('🔮'),
             'Help should display GitGenie branding');
 
         console.log('✅ Test 6 PASSED: CLI displays banner/logo in help');
