@@ -11,7 +11,15 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import crypto from 'crypto';
-import keytar from 'keytar';
+// Try to import keytar, but make it optional for environments without native dependencies
+let keytar = null;
+try {
+  const keytarModule = await import('keytar');
+  keytar = keytarModule.default;
+} catch (error) {
+  // Keytar not available (missing libsecret or other native deps)
+  // Will fall back to file-based config storage
+}
 const { openCommandPalette } = await import(
   new URL('./helpers/commandPalette.js', import.meta.url)
 );
@@ -63,22 +71,26 @@ const configFile = path.join(configDir, 'config.json');
 // Generate or retrieve unique encryption key for this user
 async function getEncryptionKey() {
   try {
-    // Try to get existing encryption key from keytar
-    let encryptionKey = await keytar.getPassword(SERVICE_NAME, ENCRYPTION_KEY_ACCOUNT);
+    // Try to get existing encryption key from keytar (if available)
+    if (keytar) {
+      let encryptionKey = await keytar.getPassword(SERVICE_NAME, ENCRYPTION_KEY_ACCOUNT);
 
-    if (!encryptionKey) {
-      // Generate a new random 32-byte key for this user
-      encryptionKey = crypto.randomBytes(32).toString('hex');
-      // Store it securely in keytar
-      await keytar.setPassword(SERVICE_NAME, ENCRYPTION_KEY_ACCOUNT, encryptionKey);
+      if (!encryptionKey) {
+        // Generate a new random 32-byte key for this user
+        encryptionKey = crypto.randomBytes(32).toString('hex');
+        // Store it securely in keytar
+        await keytar.setPassword(SERVICE_NAME, ENCRYPTION_KEY_ACCOUNT, encryptionKey);
+      }
+
+      return encryptionKey;
     }
-
-    return encryptionKey;
   } catch (error) {
-    // Fallback: generate a unique key based on user's home directory and machine
-    const uniqueData = os.homedir() + os.hostname() + os.userInfo().username;
-    return crypto.createHash('sha256').update(uniqueData).digest('hex');
+    // Keytar operation failed, fall through to fallback
   }
+
+  // Fallback: generate a unique key based on user's home directory and machine
+  const uniqueData = os.homedir() + os.hostname() + os.userInfo().username;
+  return crypto.createHash('sha256').update(uniqueData).digest('hex');
 }
 
 async function encrypt(text) {
@@ -201,13 +213,15 @@ async function getProviderApiKey(providerName) {
     return process.env.GEMINI_API_KEY;
   }
 
-  // Check keytar (secure storage)
-  try {
-    const keytarAccount = `${providerName}_api_key`;
-    const keyFromKeytar = await keytar.getPassword(SERVICE_NAME, keytarAccount);
-    if (keyFromKeytar) return keyFromKeytar;
-  } catch (error) {
-    // Keytar failed, continue to config.json fallback
+  // Check keytar (secure storage) if available
+  if (keytar) {
+    try {
+      const keytarAccount = `${providerName}_api_key`;
+      const keyFromKeytar = await keytar.getPassword(SERVICE_NAME, keytarAccount);
+      if (keyFromKeytar) return keyFromKeytar;
+    } catch (error) {
+      // Keytar failed, continue to config.json fallback
+    }
   }
 
   // Fallback to config.json (encrypted)
@@ -242,11 +256,13 @@ async function saveProviderApiKey(providerName, apikey) {
   const trimmedApiKey = apikey.trim();
   const keytarAccount = `${providerName}_api_key`;
 
-  try {
-    // Try to save to keytar first (secure storage)
-    await keytar.setPassword(SERVICE_NAME, keytarAccount, trimmedApiKey);
-  } catch (error) {
-    // Keytar failed, fallback to config.json (encrypted)
+  if (keytar) {
+    try {
+      // Try to save to keytar first (secure storage)
+      await keytar.setPassword(SERVICE_NAME, keytarAccount, trimmedApiKey);
+    } catch (error) {
+      // Keytar failed, fallback to config.json (encrypted)
+    }
   }
 
   // Also save to config.json for persistence
