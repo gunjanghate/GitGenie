@@ -513,7 +513,44 @@ program.command('cl')
       console.log(chalk.cyan('Tip: Ensure the URL is correct and you have access (SSH/HTTPS).'));
     }
   });
+
+// Register `ignore` command
+program.command('ignore')
+  .argument('<pattern>')
+  .description('Add pattern to .gitignore')
+  .option('--global', 'Add to global gitignore (~/.gitignore_global)')
+  .option('--comment <text>', 'Add comment above the pattern')
+  .action(async (pattern, options) => {
+    try {
+      const { appendToGitignore } = await import(new URL('./helpers/gitignoreHelper.js', import.meta.url));
+
+      const result = appendToGitignore(pattern, {
+        global: options.global || false,
+        comment: options.comment || null
+      });
+
+      if (result.success) {
+        console.log(chalk.green(`✅ ${result.message}`));
+        if (options.comment) {
+          console.log(chalk.gray(`   Comment: ${options.comment}`));
+        }
+        console.log(chalk.cyan(`   File: ${result.filePath}`));
+      } else {
+        console.log(chalk.yellow(`⚠ ${result.message}`));
+        if (result.filePath) {
+          console.log(chalk.gray(`   File: ${result.filePath}`));
+        }
+        process.exit(1);
+      }
+    } catch (err) {
+      console.error(chalk.red('Failed to update .gitignore'));
+      console.error(chalk.yellow(err.message));
+      process.exit(1);
+    }
+  });
+
 // Register branch helper shortcuts
+
 program.command('b')
   .argument('<branchName>')
   .description('Create & switch to new branch')
@@ -910,7 +947,7 @@ program
     const first = process.argv[2];
 
     // 🚫 If first arg is a known subcommand, do nothing here
-    if (['commit', 'b', 's', 'wt', 'cl', 'config', 'split'].includes(first)) return;
+    if (['commit', 'b', 's', 'wt', 'cl', 'config', 'split', 'ignore'].includes(first)) return;
 
     // No args → open menu
     if (!desc) {
