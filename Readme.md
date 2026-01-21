@@ -6,6 +6,8 @@
 
 </div>
 
+<img src="https://contributors-img.web.app/image?repo=gunjanghate/GitGenie"/>
+
 # GitGenie CLI - Complete Documentation
 
 
