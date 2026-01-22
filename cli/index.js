@@ -55,6 +55,20 @@ const {
   new URL('./helpers/splitUI.js', import.meta.url)
 );
 
+const {
+  handleUndoInteractive,
+  handleUndoSoft,
+  handleUndoMixed,
+  handleUndoBatch,
+  handleUndoHard
+} = await import(
+  new URL('./helpers/undoLogic.js', import.meta.url)
+);
+
+const { handleUndoError } = await import(
+  new URL('./helpers/undoErrors.js', import.meta.url)
+);
+
 
 dotenv.config({ debug: false });
 const git = simpleGit();
@@ -607,6 +621,33 @@ recoverCmd.command('apply <n>')
 // Default recover command (interactive mode)
 recoverCmd.action(async () => {
   await handleRecoverInteractive();
+});
+
+// Undo command with subcommands
+const undoCmd = program.command('undo')
+  .description('Safely undo recent commits with various reset modes');
+
+undoCmd.command('soft [n]')
+  .description('Undo N commits, keep changes staged (default: 1)')
+  .action(async (n) => {
+    await handleUndoSoft(parseInt(n) || 1);
+  });
+
+undoCmd.command('mixed [n]')
+  .description('Undo N commits, keep changes unstaged (default: 1)')
+  .action(async (n) => {
+    await handleUndoMixed(parseInt(n) || 1);
+  });
+
+undoCmd.command('hard [n]')
+  .description('Discard N commits and all changes (DANGEROUS, default: 1)')
+  .action(async (n) => {
+    await handleUndoHard(parseInt(n) || 1);
+  });
+
+// Default undo command (interactive mode)
+undoCmd.action(async () => {
+  await handleUndoInteractive();
 });
 
 
