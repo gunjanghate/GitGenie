@@ -69,6 +69,10 @@ const { handleUndoError } = await import(
   new URL('./helpers/undoErrors.js', import.meta.url)
 );
 
+const { handleHistoryCommand } = await import(
+  new URL('./helpers/historyLogic.js', import.meta.url)
+);
+
 
 dotenv.config({ debug: false });
 const git = simpleGit();
@@ -558,6 +562,28 @@ program.command('ignore')
       }
     } catch (err) {
       console.error(chalk.red('Failed to update .gitignore'));
+      console.error(chalk.yellow(err.message));
+      process.exit(1);
+    }
+  });
+
+// Register `history` command
+program
+  .command('history')
+  .description('Show commit history with filtering and statistics 📊')
+  .option('--today', 'Show commits from today only')
+  .option('--week', 'Show commits from last 7 days (default)')
+  .option('--month', 'Show commits from last 30 days')
+  .option('--all', 'Show all commits')
+  .option('--author <name>', 'Filter by specific author')
+  .option('--since <date>', 'Show commits since date (e.g., "2026-01-20", "3 days ago")')
+  .option('--limit <n>', 'Limit number of commits shown', parseInt)
+  .action(async (options) => {
+    try {
+      await handleHistoryCommand(options);
+      process.exit(0);
+    } catch (err) {
+      console.error(chalk.red('Failed to show history.'));
       console.error(chalk.yellow(err.message));
       process.exit(1);
     }
