@@ -64,11 +64,12 @@ export default function DemoVideoSection() {
     setShowThumbnail(false)
     setIsPlaying(true)
 
-    // For native video, start playback
     if (!isYouTube && videoRef.current) {
-      videoRef.current.play()
+      videoRef.current.play().catch(() => {
+        setShowThumbnail(true)
+        setIsPlaying(false)
+      })
     }
-    // For YouTube, the autoplay in URL will handle it
   }
 
   const handleVideoEnded = useCallback(() => {
