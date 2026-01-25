@@ -350,7 +350,9 @@ async function getActiveProviderInstance() {
   try {
     return ProviderFactory.getProvider(activeProviderName, apiKey);
   } catch (err) {
-    console.error(chalk.red(`Failed to initialize ${activeProviderName} provider: ${err.message}`));
+    console.error(chalk.red(`❌ Failed to initialize ${activeProviderName} AI provider.`));
+    console.error(chalk.yellow(err.message));
+    console.log(chalk.cyan(`💡 Check your API key with: gg key --${activeProviderName}`));
     return null;
   }
 }
@@ -440,8 +442,9 @@ program
 
       // Validate provider is supported
       if (!ProviderFactory.isProviderSupported(providerName)) {
-        console.error(chalk.red(`❌ Unknown provider: ${providerName}`));
-        console.log(chalk.cyan(`Supported providers: ${ProviderFactory.getSupportedProviders().join(', ')}`));
+        console.error(chalk.red(`❌ Unknown AI provider: "${providerName}"`));
+        console.log(chalk.yellow(`Supported providers: ${ProviderFactory.getSupportedProviders().join(', ')}`));
+        console.log(chalk.cyan('💡 Set your provider with: gg key --gemini <your-key>'));
         process.exit(1);
       }
 
@@ -1161,7 +1164,8 @@ async function ensureRemoteOriginInteractive() {
     const hasOrigin = remotes.some(r => r.name === 'origin');
     if (hasOrigin) return true;
 
-    console.log(chalk.yellow('ℹ No remote "origin" configured.'));
+    console.log(chalk.yellow('\nℹ️  No remote repository configured.'));
+    console.log(chalk.gray('Your commits are only saved locally until you add a remote.\n'));
     const { wantRemote } = await inquirer.prompt([
       {
         type: 'confirm',

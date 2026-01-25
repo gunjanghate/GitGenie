@@ -26,23 +26,23 @@ export function handleUndoError(error) {
 
     // Handle common Git errors
     if (error.message.includes('not a git repository')) {
-        console.error(chalk.red('❌ Not a Git repository'));
-        console.log(chalk.cyan('💡 Run this command from inside a Git repository.'));
-        console.log(chalk.gray('   To initialize: git init'));
+        console.error(chalk.red('❌ This is not a Git repository.'));
+        console.log(chalk.yellow('Run this command from inside a project folder that has been initialized with Git.'));
+        console.log(chalk.cyan('💡 To initialize: git init'));
         return;
     }
 
     if (error.message.includes('does not have any commits yet')) {
-        console.error(chalk.red('❌ Repository has no commits yet'));
-        console.log(chalk.cyan('💡 Make your first commit before using undo.'));
-        console.log(chalk.gray('   Example: git add . && git commit -m "Initial commit"'));
+        console.error(chalk.red('❌ This repository has no commits yet.'));
+        console.log(chalk.yellow('You need at least one commit before using undo.'));
+        console.log(chalk.cyan('💡 Create your first commit: gg "initial commit"'));
         return;
     }
 
     if (error.message.includes('ambiguous argument \'HEAD~')) {
-        console.error(chalk.red('❌ Not enough commits to undo'));
-        console.log(chalk.cyan('💡 The repository doesn\'t have enough commit history.'));
-        console.log(chalk.gray('   Use "git log --oneline" to see available commits'));
+        console.error(chalk.red('❌ Not enough commits to undo.'));
+        console.log(chalk.yellow('The repository doesn\'t have that many commits in its history.'));
+        console.log(chalk.cyan('💡 Check available commits: git log --oneline'));
         return;
     }
 
