@@ -187,10 +187,18 @@ export async function confirmCommitAll(groups) {
 
 /**
  * Prompt user to stage all changes
+ * @param {boolean} hasUnstagedChanges - Whether there are unstaged changes
  * @returns {Promise<boolean>} True if user wants to stage
  */
-export async function promptStageChanges() {
-    console.log(chalk.yellow('⚠ No staged changes found.'));
+export async function promptStageChanges(hasUnstagedChanges = false) {
+    if (hasUnstagedChanges) {
+        console.log(chalk.yellow('\n⚠️  You have modified files, but nothing is staged yet.'));
+        console.log(chalk.cyan('Run git add <file> or git add . to stage your changes before committing.\n'));
+    } else {
+        console.log(chalk.yellow('\n⚠️  No file changes detected.'));
+        console.log(chalk.cyan('Make some changes first, then try committing.\n'));
+        return false;
+    }
 
     const { shouldStage } = await inquirer.prompt([
         {

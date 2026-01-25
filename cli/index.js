@@ -350,7 +350,9 @@ async function getActiveProviderInstance() {
   try {
     return ProviderFactory.getProvider(activeProviderName, apiKey);
   } catch (err) {
-    console.error(chalk.red(`Failed to initialize ${activeProviderName} provider: ${err.message}`));
+    console.error(chalk.red(`❌ Failed to initialize ${activeProviderName} AI provider.`));
+    console.error(chalk.yellow(err.message));
+    console.log(chalk.cyan(`💡 Check your API key with: gg key --${activeProviderName}`));
     return null;
   }
 }
@@ -440,8 +442,9 @@ program
 
       // Validate provider is supported
       if (!ProviderFactory.isProviderSupported(providerName)) {
-        console.error(chalk.red(`❌ Unknown provider: ${providerName}`));
-        console.log(chalk.cyan(`Supported providers: ${ProviderFactory.getSupportedProviders().join(', ')}`));
+        console.error(chalk.red(`❌ Unknown AI provider: "${providerName}"`));
+        console.log(chalk.yellow(`Supported providers: ${ProviderFactory.getSupportedProviders().join(', ')}`));
+        console.log(chalk.cyan('💡 Set your provider with: gg key --gemini <your-key>'));
         process.exit(1);
       }
 
@@ -700,14 +703,18 @@ program
 
       // Handle no staged changes
       if (filesData.files.length === 0) {
-        const shouldStage = await promptStageChanges();
+        // Check if there are unstaged changes
+        const unstagedDiff = await git.diff();
+        const hasUnstagedChanges = !!unstagedDiff;
+        
+        const shouldStage = await promptStageChanges(hasUnstagedChanges);
         if (shouldStage) {
           await stageAllFiles();
           filesData = await analyzeStagedChanges();
 
           if (filesData.files.length === 0) {
-            console.error(chalk.red('No changes detected even after staging.'));
-            console.log(chalk.cyan('Tip: Make sure you have modified files. To check: git status'));
+            console.error(chalk.red('\n❌ No file changes detected.'));
+            console.log(chalk.cyan('Make some changes first, then try committing.'));
             process.exit(1);
           }
         } else {
@@ -1157,7 +1164,8 @@ async function ensureRemoteOriginInteractive() {
     const hasOrigin = remotes.some(r => r.name === 'origin');
     if (hasOrigin) return true;
 
-    console.log(chalk.yellow('ℹ No remote "origin" configured.'));
+    console.log(chalk.yellow('\nℹ️  No remote repository configured.'));
+    console.log(chalk.gray('Your commits are only saved locally until you add a remote.\n'));
     const { wantRemote } = await inquirer.prompt([
       {
         type: 'confirm',
@@ -1293,9 +1301,17 @@ async function runMainFlow(desc, opts) {
       hasCommits = false;
     }
 
+    // 3.5 Check for detached HEAD state and show warning
+    const branchInfo = await git.branch();
+    if (branchInfo.detached) {
+      console.log(chalk.yellow('\n⚠️  You\'re currently in a detached HEAD state.'));
+      console.log(chalk.yellow('Changes made here won\'t belong to any branch.'));
+      console.log(chalk.cyan('To continue safely, create a branch:'));
+      console.log(chalk.gray('  git switch -c <new-branch-name>\n'));
+    }
+
     // 4️⃣ Determine branch interactively
     let branchName = 'main';
-    const branchInfo = await git.branch();
     const currentBranch = branchInfo.current || 'main';
 
     if (opts.branch == false || !hasCommits) {
@@ -1368,12 +1384,23 @@ async function runMainFlow(desc, opts) {
     // 5️⃣ Stage files
     let diff = await git.diff(['--cached']);
     if (!diff) {
-      console.log(chalk.yellow('No staged changes found. Staging all files...'));
+      // Check if there are unstaged changes
+      const unstagedDiff = await git.diff();
+      if (unstagedDiff) {
+        console.log(chalk.yellow('\n⚠️  You have modified files, but nothing is staged yet.'));
+        console.log(chalk.cyan('Run git add <file> or git add . to stage your changes before committing.\n'));
+      } else {
+        console.log(chalk.yellow('\n⚠️  No file changes detected.'));
+        console.log(chalk.cyan('Make some changes first, then try committing.\n'));
+        process.exit(1);
+      }
+      
+      console.log(chalk.blue('Staging all files...'));
       await stageAllFiles();
       diff = await git.diff(['--cached']);
       if (!diff) {
-        console.error(chalk.red('No changes detected to commit even after staging.'));
-        console.error(chalk.cyan('Tip: Make sure you have modified files. To check: git status'));
+        console.error(chalk.red('\n❌ No file changes detected.'));
+        console.error(chalk.cyan('Make some changes first, then try committing.'));
         process.exit(1);
       }
     }

@@ -26,23 +26,23 @@ export function handleRecoveryError(error) {
 
   // Handle common Git errors
   if (error.message.includes('not a git repository')) {
-    console.error(chalk.red('❌ Not a Git repository'));
-    console.log(chalk.cyan('💡 Run this command from inside a Git repository.'));
-    console.log(chalk.gray('   To initialize: git init'));
+    console.error(chalk.red('❌ This is not a Git repository.'));
+    console.log(chalk.yellow('Run this command from inside a project folder that has been initialized with Git.'));
+    console.log(chalk.cyan('💡 To initialize: git init'));
     return;
   }
 
   if (error.message.includes('does not have any commits yet')) {
-    console.error(chalk.red('❌ Repository has no commits yet'));
-    console.log(chalk.cyan('💡 Make your first commit before using recovery features.'));
-    console.log(chalk.gray('   Example: git add . && git commit -m "Initial commit"'));
+    console.error(chalk.red('❌ This repository has no commits yet.'));
+    console.log(chalk.yellow('You need at least one commit before using recovery features.'));
+    console.log(chalk.cyan('💡 Create your first commit: gg "initial commit"'));
     return;
   }
 
   if (error.message.includes('empty reflog')) {
-    console.error(chalk.red('❌ No reflog entries found'));
-    console.log(chalk.cyan('💡 The reflog is empty - no recovery options available.'));
-    console.log(chalk.gray('   Reflog entries are created when you make commits, switches branches, etc.'));
+    console.error(chalk.red('❌ No recovery options available.'));
+    console.log(chalk.yellow('The reflog is empty — Git hasn\'t recorded any recoverable actions yet.'));
+    console.log(chalk.cyan('💡 Reflog entries are created when you make commits, switch branches, etc.'));
     return;
   }
 
@@ -75,7 +75,7 @@ export function checkRepositoryState() {
 }
 
 export function formatNoRecoveryOptions() {
-  console.log(chalk.yellow('ℹ️  No recovery options found'));
+  console.log(chalk.yellow('\nℹ️  No recovery options available.'));
   console.log(chalk.gray('This could mean:'));
   console.log(chalk.gray('  • No commits have been lost recently'));
   console.log(chalk.gray('  • Repository is in a clean state'));
