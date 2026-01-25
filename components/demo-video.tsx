@@ -1,9 +1,33 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useRef, useState, useEffect, useCallback } from "react"
 import DocsModal from "@/components/docs-modal"
 import AmbientBackground from "./parts/ambient-background"
 import Image from "next/image"
+
+declare global {
+  interface Window {
+    YT: typeof YT
+    onYouTubeIframeAPIReady: () => void
+  }
+  namespace YT {
+    class Player {
+      constructor(element: HTMLElement, options?: PlayerOptions)
+      destroy(): void
+    }
+    interface PlayerOptions {
+      events?: {
+        onStateChange?: (event: OnStateChangeEvent) => void
+      }
+    }
+    interface OnStateChangeEvent {
+      data: number
+    }
+    const PlayerState: {
+      ENDED: number
+    }
+  }
+}
 
 function getYouTubeEmbed(url: string) {
   // Supports youtube.com or youtu.be → returns /embed/... with sane params
@@ -47,10 +71,59 @@ export default function DemoVideoSection() {
     // For YouTube, the autoplay in URL will handle it
   }
 
-  const handleVideoEnded = () => {
+  const handleVideoEnded = useCallback(() => {
     setShowThumbnail(true)
     setIsPlaying(false)
-  }
+  }, [])
+
+  useEffect(() => {
+    if (!isYouTube || !isPlaying) return
+
+    let player: YT.Player | null = null
+    let isMounted = true
+
+    const onPlayerStateChange = (event: YT.OnStateChangeEvent) => {
+      if (event.data === YT.PlayerState.ENDED && isMounted) {
+        handleVideoEnded()
+      }
+    }
+
+    const initPlayer = () => {
+      if (!iframeRef.current || !isMounted) return
+      player = new YT.Player(iframeRef.current, {
+        events: {
+          onStateChange: onPlayerStateChange,
+        },
+      })
+    }
+
+    const setupPlayer = () => {
+      if (window.YT && window.YT.Player) {
+        initPlayer()
+      } else {
+        const existingScript = document.querySelector('script[src="https://www.youtube.com/iframe_api"]')
+        if (!existingScript) {
+          const tag = document.createElement("script")
+          tag.src = "https://www.youtube.com/iframe_api"
+          const firstScriptTag = document.getElementsByTagName("script")[0]
+          firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag)
+        }
+        const previousCallback = window.onYouTubeIframeAPIReady
+        window.onYouTubeIframeAPIReady = () => {
+          previousCallback?.()
+          initPlayer()
+        }
+      }
+    }
+
+    const timeoutId = setTimeout(setupPlayer, 500)
+
+    return () => {
+      isMounted = false
+      clearTimeout(timeoutId)
+      player?.destroy()
+    }
+  }, [isYouTube, isPlaying, handleVideoEnded])
 
   return (
     <section
@@ -78,6 +151,7 @@ export default function DemoVideoSection() {
         {/* Video player (YouTube or native) */}
         {isYouTube ? (
           <iframe
+            key={isPlaying ? "playing" : "paused"}
             ref={iframeRef}
             title="Git Genie demo video"
             src={isPlaying ? youTubeEmbedUrl + "&autoplay=1" : youTubeEmbedUrl}
