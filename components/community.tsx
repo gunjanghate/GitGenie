@@ -39,19 +39,19 @@ export default function Community() {
       
       <AnimateIn delay={120}>
         <div className="mx-auto mt-8 grid max-w-4xl grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6 backdrop-blur-sm">
+        <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10">
           <h3 className="text-lg font-medium text-white">Contribute</h3>
           <p className="mt-2 text-sm text-zinc-400">
           Help improve Git Genie by contributing code, documentation, or translations.
           </p>
         </div>
-        <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6 backdrop-blur-sm">
+        <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10">
           <h3 className="text-lg font-medium text-white">Feedback</h3>
           <p className="mt-2 text-sm text-zinc-400">
           Share your ideas, feature requests, and help shape the future of Git Genie.
           </p>
         </div>
-        <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6 backdrop-blur-sm">
+        <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10">
           <h3 className="text-lg font-medium text-white">Support</h3>
           <p className="mt-2 text-sm text-zinc-400">
           Get help from the community and help others with their Git workflows.
