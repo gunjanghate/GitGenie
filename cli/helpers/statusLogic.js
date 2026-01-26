@@ -7,7 +7,8 @@ import {
     formatNotInRepoError
 } from './statusErrors.js';
 
-const git = simpleGit();
+// Note: We create git instances per function call to avoid potential race conditions
+// in concurrent usage scenarios
 
 /**
  * Get current branch information
@@ -15,10 +16,11 @@ const git = simpleGit();
  */
 export async function getCurrentBranch() {
     try {
+        const git = simpleGit();
         const branchInfo = await git.branch();
         return {
             name: branchInfo.current || 'HEAD',
-            detached: branchInfo.detached
+            detached: branchInfo.detached || false
         };
     } catch (error) {
         throw new StatusError(
@@ -36,10 +38,29 @@ export async function getCurrentBranch() {
 export async function getAheadBehindCounts() {
     try {
         const { stdout } = await execaCommand('git rev-list --left-right --count @{upstream}...HEAD');
-        const [behind, ahead] = stdout.trim().split('\t').map(Number);
+
+        if (!stdout || stdout.trim() === '') {
+            return null;
+        }
+
+        // Handle both tab and space separated output
+        const parts = stdout.trim().split(/\s+/);
+
+        if (parts.length < 2) {
+            return null;
+        }
+
+        const behind = parseInt(parts[0], 10);
+        const ahead = parseInt(parts[1], 10);
+
+        // Validate parsed numbers
+        if (isNaN(behind) || isNaN(ahead)) {
+            return null;
+        }
+
         return { ahead, behind };
     } catch (error) {
-        // No upstream branch configured
+        // No upstream branch configured or other git error
         return null;
     }
 }
@@ -71,6 +92,7 @@ export async function getLastCommitInfo() {
  */
 export async function getGitStatus() {
     try {
+        const git = simpleGit();
         return await git.status();
     } catch (error) {
         throw new StatusError(
@@ -87,60 +109,96 @@ export async function getGitStatus() {
  * @returns {Object} Grouped files
  */
 export function groupFilesByStatus(status) {
+    // Input validation
+    if (!status || typeof status !== 'object') {
+        throw new StatusError(
+            'Invalid status object provided',
+            'validation',
+            ['Status object must be a valid object from git.status()']
+        );
+    }
+
     const groups = {
         staged: [],
         unstaged: [],
         untracked: []
     };
 
+    // Defensive programming - ensure all arrays exist
+    const created = status.created || [];
+    const staged = status.staged || [];
+    const deleted = status.deleted || [];
+    const renamed = status.renamed || [];
+    const modified = status.modified || [];
+    const not_added = status.not_added || [];
+    const files = status.files || [];
+
+    // Track processed files to avoid duplicates
+    const processedStaged = new Set();
+    const processedUnstaged = new Set();
+
     // Staged files (new files)
-    status.created.forEach(file => {
-        groups.staged.push({ path: file, icon: '[+]', type: 'added' });
+    created.forEach(file => {
+        if (file && !processedStaged.has(file)) {
+            groups.staged.push({ path: file, icon: '[+]', type: 'added' });
+            processedStaged.add(file);
+        }
     });
 
     // Staged files (modified)
-    status.staged.forEach(file => {
-        // Skip if already in created
-        if (!status.created.includes(file)) {
+    staged.forEach(file => {
+        // Skip if already in created or already processed
+        if (file && !created.includes(file) && !processedStaged.has(file)) {
             groups.staged.push({ path: file, icon: '[M]', type: 'modified' });
+            processedStaged.add(file);
         }
     });
 
     // Staged files (deleted)
-    status.deleted.forEach(file => {
-        groups.staged.push({ path: file, icon: '[D]', type: 'deleted' });
+    deleted.forEach(file => {
+        if (file && !processedStaged.has(file)) {
+            groups.staged.push({ path: file, icon: '[D]', type: 'deleted' });
+            processedStaged.add(file);
+        }
     });
 
     // Staged files (renamed)
-    status.renamed.forEach(item => {
+    renamed.forEach(item => {
+        if (!item) return;
         const path = typeof item === 'string' ? item : `${item.from} → ${item.to}`;
-        groups.staged.push({ path, icon: '[R]', type: 'renamed' });
+        if (!processedStaged.has(path)) {
+            groups.staged.push({ path, icon: '[R]', type: 'renamed' });
+            processedStaged.add(path);
+        }
     });
 
-    // Unstaged files (modified)
-    status.modified.forEach(file => {
-        // Only include if not already staged
-        if (!status.staged.includes(file)) {
+    // Unstaged files (modified) - skip if already staged
+    modified.forEach(file => {
+        if (file && !staged.includes(file) && !processedUnstaged.has(file)) {
             groups.unstaged.push({ path: file, icon: '[M]', type: 'modified' });
+            processedUnstaged.add(file);
         }
     });
 
     // Files with both staged and unstaged changes
-    status.files.forEach(fileInfo => {
-        if (fileInfo.index && fileInfo.working_dir) {
-            // This file has both staged and unstaged changes
-            const alreadyInStaged = groups.staged.some(f => f.path === fileInfo.path);
-            const alreadyInUnstaged = groups.unstaged.some(f => f.path === fileInfo.path);
+    files.forEach(fileInfo => {
+        if (!fileInfo || !fileInfo.path) return;
 
-            if (!alreadyInUnstaged) {
+        // Check if file has both index and working directory changes
+        if (fileInfo.index && fileInfo.working_dir) {
+            // Add to unstaged if not already there
+            if (!processedUnstaged.has(fileInfo.path)) {
                 groups.unstaged.push({ path: fileInfo.path, icon: '[M]', type: 'modified' });
+                processedUnstaged.add(fileInfo.path);
             }
         }
     });
 
     // Untracked files
-    status.not_added.forEach(file => {
-        groups.untracked.push({ path: file, icon: '[?]', type: 'untracked' });
+    not_added.forEach(file => {
+        if (file) {
+            groups.untracked.push({ path: file, icon: '[?]', type: 'untracked' });
+        }
     });
 
     return groups;
