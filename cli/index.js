@@ -73,6 +73,10 @@ const { handleHistoryCommand } = await import(
   new URL('./helpers/historyLogic.js', import.meta.url)
 );
 
+const { handleStatusCommand } = await import(
+  new URL('./helpers/statusLogic.js', import.meta.url)
+);
+
 
 dotenv.config({ debug: false });
 const git = simpleGit();
@@ -592,6 +596,22 @@ program
     }
   });
 
+// Register `status` command
+program
+  .command('status')
+  .alias('st')
+  .description('Show visually rich git status with colors and icons 🎨')
+  .action(async () => {
+    try {
+      await handleStatusCommand();
+      process.exit(0);
+    } catch (err) {
+      console.error(chalk.red('Failed to show status.'));
+      console.error(chalk.yellow(err.message));
+      process.exit(1);
+    }
+  });
+
 // Register branch helper shortcuts
 
 program.command('b')
@@ -706,7 +726,7 @@ program
         // Check if there are unstaged changes
         const unstagedDiff = await git.diff();
         const hasUnstagedChanges = !!unstagedDiff;
-        
+
         const shouldStage = await promptStageChanges(hasUnstagedChanges);
         if (shouldStage) {
           await stageAllFiles();
@@ -1394,7 +1414,7 @@ async function runMainFlow(desc, opts) {
         console.log(chalk.cyan('Make some changes first, then try committing.\n'));
         process.exit(1);
       }
-      
+
       console.log(chalk.blue('Staging all files...'));
       await stageAllFiles();
       diff = await git.diff(['--cached']);
