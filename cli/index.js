@@ -1270,6 +1270,11 @@ program.exitOverride();
 try {
   program.parse(process.argv);
 } catch (err) {
+  // Gracefully handle help/version output by exiting successfully
+  if (err.code === 'commander.helpDisplayed' || err.code === 'commander.version') {
+    process.exit(0);
+  }
+
   // Catch unknown options or commands
   if (err.code === 'commander.unknownOption' || err.code === 'commander.unknownCommand') {
     const args = process.argv.slice(2);
