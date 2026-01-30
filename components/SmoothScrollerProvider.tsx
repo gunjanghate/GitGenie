@@ -6,7 +6,6 @@ import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 
 const LenisContext = createContext<Lenis | null>(null)
-
 export const useLenis = () => useContext(LenisContext)
 
 export default function SmoothScrollProvider({ children }: { children: React.ReactNode }) {
@@ -14,13 +13,17 @@ export default function SmoothScrollProvider({ children }: { children: React.Rea
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
+    
     const lenisInstance = new Lenis({
       duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       direction: 'vertical',
       gestureOrientation: 'vertical',
       smoothWheel: true,
       touchMultiplier: 2,
+      // ADD THESE OPTIONS:
+      autoRaf: false,
+      infinite: false,
     } as any);
 
     setLenis(lenisInstance)

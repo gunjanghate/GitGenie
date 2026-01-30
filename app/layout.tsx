@@ -37,6 +37,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark scroll-smooth" data-scroll-behavior="smooth">
+      <head>
+        <style dangerouslySetInnerHTML={{__html: `
+          ::-webkit-scrollbar { width: 8px; }
+          ::-webkit-scrollbar-track { background: #1a1a1a; }
+          ::-webkit-scrollbar-thumb { background: #ffda35; border-radius: 10px; }
+          ::-webkit-scrollbar-thumb:hover { background: #ee9919; }
+          * { scrollbar-width: thin; scrollbar-color: #eb9524 #1a1a1a; }
+        `}} />
+      </head>
       <body className={`font-sans ${plusJakarta.variable} ${GeistMono.variable}`}>
         <SmoothScrollProvider>
           <Suspense fallback={null}>{children}</Suspense>
