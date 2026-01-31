@@ -29,14 +29,13 @@ export function handleHistoryError(error) {
             });
         }
     } else if (error.message.includes('not a git repository')) {
-        console.error(chalk.red('❌ Not a git repository'));
-        console.log(chalk.cyan('\n💡 Suggestions:'));
-        console.log(chalk.gray('  • Run this command inside a git repository'));
-        console.log(chalk.gray('  • Initialize a repository with: git init'));
+        console.error(chalk.red('❌ This is not a Git repository.'));
+        console.log(chalk.yellow('Run this command from inside a project folder that has been initialized with Git.'));
+        console.log(chalk.cyan('💡 To initialize: git init'));
     } else if (error.message.includes('does not have any commits yet')) {
-        console.error(chalk.red('❌ Repository has no commits yet'));
-        console.log(chalk.cyan('\n💡 Suggestions:'));
-        console.log(chalk.gray('  • Make your first commit with: gg "initial commit"'));
+        console.error(chalk.red('❌ This repository has no commits yet.'));
+        console.log(chalk.yellow('You need at least one commit before using this feature.'));
+        console.log(chalk.cyan('💡 Create your first commit: gg "initial commit"'));
     } else {
         console.error(chalk.red('❌ Failed to retrieve commit history'));
         console.error(chalk.yellow(error.message));

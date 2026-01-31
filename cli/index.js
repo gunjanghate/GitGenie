@@ -73,6 +73,10 @@ const { handleHistoryCommand } = await import(
   new URL('./helpers/historyLogic.js', import.meta.url)
 );
 
+const { handleStatusCommand } = await import(
+  new URL('./helpers/statusLogic.js', import.meta.url)
+);
+
 
 dotenv.config({ debug: false });
 const git = simpleGit();
@@ -350,7 +354,9 @@ async function getActiveProviderInstance() {
   try {
     return ProviderFactory.getProvider(activeProviderName, apiKey);
   } catch (err) {
-    console.error(chalk.red(`Failed to initialize ${activeProviderName} provider: ${err.message}`));
+    console.error(chalk.red(`❌ Failed to initialize ${activeProviderName} AI provider.`));
+    console.error(chalk.yellow(err.message));
+    console.log(chalk.cyan(`💡 Check your API key with: gg key --${activeProviderName}`));
     return null;
   }
 }
@@ -440,8 +446,9 @@ program
 
       // Validate provider is supported
       if (!ProviderFactory.isProviderSupported(providerName)) {
-        console.error(chalk.red(`❌ Unknown provider: ${providerName}`));
-        console.log(chalk.cyan(`Supported providers: ${ProviderFactory.getSupportedProviders().join(', ')}`));
+        console.error(chalk.red(`❌ Unknown AI provider: "${providerName}"`));
+        console.log(chalk.yellow(`Supported providers: ${ProviderFactory.getSupportedProviders().join(', ')}`));
+        console.log(chalk.cyan('💡 Set your provider with: gg key --gemini <your-key>'));
         process.exit(1);
       }
 
@@ -534,13 +541,180 @@ program.command('cl')
 
 // Register `ignore` command
 program.command('ignore')
-  .argument('<pattern>')
-  .description('Add pattern to .gitignore')
+  .argument('[pattern]', 'Pattern or template name to ignore')
+  .description('Add pattern/template to .gitignore')
   .option('--global', 'Add to global gitignore (~/.gitignore_global)')
   .option('--comment <text>', 'Add comment above the pattern')
+  .option('-t, --template', 'Use standard template (e.g. node, python)')
+  .option('-l, --list [keyword]', 'List available templates')
   .action(async (pattern, options) => {
     try {
       const { appendToGitignore } = await import(new URL('./helpers/gitignoreHelper.js', import.meta.url));
+      const { TemplateManager } = await import(new URL('./helpers/ignoreTemplates.js', import.meta.url));
+
+      const manager = new TemplateManager();
+
+      // Mode 1: List templates
+      if (options.list !== undefined) {
+        const keyword = typeof options.list === 'string' ? options.list : null;
+        const templates = manager.listTemplates(keyword);
+
+        console.log(chalk.cyan.bold(`\n📋 ${keyword ? `Templates matching "${keyword}"` : 'Popular Templates'}:`));
+
+        if (templates.length === 0) {
+          console.log(chalk.yellow('  No templates found.'));
+        } else {
+          const { default: Table } = await import('cli-table3');
+          const table = new Table({
+            head: [],
+            chars: {
+              'top': '─', 'top-mid': '┬', 'top-left': '╭', 'top-right': '╮',
+              'bottom': '─', 'bottom-mid': '┴', 'bottom-left': '╰', 'bottom-right': '╯',
+              'left': '│', 'left-mid': '├', 'mid': '─', 'mid-mid': '┼',
+              'right': '│', 'right-mid': '┤', 'middle': '│'
+            },
+            colWidths: [18, 18, 18, 18], // Slightly wider
+            style: { head: [], border: ['gray'] } // Gray border
+          });
+
+          // Chunk templates into groups of 4
+          let row = [];
+          for (let i = 0; i < templates.length; i++) {
+            // Add icon or color
+            row.push(chalk.cyan.bold(templates[i]));
+            if (row.length === 4) {
+              table.push(row);
+              row = [];
+            }
+          }
+          if (row.length > 0) {
+            // Fill remaining cells with empty strings
+            while (row.length < 4) row.push('');
+            table.push(row);
+          }
+          console.log(table.toString());
+        }
+        console.log(chalk.gray(`\n💡 Search: gg ignore --list <keyword>`));
+        process.exit(0);
+      }
+
+      // Mode 2: Use Template
+      if (options.template) {
+        if (!pattern) {
+          // Interactive selection with search
+          const { default: inquirerCheckboxPlus } = await import('inquirer-checkbox-plus');
+          inquirer.registerPrompt('checkbox-plus', inquirerCheckboxPlus);
+
+          console.log(chalk.cyan('Controls: ↑↓ to navigate • space to select • type to filter • enter to submit'));
+
+          const allTemplates = manager.listTemplates().filter(Boolean);
+
+          let debounceTimer;
+
+          const { selected } = await inquirer.prompt([{
+            type: 'checkbox-plus',
+            name: 'selected',
+            message: 'Select templates:',
+            pageSize: 10,
+            searchable: true,
+            source: async (answersSoFar, input) => {
+              input = input || '';
+
+              return new Promise((resolve) => {
+                if (debounceTimer) clearTimeout(debounceTimer);
+
+                debounceTimer = setTimeout(() => {
+                  const filtered = input
+                    ? allTemplates.filter(t => t.toLowerCase().includes(input.toLowerCase()))
+                    : allTemplates;
+                  resolve(filtered);
+                }, 300);
+              });
+            }
+          }]);
+
+          if (!selected || selected.length === 0) {
+            console.log(chalk.yellow('⚠ No templates selected.'));
+            process.exit(0);
+          }
+          pattern = selected.join(',');
+        }
+
+        // Support comma-separated templates: node,vscode
+        const templateNames = pattern.split(',').map(s => s.trim()).filter(Boolean);
+        let combinedContent = '';
+        let comment = options.comment ? `# ${options.comment}\n` : '';
+        let sources = [];
+
+        const spinner = ora('🔍 Fetching templates...').start();
+
+        for (const name of templateNames) {
+          let contentResult = null;
+          let finalName = name;
+
+          // Try exact match first
+          try {
+            contentResult = await manager.getTemplate(name);
+          } catch (err) {
+            // Not found, try fuzzy match
+            spinner.stop();
+            const closest = manager.getClosestMatch(name);
+
+            if (closest) {
+              console.log(chalk.yellow(`⚠ Template "${name}" not found.`));
+              const { confirm } = await inquirer.prompt([{
+                type: 'confirm',
+                name: 'confirm',
+                message: `Did you mean "${closest}"?`,
+                default: true
+              }]);
+
+              if (confirm) {
+                spinner.start(`Fetching corrected template: ${closest}...`);
+                try {
+                  contentResult = await manager.getTemplate(closest);
+                  finalName = closest;
+                } catch (fetchErr) {
+                  spinner.fail(chalk.red(`Failed to fetch corrected template "${closest}": ${fetchErr.message}`));
+                  process.exit(1);
+                }
+              } else {
+                console.log(chalk.red(`❌ Template "${name}" skipped.`));
+                continue;
+              }
+            } else {
+              spinner.fail(chalk.red(`❌ Template "${name}" not found.`));
+              console.log(chalk.cyan('Run "gg ignore --list" to see available options.'));
+              process.exit(1);
+            }
+          }
+
+          if (contentResult) {
+            combinedContent += `\n# Template: ${finalName} (${contentResult.source})\n${contentResult.content}\n`;
+            sources.push(`${finalName} (${contentResult.source})`);
+          }
+        }
+
+        spinner.succeed(`Resolved templates: ${sources.join(', ')}`);
+
+        if (!combinedContent || !combinedContent.trim()) {
+          console.log(chalk.yellow('⚠ No templates were selected to add.'));
+          process.exit(0);
+        }
+
+        const { getGitignorePath } = await import(new URL('./helpers/gitignoreHelper.js', import.meta.url));
+        const filePath = getGitignorePath(options.global);
+
+        fs.appendFileSync(filePath, '\n' + comment + combinedContent, 'utf-8');
+        console.log(chalk.green(`✅ Added templates to ${path.basename(filePath)}`));
+        process.exit(0);
+      }
+
+      // Mode 3: Basic Pattern (Legacy)
+      if (!pattern) {
+        console.error(chalk.red('⚠ Please specify a pattern or template.'));
+        process.exit(1);
+      }
 
       const result = appendToGitignore(pattern, {
         global: options.global || false,
@@ -549,17 +723,13 @@ program.command('ignore')
 
       if (result.success) {
         console.log(chalk.green(`✅ ${result.message}`));
-        if (options.comment) {
-          console.log(chalk.gray(`   Comment: ${options.comment}`));
-        }
+        if (options.comment) console.log(chalk.gray(`   Comment: ${options.comment}`));
         console.log(chalk.cyan(`   File: ${result.filePath}`));
       } else {
         console.log(chalk.yellow(`⚠ ${result.message}`));
-        if (result.filePath) {
-          console.log(chalk.gray(`   File: ${result.filePath}`));
-        }
         process.exit(1);
       }
+
     } catch (err) {
       console.error(chalk.red('Failed to update .gitignore'));
       console.error(chalk.yellow(err.message));
@@ -584,6 +754,22 @@ program
       process.exit(0);
     } catch (err) {
       console.error(chalk.red('Failed to show history.'));
+      console.error(chalk.yellow(err.message));
+      process.exit(1);
+    }
+  });
+
+// Register `status` command
+program
+  .command('status')
+  .alias('st')
+  .description('Show visually rich git status with colors and icons 🎨')
+  .action(async () => {
+    try {
+      await handleStatusCommand();
+      process.exit(0);
+    } catch (err) {
+      console.error(chalk.red('Failed to show status.'));
       console.error(chalk.yellow(err.message));
       process.exit(1);
     }
@@ -700,14 +886,18 @@ program
 
       // Handle no staged changes
       if (filesData.files.length === 0) {
-        const shouldStage = await promptStageChanges();
+        // Check if there are unstaged changes
+        const unstagedDiff = await git.diff();
+        const hasUnstagedChanges = !!unstagedDiff;
+
+        const shouldStage = await promptStageChanges(hasUnstagedChanges);
         if (shouldStage) {
           await stageAllFiles();
           filesData = await analyzeStagedChanges();
 
           if (filesData.files.length === 0) {
-            console.error(chalk.red('No changes detected even after staging.'));
-            console.log(chalk.cyan('Tip: Make sure you have modified files. To check: git status'));
+            console.error(chalk.red('\n❌ No file changes detected.'));
+            console.log(chalk.cyan('Make some changes first, then try committing.'));
             process.exit(1);
           }
         } else {
@@ -1032,7 +1222,112 @@ if (!process.argv.slice(2).length) {
   process.exit(0);
 }
 
-program.parse(process.argv);
+// Handle unknown commands
+program.on('command:*', async (operands) => {
+  const command = operands[0];
+  const availableCommands = program.commands.map(cmd => cmd.name());
+
+  console.log(chalk.red(`Error: Unknown command "${command}"`));
+
+  // Simple Levenshtein distance for suggestion
+  const levenshtein = (a, b) => {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+    const matrix = [];
+    for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+    for (let j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) == a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
+        }
+      }
+    }
+    return matrix[b.length][a.length];
+  };
+
+  let bestMatch = null;
+  let minDist = Infinity;
+
+  availableCommands.forEach(cmd => {
+    const dist = levenshtein(command, cmd);
+    if (dist < minDist && dist <= 3) {
+      minDist = dist;
+      bestMatch = cmd;
+    }
+  });
+
+  if (bestMatch) {
+    console.log(chalk.yellow(`Did you mean "${chalk.bold(bestMatch)}"?`));
+  }
+  process.exit(1);
+});
+
+program.exitOverride();
+
+try {
+  program.parse(process.argv);
+} catch (err) {
+  // Gracefully handle help/version output by exiting successfully
+  if (err.code === 'commander.helpDisplayed' || err.code === 'commander.version') {
+    process.exit(0);
+  }
+
+  // Catch unknown options or commands
+  if (err.code === 'commander.unknownOption' || err.code === 'commander.unknownCommand') {
+    const args = process.argv.slice(2);
+    const command = args[0]; // First argument is likely the command
+
+    // Only suggest if it looks like a command (not a flag)
+    if (command && !command.startsWith('-')) {
+      const availableCommands = program.commands.map(cmd => cmd.name());
+
+      // Simple Levenshtein
+      const levenshtein = (a, b) => {
+        if (a.length === 0) return b.length;
+        if (b.length === 0) return a.length;
+        const matrix = [];
+        for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+        for (let j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+        for (let i = 1; i <= b.length; i++) {
+          for (let j = 1; j <= a.length; j++) {
+            if (b.charAt(i - 1) == a.charAt(j - 1)) {
+              matrix[i][j] = matrix[i - 1][j - 1];
+            } else {
+              matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1));
+            }
+          }
+        }
+        return matrix[b.length][a.length];
+      };
+
+      let bestMatch = null;
+      let minDist = Infinity;
+
+      availableCommands.forEach(cmd => {
+        const dist = levenshtein(command, cmd);
+        if (dist < minDist && dist <= 3) {
+          minDist = dist;
+          bestMatch = cmd;
+        }
+      });
+
+      if (bestMatch) {
+        console.log(chalk.red(`Error: ${err.message}`));
+        console.log(chalk.yellow(`Did you mean "${chalk.bold(bestMatch)}"?`));
+      } else {
+        console.log(chalk.red(err.message));
+      }
+    } else {
+      console.log(chalk.red(err.message));
+    }
+    process.exit(1);
+  }
+  // Rethrow other errors
+  throw err;
+}
 
 
 /** Generate commit message */
@@ -1157,7 +1452,8 @@ async function ensureRemoteOriginInteractive() {
     const hasOrigin = remotes.some(r => r.name === 'origin');
     if (hasOrigin) return true;
 
-    console.log(chalk.yellow('ℹ No remote "origin" configured.'));
+    console.log(chalk.yellow('\nℹ️  No remote repository configured.'));
+    console.log(chalk.gray('Your commits are only saved locally until you add a remote.\n'));
     const { wantRemote } = await inquirer.prompt([
       {
         type: 'confirm',
@@ -1293,9 +1589,17 @@ async function runMainFlow(desc, opts) {
       hasCommits = false;
     }
 
+    // 3.5 Check for detached HEAD state and show warning
+    const branchInfo = await git.branch();
+    if (branchInfo.detached) {
+      console.log(chalk.yellow('\n⚠️  You\'re currently in a detached HEAD state.'));
+      console.log(chalk.yellow('Changes made here won\'t belong to any branch.'));
+      console.log(chalk.cyan('To continue safely, create a branch:'));
+      console.log(chalk.gray('  git switch -c <new-branch-name>\n'));
+    }
+
     // 4️⃣ Determine branch interactively
     let branchName = 'main';
-    const branchInfo = await git.branch();
     const currentBranch = branchInfo.current || 'main';
 
     if (opts.branch == false || !hasCommits) {
@@ -1368,12 +1672,23 @@ async function runMainFlow(desc, opts) {
     // 5️⃣ Stage files
     let diff = await git.diff(['--cached']);
     if (!diff) {
-      console.log(chalk.yellow('No staged changes found. Staging all files...'));
+      // Check if there are unstaged changes
+      const unstagedDiff = await git.diff();
+      if (unstagedDiff) {
+        console.log(chalk.yellow('\n⚠️  You have modified files, but nothing is staged yet.'));
+        console.log(chalk.cyan('Run git add <file> or git add . to stage your changes before committing.\n'));
+      } else {
+        console.log(chalk.yellow('\n⚠️  No file changes detected.'));
+        console.log(chalk.cyan('Make some changes first, then try committing.\n'));
+        process.exit(1);
+      }
+
+      console.log(chalk.blue('Staging all files...'));
       await stageAllFiles();
       diff = await git.diff(['--cached']);
       if (!diff) {
-        console.error(chalk.red('No changes detected to commit even after staging.'));
-        console.error(chalk.cyan('Tip: Make sure you have modified files. To check: git status'));
+        console.error(chalk.red('\n❌ No file changes detected.'));
+        console.error(chalk.cyan('Make some changes first, then try committing.'));
         process.exit(1);
       }
     }
