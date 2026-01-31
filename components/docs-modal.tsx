@@ -3,6 +3,8 @@
 
 import type React from "react"
 import Link from "next/link"
+
+// UPDATED: 'Contents' list is clickable Markdown links [Title](#id)
 export const DOCS_MD = `# Git Genie — Usage Guide 
 
 > **Essence:** \`gg\` automates staging, Conventional Commit creation (Gemini), branch flow, optional merge to main, and push. Now includes secure API key storage and AI-powered branch/PR naming.
@@ -10,22 +12,22 @@ export const DOCS_MD = `# Git Genie — Usage Guide
 ---
 
 ## Contents
-- Quick start
-- Install & verify
-- Configure Gemini API key
-- Command syntax & options
-- Command palette (interactive)
-- How it works (mapped to source)
-- Common workflows
-- Branch & merge behavior
-- AI commit generation details
-- AI branch & PR generation
-- **Open Source Contributions (\`--osc\`)**
-- Examples
-- Troubleshooting
-- Security & privacy
-- Contributing / roadmap
-- FAQ / Support
+- [Quick start](#quick-start)
+- [Install & verify](#install-verify)
+- [Configure Gemini API key](#configure-gemini-api-key)
+- [Command syntax](#command-syntax)
+- [Command palette (interactive)](#command-palette-interactive)
+- [How it works (mapped to source)](#how-it-works-mapped-to-source)
+- [Common workflows](#common-workflows)
+- [Branch & merge behavior](#branch-merge-behavior)
+- [AI commit generation](#ai-commit-generation)
+- [AI branch & PR generation](#ai-branch-pr-generation)
+- [**Open Source Contributions (\`--osc\`)**](#open-source-contributions-osc)
+- [Examples](#examples)
+- [Troubleshooting](#troubleshooting)
+- [Security & privacy](#security-privacy)
+- [Contributing / roadmap](#contributing-roadmap)
+- [FAQ](#faq)
 
 ---
 
@@ -131,7 +133,7 @@ Available actions (subject to evolve):
 
 Tip: See the “Command palette demo” section on the homepage for a visual walkthrough of the UI.
 
-## How it works (step mapping)
+## How it works (mapped to source)
 1. Parse args via Commander (main action wrapper).
 2. Repo check: if not a git repo → \`git init\`.
 3. Remote: if \`--remote\` provided → attempt \`git remote add origin <url>\` (ignore if exists).
@@ -286,26 +288,19 @@ Planned: PR automation, partial diff selection, stats mode, model selection flag
 Contribute: fork → branch → changes → \`gg "feat xyz" --genie\` → PR.
 
 ## FAQ
-**Q: How do I rotate API keys?**  
-A: Just run \`gg config <new_key>\` to overwrite the existing one.
+**Q: How do I rotate API keys?** A: Just run \`gg config <new_key>\` to overwrite the existing one.
 
-**Q: What if I hit quota on my API key?**  
-A: Swap to another key using \`gg config <backup_key>\`.
+**Q: What if I hit quota on my API key?** A: Swap to another key using \`gg config <backup_key>\`.
 
-**Q: Is key storage secure?**  
-A: Yes—uses OS keychain when available, fallback to AES-256-CBC encryption with per-user keys.
+**Q: Is key storage secure?** A: Yes—uses OS keychain when available, fallback to AES-256-CBC encryption with per-user keys.
 
-**Q: Windows support?**  
-A: Yes (PowerShell tested), uses Windows Credential Vault for secure storage.
+**Q: Windows support?** A: Yes (PowerShell tested), uses Windows Credential Vault for secure storage.
 
-**Q: Can it open PRs?**  
-A: Not yet (roadmap), but generates PR titles for manual creation.
+**Q: Can it open PRs?** A: Not yet (roadmap), but generates PR titles for manual creation.
 
-**Q: Model configurable?**  
-A: Currently fixed to \`gemini-2.0-flash\`.
+**Q: Model configurable?** A: Currently fixed to \`gemini-2.0-flash\`.
 
-**Q: How does \`--osc\` work?**  
-A: Prompts for issue number, creates branch \`type/#<issue_number>-shorttitle\` (short title from Gemini if \`--genie\` is used, otherwise from your message).
+**Q: How does \`--osc\` work?** A: Prompts for issue number, creates branch \`type/#<issue_number>-shorttitle\` (short title from Gemini if \`--genie\` is used, otherwise from your message).
 
 ## Publish (maintainers)
 \`\`\`bash
@@ -323,10 +318,7 @@ _End of docs_
 `
 
 export default function DocsModal() {
-
-
   return (
-    
         <Link
         href={"/docs"}
           id="docs"
@@ -336,7 +328,5 @@ export default function DocsModal() {
         >
           View full docs
         </Link>
-    
-   
   )
 }

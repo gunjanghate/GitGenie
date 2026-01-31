@@ -12,15 +12,20 @@ import { cn } from "@/lib/utils"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 
-// Table of Contents sections
+// TOC ITEMS (Matches the IDs generated below)
 const TOC_ITEMS = [
-    { id: "installation", label: "Installation" },
-    { id: "usage", label: "Usage" },
-    { id: "command-palette", label: "Command Palette" },
-    { id: "commit-types", label: "Commit Types" },
-    { id: "advanced-features", label: "Advanced Features" },
+    { id: "quick-start", label: "Quick Start" },
+    { id: "install-verify", label: "Install & Verify" },
+    { id: "configure-gemini-api-key", label: "Configure API Key" },
+    { id: "command-syntax", label: "Command Syntax" },
+    { id: "command-palette-interactive", label: "Command Palette" },
+    { id: "how-it-works-mapped-to-source", label: "How it Works" },
+    { id: "open-source-contributions-osc", label: "Open Source (--osc)" },
+    { id: "common-workflows", label: "Common Workflows" },
+    { id: "examples", label: "Examples" },
     { id: "troubleshooting", label: "Troubleshooting" },
-    { id: "contributing", label: "Contributing" },
+    { id: "security-privacy", label: "Security & Privacy" },
+    { id: "faq", label: "FAQ" },
 ]
 
 function CopyInline({ text }: { text: string }) {
@@ -99,11 +104,16 @@ function SidebarNav({ activeSection, onItemClick }: { activeSection: string; onI
                     key={item.id}
                     href={`#${item.id}`}
                     onClick={(e) => {
-                         // Optional: Smooth scroll manually if needed, but CSS scroll-behavior usually handles it
+                         // Prevent default anchor jump, use smooth scroll
+                         e.preventDefault();
+                         const element = document.getElementById(item.id);
+                         if (element) {
+                             element.scrollIntoView({ behavior: 'smooth' });
+                         }
                          onItemClick?.();
                     }}
                     className={cn(
-                        "block py-1.5 px-3 text-sm transition-colors rounded-md cursor-pointer", // UPDATED: Added cursor-pointer
+                        "block py-1.5 px-3 text-sm transition-colors rounded-md cursor-pointer", 
                         activeSection === item.id
                             ? "text-amber-400 bg-amber-400/10 font-medium"
                             : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
@@ -124,10 +134,11 @@ function Sidebar({ activeSection }: { activeSection: string }) {
             {/* Mobile TOC Drawer */}
             <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild>
+                    {/* FIX: Moved from right-6 to left-6 to avoid overlapping with ScrollToTop button */}
                     <Button
                         variant="outline"
                         size="icon"
-                        className="lg:hidden fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full border-white/10 bg-black/60 backdrop-blur-sm hover:bg-black/80 cursor-pointer"
+                        className="lg:hidden fixed bottom-6 left-6 z-50 h-12 w-12 rounded-full border-white/10 bg-black/60 backdrop-blur-sm hover:bg-black/80 cursor-pointer"
                         aria-label="Open table of contents"
                     >
                         <Menu className="h-5 w-5" />
@@ -169,7 +180,6 @@ export default function DocsPage() {
             { rootMargin: "-100px 0px -80% 0px" }
         )
 
-        // Observe all h2 elements (main sections)
         const headings = document.querySelectorAll("article h2[id]")
         headings.forEach((heading) => observerRef.current?.observe(heading))
 
@@ -208,7 +218,7 @@ export default function DocsPage() {
                     {/* Sidebar navigation */}
                     <Sidebar activeSection={activeSection} />
 
-                    {/* Main article content - UPDATED: width fixes */}
+                    {/* Main article content - Responsive widths */}
                     <article className="flex-1 min-w-0 w-full max-w-full lg:max-w-3xl markdown text-zinc-200 pb-16">
                         <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
@@ -240,14 +250,40 @@ export default function DocsPage() {
                                 ul: ({ children }) => <ul className="mb-4 ml-5 list-disc space-y-2 text-zinc-300/90 leading-7">{children}</ul>,
                                 ol: ({ children }) => <ol className="mb-4 ml-5 list-decimal space-y-2 text-zinc-300/90 leading-7">{children}</ol>,
                                 li: ({ children }) => <li className="pl-1">{children}</li>,
-                                a: (props) => (
-                                    <a 
-                                        {...props} 
-                                        className="text-amber-400 hover:text-amber-300 underline decoration-amber-400/30 hover:decoration-amber-300 transition-colors cursor-pointer" 
-                                        target="_blank" 
-                                        rel="noreferrer" 
-                                    />
-                                ),
+                                // FIX: Handle links differently based on if they are internal (#) or external
+                                a: ({ href, children, ...props }: any) => {
+                                    const isInternal = href?.startsWith("#");
+                                    if (isInternal) {
+                                        return (
+                                            <a 
+                                                href={href}
+                                                className="text-amber-400 hover:text-amber-300 hover:underline cursor-pointer"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    const id = href.replace("#", "");
+                                                    const element = document.getElementById(id);
+                                                    if (element) {
+                                                        element.scrollIntoView({ behavior: "smooth" });
+                                                    }
+                                                }}
+                                                {...props}
+                                            >
+                                                {children}
+                                            </a>
+                                        )
+                                    }
+                                    return (
+                                        <a 
+                                            href={href} 
+                                            className="text-amber-400 hover:text-amber-300 underline decoration-amber-400/30 hover:decoration-amber-300 transition-colors cursor-pointer" 
+                                            target="_blank" 
+                                            rel="noreferrer" 
+                                            {...props}
+                                        >
+                                            {children}
+                                        </a>
+                                    )
+                                },
                                 blockquote: ({ children }) => (
                                     <blockquote className="my-4 border-l-4 border-amber-400/40 bg-amber-400/5 pl-4 py-2 text-zinc-300/90 rounded-r">
                                         {children}
