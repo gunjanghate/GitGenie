@@ -55,7 +55,7 @@ export default function Usage() {
         // DESKTOP: Multiple cards can be open, 4-column grid
         <Accordion 
           type="multiple" 
-          className="grid items-start gap-6 lg:grid-cols-4"
+          className="grid items-stretch gap-6 lg:grid-cols-4 auto-rows-[1fr]"
         >
            {renderFlags(flags)}
         </Accordion>
@@ -125,7 +125,7 @@ function renderFlags(flags: any[]) {
     <AnimateIn key={`${f.flag}-${i}`} delay={i * 80}>
       <AccordionItem
         value={f.flag}
-        className="relative flex flex-col justify-between rounded-2xl border border-white/10 bg-zinc-900/40 px-4 py-2 h-auto"
+        className="relative flex flex-col justify-between rounded-2xl border border-white/10 bg-zinc-900/40 px-4 py-2 h-full"
       >
         <AccordionTrigger className="group w-full rounded-xl px-1 py-2 text-left no-underline hover:no-underline cursor-pointer">
           <div className="flex flex-col gap-1 pr-2">
@@ -134,22 +134,11 @@ function renderFlags(flags: any[]) {
           </div>
         </AccordionTrigger>
         <AccordionContent className="transition-all">
-          {/* PERFECT CODE BLOCK:
-            - py-2 (Matches Shortcuts)
-            - gap-2 (Matches Shortcuts)
-            - bg-black/30 (Matches Shortcuts)
-            - whitespace-normal break-words (Responsive wrapping)
-          */}
-          <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2 w-full">
-            <code 
-              className="font-mono text-xs text-zinc-200 whitespace-normal break-words" 
-              title={f.example}
-            >
+          <div className="mt-3 flex items-center justify-between gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2">
+            <span className="truncate font-mono text-xs text-zinc-200" title={f.example}>
               {f.example}
-            </code>
-            <div className="shrink-0">
-              <CopyButton text={f.example} />
-            </div>
+            </span>
+            <CopyButton text={f.example} />
           </div>
         </AccordionContent>
       </AccordionItem>
