@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 
-// TOC ITEMS (Matches the IDs generated below)
+// TOC ITEMS
 const TOC_ITEMS = [
     { id: "quick-start", label: "Quick Start" },
     { id: "install-verify", label: "Install & Verify" },
@@ -134,7 +134,7 @@ function Sidebar({ activeSection }: { activeSection: string }) {
             {/* Mobile TOC Drawer */}
             <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild>
-                    {/* FIX: Moved from right-6 to left-6 to avoid overlapping with ScrollToTop button */}
+                    {/* FIX: Moved from right-6 to left-6 to prevent overlap with Back-to-Top button */}
                     <Button
                         variant="outline"
                         size="icon"

@@ -17,20 +17,15 @@ export default function Usage() {
     { flag: "--osc", desc: "Branch name for open source", example: 'gg "improve docs" --osc --type docs' },
   ]
 
-  // Detect if the user is on a Desktop screen (lg breakpoint: 1024px)
-  // Default to true (Desktop) for server-side consistency, updates on client.
+  // Responsive Check: true if screen is Desktop (lg >= 1024px)
   const [isDesktop, setIsDesktop] = useState(true)
 
   useEffect(() => {
     const checkDesktop = () => {
-      // 1024px matches Tailwind's 'lg' breakpoint
       setIsDesktop(window.innerWidth >= 1024)
     }
-    
-    // Initial check
+    // Check on mount and resize
     checkDesktop()
-    
-    // Add listener for resize events
     window.addEventListener("resize", checkDesktop)
     return () => window.removeEventListener("resize", checkDesktop)
   }, [])
@@ -52,22 +47,24 @@ export default function Usage() {
         </AnimateIn>
       </div>
 
-      {/* Dynamic Accordion Behavior:
-         - Mobile/Tablet (<1024px): type="single" (Only one open at a time)
-         - Desktop (>=1024px): type="multiple" (Multiple open at once - Old Behavior)
+      {/* RESPONSIVE LOGIC:
+          - Desktop (isDesktop = true): Renders type="multiple" (Grid Layout)
+          - Mobile (isDesktop = false): Renders type="single" (Stack Layout)
       */}
       {isDesktop ? (
+        // DESKTOP: Multiple cards can be open, 4-column grid
         <Accordion 
           type="multiple" 
-          className="grid items-start gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+          className="grid items-start gap-6 lg:grid-cols-4"
         >
            {renderFlags(flags)}
         </Accordion>
       ) : (
+        // MOBILE/TABLET: Only one card open at a time, Single column stack
         <Accordion 
           type="single" 
           collapsible 
-          className="grid items-start gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+          className="grid items-start gap-4 grid-cols-1"
         >
            {renderFlags(flags)}
         </Accordion>
@@ -91,7 +88,7 @@ export default function Usage() {
             <div className="flex flex-col h-full rounded-2xl border border-white/10 bg-zinc-900/40 px-4 py-6">
               <span className="font-mono text-base text-amber-400 mb-2">gg b &lt;branch&gt;</span>
               <span className="text-zinc-300 mb-4 text-sm">Create and switch to a new branch.<br /><span className="text-xs text-zinc-400">git checkout -b</span></span>
-              <div className="mt-auto flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+              <div className="mt-auto flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2">
                 <span className="font-mono text-xs text-zinc-200 break-all">gg b feature/login</span>
                 <CopyButton text="gg b feature/login" />
               </div>
@@ -101,7 +98,7 @@ export default function Usage() {
             <div className="flex flex-col h-full rounded-2xl border border-white/10 bg-zinc-900/40 px-4 py-6">
               <span className="font-mono text-base text-amber-400 mb-2">gg s &lt;branch&gt;</span>
               <span className="text-zinc-300 mb-4 text-sm">Switch to an existing branch.<br /><span className="text-xs text-zinc-400">git checkout</span></span>
-              <div className="mt-auto flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+              <div className="mt-auto flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2">
                 <span className="font-mono text-xs text-zinc-200 break-all">gg s main</span>
                 <CopyButton text="gg s main" />
               </div>
@@ -111,9 +108,9 @@ export default function Usage() {
             <div className="flex flex-col h-full rounded-2xl border border-white/10 bg-zinc-900/40 px-4 py-6">
               <span className="font-mono text-base text-amber-400 mb-2">gg wt ...</span>
               <span className="text-zinc-300 mb-4 text-sm">Create a worktree for a branch.<br /><span className="text-xs text-zinc-400">Auto-creates branch if missing.</span></span>
-              <div className="mt-auto flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+              <div className="mt-auto flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2">
                 <span className="font-mono text-xs text-zinc-200 break-all">gg wt docs ./docs</span>
-                <CopyButton text="gg wt feature/docs ./docs main" />
+                <CopyButton text="gg wt docs ./docs" />
               </div>
             </div>
           </AnimateIn>
@@ -123,7 +120,6 @@ export default function Usage() {
   )
 }
 
-// Helper to render flags to avoid code duplication
 function renderFlags(flags: any[]) {
   return flags.map((f, i) => (
     <AnimateIn key={`${f.flag}-${i}`} delay={i * 80}>
@@ -138,9 +134,15 @@ function renderFlags(flags: any[]) {
           </div>
         </AccordionTrigger>
         <AccordionContent className="transition-all">
-          <div className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-3">
+          {/* PERFECT CODE BLOCK:
+            - py-2 (Matches Shortcuts)
+            - gap-2 (Matches Shortcuts)
+            - bg-black/30 (Matches Shortcuts)
+            - whitespace-normal break-words (Responsive wrapping)
+          */}
+          <div className="mt-3 flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2 w-full">
             <code 
-              className="font-mono text-xs text-zinc-200 whitespace-normal break-all" 
+              className="font-mono text-xs text-zinc-200 whitespace-normal break-words" 
               title={f.example}
             >
               {f.example}
