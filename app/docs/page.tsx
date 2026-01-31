@@ -36,7 +36,7 @@ function CopyInline({ text }: { text: string }) {
         <button
             type="button"
             onClick={onCopy}
-            className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/90 transition hover:bg-white/10"
+            className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/90 transition hover:bg-white/10 cursor-pointer"
             aria-label="Copy code"
         >
             <Copy size={12} className="opacity-80" />
@@ -58,7 +58,7 @@ function CodeBlock(props: any) {
 
     const lang = languageClass.replace("language-", "")
     return (
-        <div className="group relative my-4 rounded-lg border border-white/10 bg-black/40 overflow-hidden">
+        <div className="group relative my-4 rounded-lg border border-white/10 bg-black/40 overflow-hidden max-w-full">
             <div className="absolute right-2 top-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                 <CopyInline text={code} />
             </div>
@@ -87,6 +87,9 @@ function SafeParagraph({ children }: { children: React.ReactNode }) {
     return containsBlock ? <div className={base}>{children}</div> : <p className={base}>{children}</p>
 }
 
+// Helper to sanitize IDs consistently
+const createId = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
 function SidebarNav({ activeSection, onItemClick }: { activeSection: string; onItemClick?: () => void }) {
     return (
         <nav className="space-y-1">
@@ -95,9 +98,12 @@ function SidebarNav({ activeSection, onItemClick }: { activeSection: string; onI
                 <a
                     key={item.id}
                     href={`#${item.id}`}
-                    onClick={onItemClick}
+                    onClick={(e) => {
+                         // Optional: Smooth scroll manually if needed, but CSS scroll-behavior usually handles it
+                         onItemClick?.();
+                    }}
                     className={cn(
-                        "block py-1.5 px-3 text-sm transition-colors rounded-md",
+                        "block py-1.5 px-3 text-sm transition-colors rounded-md cursor-pointer", // UPDATED: Added cursor-pointer
                         activeSection === item.id
                             ? "text-amber-400 bg-amber-400/10 font-medium"
                             : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
@@ -121,7 +127,7 @@ function Sidebar({ activeSection }: { activeSection: string }) {
                     <Button
                         variant="outline"
                         size="icon"
-                        className="lg:hidden fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full border-white/10 bg-black/60 backdrop-blur-sm hover:bg-black/80"
+                        className="lg:hidden fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full border-white/10 bg-black/60 backdrop-blur-sm hover:bg-black/80 cursor-pointer"
                         aria-label="Open table of contents"
                     >
                         <Menu className="h-5 w-5" />
@@ -175,17 +181,17 @@ export default function DocsPage() {
     return (
         <main className="relative min-h-screen text-white bg-linear-to-b from-zinc-950 via-zinc-900 to-zinc-950">
             {/* Ambient background - subtle */}
-            <div className="absolute inset-0 opacity-30">
+            <div className="absolute inset-0 opacity-30 pointer-events-none">
                 <AmbientBackground />
             </div>
 
             {/* Top header - compact */}
             <header className="relative z-10 border-b border-white/5 bg-black/20 backdrop-blur-sm">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-                    <h1 className="text-2xl md:text-3xl font-bold">
+                    <h1 className="text-2xl md:text-3xl font-bold flex items-center">
                         <button
                             type="button"
-                            className="text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:ring-offset-2 focus:ring-offset-zinc-950 rounded"
+                            className="text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:ring-offset-2 focus:ring-offset-zinc-950 rounded cursor-pointer"
                             onClick={() => router.push("/")}
                             aria-label="Navigate to home page"
                         >
@@ -198,34 +204,34 @@ export default function DocsPage() {
 
             {/* Main content with sidebar */}
             <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-                <div className="flex gap-8 lg:gap-12">
+                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
                     {/* Sidebar navigation */}
                     <Sidebar activeSection={activeSection} />
 
-                    {/* Main article content */}
-                    <article className="flex-1 min-w-0 max-w-3xl markdown text-zinc-200 pb-16">
+                    {/* Main article content - UPDATED: width fixes */}
+                    <article className="flex-1 min-w-0 w-full max-w-full lg:max-w-3xl markdown text-zinc-200 pb-16">
                         <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={{
                                 code: CodeBlock,
                                 h1: ({ children }) => {
-                                    const id = String(children).toLowerCase().replace(/\s+/g, "-")
+                                    const id = createId(String(children));
                                     return <h1 id={id} className="mb-4 text-3xl md:text-4xl font-bold text-white">{children}</h1>
                                 },
                                 h2: ({ children }) => {
-                                    const id = String(children).toLowerCase().replace(/\s+/g, "-")
+                                    const id = createId(String(children));
                                     return (
                                         <h2 
                                             id={id} 
-                                            className="mt-12 mb-4 pb-2 text-2xl font-semibold text-white border-b border-white/10 scroll-mt-20"
+                                            className="mt-12 mb-4 pb-2 text-2xl font-semibold text-white border-b border-white/10 scroll-mt-24"
                                         >
                                             {children}
                                         </h2>
                                     )
                                 },
                                 h3: ({ children }) => {
-                                    const id = String(children).toLowerCase().replace(/\s+/g, "-")
-                                    return <h3 id={id} className="mt-8 mb-3 text-xl font-semibold text-white/95 scroll-mt-20">{children}</h3>
+                                    const id = createId(String(children));
+                                    return <h3 id={id} className="mt-8 mb-3 text-xl font-semibold text-white/95 scroll-mt-24">{children}</h3>
                                 },
                                 h4: ({ children }) => {
                                     return <h4 className="mt-6 mb-2 text-lg font-semibold text-white/90">{children}</h4>
@@ -237,7 +243,7 @@ export default function DocsPage() {
                                 a: (props) => (
                                     <a 
                                         {...props} 
-                                        className="text-amber-400 hover:text-amber-300 underline decoration-amber-400/30 hover:decoration-amber-300 transition-colors" 
+                                        className="text-amber-400 hover:text-amber-300 underline decoration-amber-400/30 hover:decoration-amber-300 transition-colors cursor-pointer" 
                                         target="_blank" 
                                         rel="noreferrer" 
                                     />
@@ -249,7 +255,7 @@ export default function DocsPage() {
                                 ),
                                 hr: () => <hr className="my-8 border-white/10" />,
                                 table: ({ children }) => (
-                                    <div className="my-4 overflow-x-auto">
+                                    <div className="my-4 overflow-x-auto w-full">
                                         <table className="w-full border-collapse text-sm">{children}</table>
                                     </div>
                                 ),

@@ -22,19 +22,19 @@ export default function Usage() {
       <div className="mb-10">
         <AnimateIn>
           <div>
-
             <h2 id="usage-title" className="text-2xl font-semibold sm:text-3xl">
               Usage & Flags
             </h2>
             <div className="line h-1 mt-1 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
-
           </div>
         </AnimateIn>
         <AnimateIn delay={60}>
           <p className="mt-3 max-w-2xl text-zinc-300">Configure Git Genie behavior with clean, human-friendly flags.</p>
         </AnimateIn>
       </div>
-      <Accordion type="multiple" className="grid items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-4 auto-rows-[1fr]">
+      
+      {/* UPDATED: Changed type to "single" and collapsible. Added grid-cols-1 for mobile. */}
+      <Accordion type="single" collapsible className="grid items-stretch gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 auto-rows-[1fr]">
         {flags.map((f, i) => (
           <AnimateIn key={`${f.flag}-${i}`} delay={i * 80}>
             <AccordionItem
@@ -64,17 +64,16 @@ export default function Usage() {
       <div className="mt-16">
         <AnimateIn>
           <div>
-
-                   <h2 id="shortcuts-title" className="text-2xl font-semibold sm:text-3xl">
+            <h2 id="shortcuts-title" className="text-2xl font-semibold sm:text-3xl">
               Branch Management Shortcuts
             </h2>
             <div className="line h-1 mt-1 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
           </div>
         </AnimateIn>
-            <AnimateIn delay={60}>
+        <AnimateIn delay={60}>
           <p className="mt-3 max-w-2xl text-zinc-300 mb-6">Manage your branches effortlessly with these shortcuts.</p>
         </AnimateIn>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mt-4">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-4">
           <AnimateIn delay={40}>
             <div className="flex flex-col h-full rounded-2xl border border-white/10 bg-zinc-900/40 px-4 py-6">
               <span className="font-mono text-base text-amber-400 mb-2">gg b &lt;branchName&gt;</span>
