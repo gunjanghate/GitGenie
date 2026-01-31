@@ -26,6 +26,7 @@ export default function Hero() {
   md:justify-between"
       >
         <Link
+        target="_blank"
           href="https://github.com/gunjanghate/GitGenie"
           className="group inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black transition-transform duration-200 hover:scale-[1.03] hover:shadow-[0_0_0_3px_rgba(245,158,11,0.30)]"
           aria-label="Star on GitHub"
@@ -34,6 +35,7 @@ export default function Hero() {
           <span>Star on GitHub</span>
         </Link>
         <Link
+        target="_blank"
           href="https://www.npmjs.com/package/@gunjanghate/git-genie"
           className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:scale-[1.03] hover:border-amber-400/40 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.18)]"
           aria-label="Install via npm"
@@ -62,7 +64,7 @@ export default function Hero() {
             <Sparkles className="h-4 w-4 text-amber-400" aria-hidden="true" />{" "}
             <hr className="mx-2 h-4 w-px shrink-0 bg-neutral-500" />
             <AnimatedGradientText className="text-xs font-medium">
-              Your own Github Genie | 2.5k+ downloads
+              Your own Github Genie | <Link className="cursor-pointer hover:underline" href={"https://www.npmjs.com/package/@gunjanghate/git-genie"} target="_blank">3k+ downloads</Link>
             </AnimatedGradientText>
             <ChevronRight
               className="ml-1 size-4 stroke-neutral-500 transition-transform

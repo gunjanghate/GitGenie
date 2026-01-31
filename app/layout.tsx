@@ -14,18 +14,18 @@ const plusJakarta = Plus_Jakarta_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "Git Genie — AI-powered Git assistant",
+  title: "Git Genie — AI powered Git assistant",
   description:
     "Automate staging, commit messages, branch flow, and pushes in one command. Open-source NPM package to supercharge your Git workflow.",
   alternates: { canonical: "https://gitgenie.vercel.app" },
   openGraph: {
-    title: "Git Genie — AI-powered Git assistant",
+    title: "Git Genie — AI powered Git assistant",
     description: "Automate staging, commit messages, branch flow, and pushes in one command. Open-source NPM package.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Git Genie — AI-powered Git assistant",
+    title: "Git Genie — AI powered Git assistant",
     description: "Automate staging, commit messages, branch flow, and pushes in one command.",
   },
 }
@@ -38,7 +38,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark scroll-smooth" data-scroll-behavior="smooth">
       <head>
-        <style dangerouslySetInnerHTML={{__html: `
+        <style dangerouslySetInnerHTML={{
+          __html: `
           ::-webkit-scrollbar { width: 8px; }
           ::-webkit-scrollbar-track { background: #1a1a1a; }
           ::-webkit-scrollbar-thumb { background: #ffda35; border-radius: 10px; }
