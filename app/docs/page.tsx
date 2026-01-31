@@ -11,6 +11,8 @@ import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { Star, Package, Sparkles } from "lucide-react"
 
 // TOC ITEMS
 const TOC_ITEMS = [
@@ -97,7 +99,7 @@ const createId = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-"
 
 function SidebarNav({ activeSection, onItemClick }: { activeSection: string; onItemClick?: () => void }) {
     return (
-        <nav className="space-y-1">
+        <nav className="space-y-1 border-r-amber-600/50 border-r rounded-tr-2xl rounded-br-2xl py-10">
             <h2 className="mb-3 text-sm font-semibold text-white">On This Page</h2>
             {TOC_ITEMS.map((item) => (
                 <a
@@ -126,7 +128,13 @@ function SidebarNav({ activeSection, onItemClick }: { activeSection: string; onI
     )
 }
 
-function Sidebar({ activeSection }: { activeSection: string }) {
+function Sidebar({
+    activeSection,
+    onSectionSelect,
+}: {
+    activeSection: string
+    onSectionSelect: (id: string) => void
+}) {
     const [open, setOpen] = useState(false)
 
     return (
@@ -145,8 +153,14 @@ function Sidebar({ activeSection }: { activeSection: string }) {
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-64 bg-zinc-900/95 backdrop-blur-sm border-white/10">
-                    <div className="mt-8">
-                        <SidebarNav activeSection={activeSection} onItemClick={() => setOpen(false)} />
+                    <div className="">
+                        <SidebarNav
+                            activeSection={activeSection}
+                            onItemClick={(id) => {
+                                onSectionSelect(id)
+                                setOpen(false)
+                            }}
+                        />
                     </div>
                 </SheetContent>
             </Sheet>
@@ -154,7 +168,7 @@ function Sidebar({ activeSection }: { activeSection: string }) {
             {/* Desktop Sidebar */}
             <aside className="hidden lg:block w-64 shrink-0">
                 <div className="sticky top-6 h-[calc(100vh-3rem)]">
-                    <SidebarNav activeSection={activeSection} />
+                    <SidebarNav activeSection={activeSection} onItemClick={onSectionSelect} />
                 </div>
             </aside>
         </>
@@ -210,13 +224,14 @@ export default function DocsPage() {
                         <span className="text-zinc-400 font-normal ml-2">/ Documentation</span>
                     </h1>
                 </div>
+
             </header>
 
             {/* Main content with sidebar */}
             <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
                     {/* Sidebar navigation */}
-                    <Sidebar activeSection={activeSection} />
+                    <Sidebar activeSection={activeSection} onSectionSelect={setActiveSection} />
 
                     {/* Main article content - Responsive widths */}
                     <article className="flex-1 min-w-0 w-full max-w-full lg:max-w-3xl markdown text-zinc-200 pb-16">
@@ -302,8 +317,10 @@ export default function DocsPage() {
                                 td: ({ children }) => <td className="px-4 py-2 text-zinc-300/90">{children}</td>,
                             }}
                         >
+
                             {content}
                         </ReactMarkdown>
+
                     </article>
                 </div>
             </div>
