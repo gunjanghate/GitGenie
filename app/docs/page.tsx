@@ -9,7 +9,7 @@ import AmbientBackground from "@/components/parts/ambient-background"
 import { DOCS_MD } from "@/components/docs-modal"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Star, Package, Sparkles } from "lucide-react"
@@ -162,6 +162,14 @@ function Sidebar({
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-64 bg-zinc-900/95 backdrop-blur-sm border-white/10">
+                    {/* Add this block to fix the accessibility error */}
+                    <SheetHeader className="sr-only">
+                        <SheetTitle>Documentation Navigation</SheetTitle>
+                        <SheetDescription>
+                            Select a section to jump to its content.
+                        </SheetDescription>
+                    </SheetHeader>
+                    
                     <div className="">
                         <SidebarNav
                             activeSection={activeSection}
@@ -174,7 +182,7 @@ function Sidebar({
                 </SheetContent>
             </Sheet>
 
-            {/* Desktop Sidebar */}
+            {/* Desktop Sidebar remains unchanged */}
             <aside className="hidden lg:block w-64 shrink-0">
                 <div className="sticky top-6 h-[calc(100vh-3rem)]">
                     <SidebarNav activeSection={activeSection} onItemClick={onSectionSelect} />
