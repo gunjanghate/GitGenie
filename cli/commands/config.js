@@ -310,12 +310,49 @@ export async function saveApiKey(apikey) {
 export function registerConfigCommand(program) {
     // Register `config`
     program
-        .command('config <apikey>')
-        .description('Save your AI provider API key for unlocking genie powers')
+        .command('config [apikey]')
+        .description('Save your AI provider API key or check configuration status')
         .option('--provider <name>', 'Provider name (gemini, mistral, groq)', 'gemini')
+        .option('--status', 'Check configuration status of all providers')
         .action(async (apikey, options) => {
             try {
                 const { ProviderFactory } = await import('../providers/index.js');
+
+                // Mode 1: Check Status
+                if (options.status) {
+                    console.log(chalk.bold('\n🔮 AI Provider Configuration Status:\n'));
+
+                    const providers = ProviderFactory.getSupportedProviders();
+                    let hasConfigured = false;
+
+                    for (const provider of providers) {
+                        const key = await getProviderApiKey(provider);
+                        const isConfigured = !!key;
+                        const statusColor = isConfigured ? chalk.green : chalk.gray;
+                        const statusIcon = isConfigured ? '✅' : '❌';
+                        const statusText = isConfigured ? 'Configured' : 'Not configured';
+                        const padding = ' '.repeat(10 - provider.length);
+
+                        console.log(`  ${chalk.cyan(provider.charAt(0).toUpperCase() + provider.slice(1))}${padding}: ${statusIcon} ${statusColor(statusText)}`);
+                        if (isConfigured) hasConfigured = true;
+                    }
+
+                    console.log(''); // Empty line
+                    if (!hasConfigured) {
+                        console.log(chalk.yellow('  No providers configured yet.'));
+                        console.log(chalk.cyan('  Run: gg config <your-key> --provider <name>'));
+                    }
+                    process.exit(0);
+                }
+
+                // Mode 2: Save API Key
+                if (!apikey) {
+                    console.error(chalk.red('Error: API key is required when not using --status'));
+                    console.log(chalk.cyan('Usage: gg config <apikey>'));
+                    console.log(chalk.cyan('Check Status: gg config --status'));
+                    process.exit(1);
+                }
+
                 const providerName = options.provider.toLowerCase();
 
                 // Validate provider is supported
