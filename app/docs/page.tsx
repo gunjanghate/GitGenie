@@ -120,6 +120,7 @@ function SidebarNav({ activeSection, onItemClick }: { activeSection: string; onI
                          const element = document.getElementById(item.id);
                          if (element) {
                              element.scrollIntoView({ behavior: 'smooth' });
+                             window.history.replaceState(null, "", `#${item.id}`);
                          }
                          onItemClick?.(item.id);
                     }}
@@ -286,6 +287,7 @@ export default function DocsPage() {
                                                     const element = document.getElementById(id);
                                                     if (element) {
                                                         element.scrollIntoView({ behavior: "smooth" });
+                                                        window.history.replaceState(null, "", href);
                                                     }
                                                 }}
                                                 {...props}
