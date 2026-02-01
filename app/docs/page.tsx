@@ -94,10 +94,19 @@ function SafeParagraph({ children }: { children: React.ReactNode }) {
     return containsBlock ? <div className={base}>{children}</div> : <p className={base}>{children}</p>
 }
 
-// Helper to sanitize IDs consistently
-const createId = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+// Helper to extract plain text from React nodes recursively
+const textFromNode = (node: React.ReactNode): string => {
+    if (typeof node === "string" || typeof node === "number") return String(node)
+    if (Array.isArray(node)) return node.map(textFromNode).join("")
+    if (isValidElement(node)) return textFromNode(node.props.children)
+    return ""
+}
 
-function SidebarNav({ activeSection, onItemClick }: { activeSection: string; onItemClick?: () => void }) {
+// Helper to sanitize IDs consistently
+const createId = (node: React.ReactNode) =>
+    textFromNode(node).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+
+function SidebarNav({ activeSection, onItemClick }: { activeSection: string; onItemClick?: (id: string) => void }) {
     return (
         <nav className="space-y-1 border-r-amber-600/50 border-r rounded-tr-2xl rounded-br-2xl py-10">
             <h2 className="mb-3 text-sm font-semibold text-white">On This Page</h2>
@@ -112,7 +121,7 @@ function SidebarNav({ activeSection, onItemClick }: { activeSection: string; onI
                          if (element) {
                              element.scrollIntoView({ behavior: 'smooth' });
                          }
-                         onItemClick?.();
+                         onItemClick?.(item.id);
                     }}
                     className={cn(
                         "block py-1.5 px-3 text-sm transition-colors rounded-md cursor-pointer", 
@@ -142,7 +151,6 @@ function Sidebar({
             {/* Mobile TOC Drawer */}
             <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild>
-                    {/* FIX: Moved from right-6 to left-6 to prevent overlap with Back-to-Top button */}
                     <Button
                         variant="outline"
                         size="icon"
@@ -240,11 +248,11 @@ export default function DocsPage() {
                             components={{
                                 code: CodeBlock,
                                 h1: ({ children }) => {
-                                    const id = createId(String(children));
+                                    const id = createId(children);
                                     return <h1 id={id} className="mb-4 text-3xl md:text-4xl font-bold text-white">{children}</h1>
                                 },
                                 h2: ({ children }) => {
-                                    const id = createId(String(children));
+                                    const id = createId(children);
                                     return (
                                         <h2 
                                             id={id} 
@@ -255,7 +263,7 @@ export default function DocsPage() {
                                     )
                                 },
                                 h3: ({ children }) => {
-                                    const id = createId(String(children));
+                                    const id = createId(children);
                                     return <h3 id={id} className="mt-8 mb-3 text-xl font-semibold text-white/95 scroll-mt-24">{children}</h3>
                                 },
                                 h4: ({ children }) => {
@@ -265,7 +273,6 @@ export default function DocsPage() {
                                 ul: ({ children }) => <ul className="mb-4 ml-5 list-disc space-y-2 text-zinc-300/90 leading-7">{children}</ul>,
                                 ol: ({ children }) => <ol className="mb-4 ml-5 list-decimal space-y-2 text-zinc-300/90 leading-7">{children}</ol>,
                                 li: ({ children }) => <li className="pl-1">{children}</li>,
-                                // FIX: Handle links differently based on if they are internal (#) or external
                                 a: ({ href, children, ...props }: any) => {
                                     const isInternal = href?.startsWith("#");
                                     if (isInternal) {

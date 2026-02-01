@@ -17,8 +17,8 @@ export default function Usage() {
     { flag: "--osc", desc: "Branch name for open source", example: 'gg "improve docs" --osc --type docs' },
   ]
 
-  // Responsive Check: true if screen is Desktop (lg >= 1024px)
-  const [isDesktop, setIsDesktop] = useState(true)
+  // Responsive Check: Initialize as null to avoid hydration mismatch, then determine on mount
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null)
 
   useEffect(() => {
     const checkDesktop = () => {
@@ -48,10 +48,11 @@ export default function Usage() {
       </div>
 
       {/* RESPONSIVE LOGIC:
+          - Wait until mounted (isDesktop !== null) to prevent SSR mismatch
           - Desktop (isDesktop = true): Renders type="multiple" (Grid Layout)
           - Mobile (isDesktop = false): Renders type="single" (Stack Layout)
       */}
-      {isDesktop ? (
+      {isDesktop === null ? null : isDesktop ? (
         // DESKTOP: Multiple cards can be open, 4-column grid
         <Accordion 
           type="multiple" 
