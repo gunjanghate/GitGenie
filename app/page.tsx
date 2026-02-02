@@ -7,6 +7,8 @@ import Community from "@/components/community"
 import SiteFooter from "@/components/site-footer"
 import DemoVideoSection from "@/components/demo-video"
 import FAQ from "@/components/faq"
+import HeroNav from "@/components/hero-nav"
+
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://gitgenie.vercel.app"),
@@ -35,10 +37,17 @@ export const metadata: Metadata = {
   },
 }
 
+
 export default function Page() {
   return (
     <main className="relative min-h-screen bg-black text-white overflow-x-hidden">
-      <Hero />
+      <div className="relative">
+        <Hero />
+        {/* Navigation bar positioned at the top */}
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
+          <HeroNav />
+        </div>
+      </div>
       <Features />
       <HowItWorks />
       <DemoVideoSection />
@@ -46,7 +55,6 @@ export default function Page() {
       <FAQ/>
       <Community />
       <SiteFooter />
-      
     </main>
   )
 }
