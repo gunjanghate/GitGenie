@@ -16,18 +16,25 @@ import { Star, Package, Sparkles } from "lucide-react"
 
 // TOC ITEMS
 const TOC_ITEMS = [
+    { id: "contents", label: "Contents" },
     { id: "quick-start", label: "Quick Start" },
     { id: "install-verify", label: "Install & Verify" },
     { id: "configure-gemini-api-key", label: "Configure API Key" },
     { id: "command-syntax", label: "Command Syntax" },
     { id: "command-palette-interactive", label: "Command Palette" },
     { id: "how-it-works-mapped-to-source", label: "How it Works" },
-    { id: "open-source-contributions-osc", label: "Open Source (--osc)" },
     { id: "common-workflows", label: "Common Workflows" },
+    { id: "branch-merge-behavior", label: "Branch & Merge Behavior" },
+    { id: "ai-commit-generation", label: "AI Commit Generation" },
+    { id: "ai-branch-pr-generation", label: "AI Branch & PR Generation" },
+    { id: "open-source-contributions-osc", label: "Open Source (--osc)" },
     { id: "examples", label: "Examples" },
     { id: "troubleshooting", label: "Troubleshooting" },
     { id: "security-privacy", label: "Security & Privacy" },
+    { id: "contributing-roadmap", label: "Contributing / Roadmap" },
     { id: "faq", label: "FAQ" },
+    { id: "publish-maintainers", label: "Publish (Maintainers)" },
+    { id: "support", label: "Support" },
 ]
 
 function CopyInline({ text }: { text: string }) {
