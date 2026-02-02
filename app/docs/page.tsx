@@ -9,79 +9,32 @@ import AmbientBackground from "@/components/parts/ambient-background"
 import { DOCS_MD } from "@/components/docs-modal"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Star, Package, Sparkles } from "lucide-react"
 
-// Extract plain text from React nodes (handles nested elements like code)
-function getNodeText(node: React.ReactNode): string {
-    if (typeof node === "string" || typeof node === "number") return String(node)
-    if (Array.isArray(node)) return node.map(getNodeText).join("")
-    if (isValidElement(node)) return getNodeText((node.props as any)?.children)
-    return ""
-}
-
-// Shared slug generator so headings and sidebar use identical IDs
-function slugifyText(text: string): string {
-    return text
-        .toLowerCase()
-        .replace(/[\u2013\u2014]/g, "-") // en/em dash to hyphen
-        .replace(/&/g, "and")
-        .replace(/[`~!@#$%^*()+=\[\]{}|\\;:'",.<>/?]/g, "")
-        .replace(/\s+|\//g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-|-$/g, "")
-}
-
-function slugifyHeading(node: React.ReactNode): string {
-    const text = getNodeText(node)
-    return slugifyText(text)
-}
-
-function DocsCTAs() {
-    return (
-        <div className="flex w-full min-w-1/2 flex-col gap-3 sm:flex-row sm:items-center">
-            <Link
-                target="_blank"
-                href="https://github.com/gunjanghate/GitGenie"
-                className="group inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black transition-transform duration-200 hover:scale-[1.03] hover:shadow-[0_0_0_3px_rgba(245,158,11,0.30)]"
-                aria-label="Star on GitHub"
-            >
-                <Star className="h-4 w-4 text-amber-500" aria-hidden="true" />
-                <span>Star on GitHub</span>
-            </Link>
-            <Link
-                target="_blank"
-                href="https://www.npmjs.com/package/@gunjanghate/git-genie"
-                className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:scale-[1.03] hover:border-amber-400/40 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.18)]"
-                aria-label="Install via npm"
-            >
-                <Package className="h-4 w-4 text-amber-400" aria-hidden="true" />
-                <span>Install via npm</span>
-            </Link>
-        </div>
-    )
-}
-
-// Table of Contents sections (labels from Contents in DOCS_MD)
+// TOC ITEMS
 const TOC_ITEMS = [
-    { label: "Quick start", target: "Quick start" },
-    { label: "Install & verify", target: "Install & verify" },
-    { label: "Configure Gemini API key", target: "Configure Gemini API key" },
-    { label: "Command syntax & options", target: "Command syntax" },
-    { label: "Command palette (interactive)", target: "Command palette (interactive)" },
-    { label: "How it works (mapped to source)", target: "How it works (step mapping)" },
-    { label: "Common workflows", target: "Common workflows" },
-    { label: "Branch & merge behavior", target: "Branch & merge behavior" },
-    { label: "AI commit generation details", target: "AI commit generation" },
-    { label: "AI branch & PR generation", target: "AI branch & PR generation" },
-    { label: "Open Source Contributions (--osc)", target: "Open Source Contributions (`--osc`)" },
-    { label: "Examples", target: "Examples" },
-    { label: "Troubleshooting", target: "Troubleshooting" },
-    { label: "Security & privacy", target: "Security & privacy" },
-    { label: "Contributing / roadmap", target: "Contributing / roadmap" },
-    { label: "FAQ / Support", target: "FAQ" },
+    { id: "contents", label: "Contents" },
+    { id: "quick-start", label: "Quick Start" },
+    { id: "install-verify", label: "Install & Verify" },
+    { id: "configure-gemini-api-key", label: "Configure API Key" },
+    { id: "command-syntax", label: "Command Syntax" },
+    { id: "command-palette-interactive", label: "Command Palette" },
+    { id: "how-it-works-mapped-to-source", label: "How it Works" },
+    { id: "common-workflows", label: "Common Workflows" },
+    { id: "branch-merge-behavior", label: "Branch & Merge Behavior" },
+    { id: "ai-commit-generation", label: "AI Commit Generation" },
+    { id: "ai-branch-pr-generation", label: "AI Branch & PR Generation" },
+    { id: "open-source-contributions-osc", label: "Open Source (--osc)" },
+    { id: "examples", label: "Examples" },
+    { id: "troubleshooting", label: "Troubleshooting" },
+    { id: "security-privacy", label: "Security & Privacy" },
+    { id: "contributing-roadmap", label: "Contributing / Roadmap" },
+    { id: "faq", label: "FAQ" },
+    { id: "publish-maintainers", label: "Publish (Maintainers)" },
+    { id: "support", label: "Support" },
 ]
 
 function CopyInline({ text }: { text: string }) {
@@ -97,7 +50,7 @@ function CopyInline({ text }: { text: string }) {
         <button
             type="button"
             onClick={onCopy}
-            className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/90 transition hover:bg-amber-700/10"
+            className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/90 transition hover:bg-white/10 cursor-pointer"
             aria-label="Copy code"
         >
             <Copy size={12} className="opacity-80" />
@@ -119,7 +72,7 @@ function CodeBlock(props: any) {
 
     const lang = languageClass.replace("language-", "")
     return (
-        <div className="group relative my-4 rounded-lg border border-white/10 hover:border-amber-600/50 transition-all duration-300 bg-black/40 overflow-hidden">
+        <div className="group relative my-4 rounded-lg border border-white/10 bg-black/40 overflow-hidden max-w-full">
             <div className="absolute right-2 top-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
                 <CopyInline text={code} />
             </div>
@@ -148,34 +101,46 @@ function SafeParagraph({ children }: { children: React.ReactNode }) {
     return containsBlock ? <div className={base}>{children}</div> : <p className={base}>{children}</p>
 }
 
-function SidebarNav({
-    activeSection,
-    onItemClick,
-}: {
-    activeSection: string
-    onItemClick?: (id: string) => void
-}) {
+// Helper to extract plain text from React nodes recursively
+const textFromNode = (node: React.ReactNode): string => {
+    if (typeof node === "string" || typeof node === "number") return String(node)
+    if (Array.isArray(node)) return node.map(textFromNode).join("")
+    if (isValidElement(node)) return textFromNode(node.props.children)
+    return ""
+}
+
+// Helper to sanitize IDs consistently
+const createId = (node: React.ReactNode) =>
+    textFromNode(node).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+
+function SidebarNav({ activeSection, onItemClick }: { activeSection: string; onItemClick?: (id: string) => void }) {
     return (
         <nav className="space-y-1 border-r-amber-600/50 border-r rounded-tr-2xl rounded-br-2xl py-10">
             <h2 className="mb-3 text-sm font-semibold text-white">On This Page</h2>
-            {TOC_ITEMS.map((item) => {
-                const id = slugifyText(item.target)
-                return (
-                    <a
-                        key={item.label}
-                        href={`#${id}`}
-                        onClick={() => onItemClick?.(id)}
-                        className={cn(
-                            "block py-1.5 px-3 text-sm transition-colors rounded-l-md",
-                            activeSection === id
-                                ? "bg-amber-600/50 text-white font-medium"
-                                : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
-                        )}
-                    >
-                        {item.label}
-                    </a>
-                )
-            })}
+            {TOC_ITEMS.map((item) => (
+                <a
+                    key={item.id}
+                    href={`#${item.id}`}
+                    onClick={(e) => {
+                         // Prevent default anchor jump, use smooth scroll
+                         e.preventDefault();
+                         const element = document.getElementById(item.id);
+                         if (element) {
+                             element.scrollIntoView({ behavior: 'smooth' });
+                             window.history.replaceState(null, "", `#${item.id}`);
+                         }
+                         onItemClick?.(item.id);
+                    }}
+                    className={cn(
+                        "block py-1.5 px-3 text-sm transition-colors rounded-md cursor-pointer", 
+                        activeSection === item.id
+                            ? "text-amber-400 bg-amber-400/10 font-medium"
+                            : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+                    )}
+                >
+                    {item.label}
+                </a>
+            ))}
         </nav>
     )
 }
@@ -197,13 +162,21 @@ function Sidebar({
                     <Button
                         variant="outline"
                         size="icon"
-                        className="lg:hidden fixed bottom-6 right-6 z-50 h-12 w-12 rounded-full border-white/10 bg-black/60 backdrop-blur-sm hover:bg-black/80"
+                        className="lg:hidden fixed bottom-6 left-6 z-50 h-12 w-12 rounded-full border-white/10 bg-black/60 backdrop-blur-sm hover:bg-black/80 cursor-pointer"
                         aria-label="Open table of contents"
                     >
                         <Menu className="h-5 w-5" />
                     </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="w-64 bg-zinc-900/95 backdrop-blur-sm border-white/10">
+                    {/* Add this block to fix the accessibility error */}
+                    <SheetHeader className="sr-only">
+                        <SheetTitle>Documentation Navigation</SheetTitle>
+                        <SheetDescription>
+                            Select a section to jump to its content.
+                        </SheetDescription>
+                    </SheetHeader>
+                    
                     <div className="">
                         <SidebarNav
                             activeSection={activeSection}
@@ -216,7 +189,7 @@ function Sidebar({
                 </SheetContent>
             </Sheet>
 
-            {/* Desktop Sidebar */}
+            {/* Desktop Sidebar remains unchanged */}
             <aside className="hidden lg:block w-64 shrink-0">
                 <div className="sticky top-6 h-[calc(100vh-3rem)]">
                     <SidebarNav activeSection={activeSection} onItemClick={onSectionSelect} />
@@ -245,7 +218,6 @@ export default function DocsPage() {
             { rootMargin: "-100px 0px -80% 0px" }
         )
 
-        // Observe all h2 elements (main sections)
         const headings = document.querySelectorAll("article h2[id]")
         headings.forEach((heading) => observerRef.current?.observe(heading))
 
@@ -257,62 +229,58 @@ export default function DocsPage() {
     return (
         <main className="relative min-h-screen text-white bg-linear-to-b from-zinc-950 via-zinc-900 to-zinc-950">
             {/* Ambient background - subtle */}
-            <div className="absolute inset-0 opacity-30">
+            <div className="absolute inset-0 opacity-30 pointer-events-none">
                 <AmbientBackground />
             </div>
 
             {/* Top header - compact */}
-            <header className="relative z-10 border-b  border-amber-600/50 bg-black/20 backdrop-blur-sm">
-                <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                        <h1 className="text-2xl md:text-3xl font-bold min-w-1/2">
-                            <button
-                                type="button"
-                                className="text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:ring-offset-2 focus:ring-offset-zinc-950 rounded"
-                                onClick={() => router.push("/")}
-                                aria-label="Navigate to home page"
-                            >
-                                Git Genie
-                            </button>
-                            <span className="text-zinc-400 font-normal ml-2">/ Documentation</span>
-                        </h1>
-                        <DocsCTAs />
-                    </div>
+            <header className="relative z-10 border-b border-white/5 bg-black/20 backdrop-blur-sm">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+                    <h1 className="text-2xl md:text-3xl font-bold flex items-center">
+                        <button
+                            type="button"
+                            className="text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:ring-offset-2 focus:ring-offset-zinc-950 rounded cursor-pointer"
+                            onClick={() => router.push("/")}
+                            aria-label="Navigate to home page"
+                        >
+                            Git Genie
+                        </button>
+                        <span className="text-zinc-400 font-normal ml-2">/ Documentation</span>
+                    </h1>
                 </div>
 
             </header>
 
             {/* Main content with sidebar */}
             <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-                <div className="flex gap-8 lg:gap-12">
+                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
                     {/* Sidebar navigation */}
                     <Sidebar activeSection={activeSection} onSectionSelect={setActiveSection} />
 
-                    {/* Main article content */}
-                    <article className="flex-1 min-w-0 max-w-3xl markdown text-zinc-200 pb-16">
-
+                    {/* Main article content - Responsive widths */}
+                    <article className="flex-1 min-w-0 w-full max-w-full lg:max-w-3xl markdown text-zinc-200 pb-16">
                         <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={{
                                 code: CodeBlock,
                                 h1: ({ children }) => {
-                                    const id = slugifyHeading(children)
+                                    const id = createId(children);
                                     return <h1 id={id} className="mb-4 text-3xl md:text-4xl font-bold text-white">{children}</h1>
                                 },
                                 h2: ({ children }) => {
-                                    const id = slugifyHeading(children)
+                                    const id = createId(children);
                                     return (
-                                        <h2
-                                            id={id}
-                                            className="mt-12 mb-4 pb-2 text-2xl font-semibold text-white border-b border-white/10 scroll-mt-20"
+                                        <h2 
+                                            id={id} 
+                                            className="mt-12 mb-4 pb-2 text-2xl font-semibold text-white border-b border-white/10 scroll-mt-24"
                                         >
                                             {children}
                                         </h2>
                                     )
                                 },
                                 h3: ({ children }) => {
-                                    const id = slugifyHeading(children)
-                                    return <h3 id={id} className="mt-8 mb-3 text-xl font-semibold text-white/95 scroll-mt-20">{children}</h3>
+                                    const id = createId(children);
+                                    return <h3 id={id} className="mt-8 mb-3 text-xl font-semibold text-white/95 scroll-mt-24">{children}</h3>
                                 },
                                 h4: ({ children }) => {
                                     return <h4 className="mt-6 mb-2 text-lg font-semibold text-white/90">{children}</h4>
@@ -321,14 +289,40 @@ export default function DocsPage() {
                                 ul: ({ children }) => <ul className="mb-4 ml-5 list-disc space-y-2 text-zinc-300/90 leading-7">{children}</ul>,
                                 ol: ({ children }) => <ol className="mb-4 ml-5 list-decimal space-y-2 text-zinc-300/90 leading-7">{children}</ol>,
                                 li: ({ children }) => <li className="pl-1">{children}</li>,
-                                a: (props) => (
-                                    <a
-                                        {...props}
-                                        className="text-amber-400 hover:text-amber-300 underline decoration-amber-400/30 hover:decoration-amber-300 transition-colors"
-                                        target="_blank"
-                                        rel="noreferrer"
-                                    />
-                                ),
+                                a: ({ href, children, ...props }: any) => {
+                                    const isInternal = href?.startsWith("#");
+                                    if (isInternal) {
+                                        return (
+                                            <a 
+                                                href={href}
+                                                className="text-amber-400 hover:text-amber-300 hover:underline cursor-pointer"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    const id = href.replace("#", "");
+                                                    const element = document.getElementById(id);
+                                                    if (element) {
+                                                        element.scrollIntoView({ behavior: "smooth" });
+                                                        window.history.replaceState(null, "", href);
+                                                    }
+                                                }}
+                                                {...props}
+                                            >
+                                                {children}
+                                            </a>
+                                        )
+                                    }
+                                    return (
+                                        <a 
+                                            href={href} 
+                                            className="text-amber-400 hover:text-amber-300 underline decoration-amber-400/30 hover:decoration-amber-300 transition-colors cursor-pointer" 
+                                            target="_blank" 
+                                            rel="noreferrer" 
+                                            {...props}
+                                        >
+                                            {children}
+                                        </a>
+                                    )
+                                },
                                 blockquote: ({ children }) => (
                                     <blockquote className="my-4 border-l-4 border-amber-400/40 bg-amber-400/5 pl-4 py-2 text-zinc-300/90 rounded-r">
                                         {children}
@@ -336,7 +330,7 @@ export default function DocsPage() {
                                 ),
                                 hr: () => <hr className="my-8 border-white/10" />,
                                 table: ({ children }) => (
-                                    <div className="my-4 overflow-x-auto">
+                                    <div className="my-4 overflow-x-auto w-full">
                                         <table className="w-full border-collapse text-sm">{children}</table>
                                     </div>
                                 ),
