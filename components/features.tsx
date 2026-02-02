@@ -25,7 +25,7 @@ export default function Features() {
   ]
 
   return (
-    <section aria-labelledby="features-title" className="relative mx-auto lg:mx-32 max-w-6xl px-6 py-20 sm:py-24 ">
+    <section id="features" aria-labelledby="features-title" className="relative mx-auto lg:mx-32 max-w-6xl px-6 py-20 sm:py-24 ">
       <AmbientBackground />
       <div className="mb-10 relative z-10">
 
