@@ -296,8 +296,6 @@ npm publish --access public
 - Issues: https://github.com/gunjanghate/GitGenie/issues
 - NPM: https://www.npmjs.com/package/@gunjanghate/git-genie
 - X / Twitter: @gunjanghate11
-
-_End of docs_
 `
 export const DOCS_MD = DOCS_GETTING_STARTED
 
