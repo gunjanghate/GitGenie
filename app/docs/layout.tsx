@@ -60,7 +60,7 @@ function CTAFooter() {
         href="https://www.npmjs.com/package/@gunjanghate/git-genie"
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-2 w-full rounded-md bg-red-500/10 border border-red-500/30 px-3 py-2.5 text-sm font-medium text-red-400 transition-all hover:bg-red-500/20 hover:border-red-500/50 cursor-pointer group"
+        className="flex items-center gap-2 w-full rounded-md bg-white/10 border border-white/30 px-3 py-2.5 text-sm font-medium text-white transition-all hover:bg-white/20 hover:border-white/50 cursor-pointer group"
       >
         <Package className="h-4 w-4 group-hover:rotate-12 transition-transform" />
         <span>npm install</span>
@@ -90,7 +90,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
               href={item.href}
               onClick={onNavigate}
               className={cn(
-                "block rounded-md px-3 py-2 text-sm transition-colors cursor-pointer",
+                "block rounded-l-md px-3 py-2 text-sm transition-colors cursor-pointer",
                 active
                   ? "bg-amber-400/10 text-amber-400 font-medium"
                   : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
@@ -160,7 +160,7 @@ export default function DocsLayout({
   const router = useRouter()
 
   return (
-    <main className="relative min-h-screen text-white bg-linear-to-b from-zinc-950 via-zinc-900 to-zinc-950">
+    <main className="relative min-h-screen text-white bg-black">
       {/* Ambient background */}
       <div className="absolute inset-0 opacity-30 pointer-events-none">
         <AmbientBackground />

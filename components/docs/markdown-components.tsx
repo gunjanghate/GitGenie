@@ -53,12 +53,12 @@ export function CodeBlock(props: any) {
 
   // Multiline code block
   return (
-    <div className="group relative my-4 rounded-lg border border-white/10 bg-black/40 overflow-hidden">
+    <div className="group relative my-3 rounded-lg border border-amber-600/50 bg-black/40 overflow-hidden">
       <div className="absolute right-2 top-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
         <CopyInline text={raw} />
       </div>
 
-      <pre className="overflow-x-auto p-4 text-[0.875rem] leading-relaxed">
+      <pre className="overflow-x-auto p-4 text-[0.875rem] leading-relaxed ">
         <code className={className}>{raw}</code>
       </pre>
     </div>
