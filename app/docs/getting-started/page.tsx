@@ -3,7 +3,7 @@
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { DOCS_GETTING_STARTED } from "@/components/docs-modal"
-import { CodeBlock} from "@/components/docs/markdown-components"
+import { CodeBlock, BlockQuote} from "@/components/docs/markdown-components"
 
 export default function GettingStartedPage() {
   return (
@@ -12,6 +12,7 @@ export default function GettingStartedPage() {
         remarkPlugins={[remarkGfm]}
         components={{
           code: CodeBlock,
+          blockquote: BlockQuote,
         }}
       >
         {DOCS_GETTING_STARTED}

@@ -5,7 +5,12 @@ import type React from "react"
 import Link from "next/link"
 
 // UPDATED: 'Contents' list is clickable Markdown links [Title](#id)
-export const DOCS_GETTING_STARTED = `
+export const DOCS_GETTING_STARTED = `# Git Genie — Usage Guide 
+
+> **Essence:** \`gg\` automates staging, Conventional Commit creation (Gemini), branch flow, optional merge to main, and push. Now includes secure API key storage and AI-powered branch/PR naming.
+
+---
+
 ## Quick start
 Global install:
 \`\`\`bash

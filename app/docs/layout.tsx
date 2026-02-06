@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
-import { Menu } from "lucide-react"
+import { Menu, Star, GitPullRequest, Package } from "lucide-react"
 
 import AmbientBackground from "@/components/parts/ambient-background"
 import { cn } from "@/lib/utils"
@@ -29,36 +29,82 @@ const DOC_GROUPS = [
   { label: "Security & Community", href: "/docs/security" },
 ]
 
+/* ===== CTA Footer Buttons ===== */
+function CTAFooter() {
+  return (
+    <div className="mt-auto pt-6 px-3 pb-6 space-y-3 border-t border-amber-600/30">
+      {/* Star the Repo */}
+      <a
+        href="https://github.com/gunjanghate/GitGenie"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 w-full rounded-md bg-amber-500/10 border border-amber-500/30 px-3 py-2.5 text-sm font-medium text-amber-400 transition-all hover:bg-amber-500/20 hover:border-amber-500/50 cursor-pointer group"
+      >
+        <Star className="h-4 w-4 group-hover:fill-amber-400 transition-all" />
+        <span>Star the Repo</span>
+      </a>
+
+      {/* Contribute */}
+      <a
+        href="https://github.com/gunjanghate/GitGenie/issues"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 w-full rounded-md bg-blue-500/10 border border-blue-500/30 px-3 py-2.5 text-sm font-medium text-blue-400 transition-all hover:bg-blue-500/20 hover:border-blue-500/50 cursor-pointer group"
+      >
+        <GitPullRequest className="h-4 w-4 group-hover:scale-110 transition-transform" />
+        <span>Contribute</span>
+      </a>
+
+      {/* NPM Package */}
+      <a
+        href="https://www.npmjs.com/package/@gunjanghate/git-genie"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2 w-full rounded-md bg-red-500/10 border border-red-500/30 px-3 py-2.5 text-sm font-medium text-red-400 transition-all hover:bg-red-500/20 hover:border-red-500/50 cursor-pointer group"
+      >
+        <Package className="h-4 w-4 group-hover:rotate-12 transition-transform" />
+        <span>npm install</span>
+      </a>
+    </div>
+  )
+}
+
 /* ===== SidebarNav ===== */
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
 
   return (
-    <nav className="space-y-1 border-r border-amber-600/50 rounded-tr-2xl rounded-br-2xl py-10">
-      <h2 className="mb-3 px-3 text-sm font-semibold text-white">
-        Documentation
-      </h2>
+    <div className="flex flex-col h-full">
+      {/* Navigation Links */}
+      <nav className="flex-1 space-y-1 py-6">
+        <h2 className="mb-4 px-3 text-sm font-semibold text-white">
+          Documentation
+        </h2>
 
-      {DOC_GROUPS.map((item) => {
-        const active = pathname === item.href
+        {DOC_GROUPS.map((item) => {
+          const active = pathname === item.href
 
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            className={cn(
-              "block rounded-md px-3 py-1.5 text-sm transition-colors cursor-pointer",
-              active
-                ? "bg-amber-400/10 text-amber-400 font-medium"
-                : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
-            )}
-          >
-            {item.label}
-          </Link>
-        )
-      })}
-    </nav>
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onNavigate}
+              className={cn(
+                "block rounded-md px-3 py-2 text-sm transition-colors cursor-pointer",
+                active
+                  ? "bg-amber-400/10 text-amber-400 font-medium"
+                  : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
+              )}
+            >
+              {item.label}
+            </Link>
+          )
+        })}
+      </nav>
+
+      {/* CTA Footer */}
+      <CTAFooter />
+    </div>
   )
 }
 
@@ -81,7 +127,7 @@ function Sidebar() {
           </Button>
         </SheetTrigger>
 
-        <SheetContent side="left" className="w-64 bg-zinc-900/95 backdrop-blur-sm border-white/10">
+        <SheetContent side="left" className="w-64 bg-zinc-900/95 backdrop-blur-sm border-white/10 p-0">
           <SheetHeader className="sr-only">
             <SheetTitle>Docs Navigation</SheetTitle>
             <SheetDescription>
@@ -89,13 +135,15 @@ function Sidebar() {
             </SheetDescription>
           </SheetHeader>
 
-          <SidebarNav onNavigate={() => setOpen(false)} />
+          <div className="h-full border-r border-amber-600/50 rounded-tr-2xl rounded-br-2xl">
+            <SidebarNav onNavigate={() => setOpen(false)} />
+          </div>
         </SheetContent>
       </Sheet>
 
       {/* Desktop sidebar */}
       <aside className="hidden lg:block w-64 shrink-0">
-        <div className="sticky top-6 h-[calc(100vh-3rem)]">
+        <div className="sticky top-6 h-[calc(100vh-3rem)] border-r border-amber-600/50 rounded-tr-2xl rounded-br-2xl">
           <SidebarNav />
         </div>
       </aside>
