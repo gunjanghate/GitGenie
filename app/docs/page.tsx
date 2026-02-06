@@ -113,91 +113,6 @@ const textFromNode = (node: React.ReactNode): string => {
 const createId = (node: React.ReactNode) =>
     textFromNode(node).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
 
-function SidebarNav({ activeSection, onItemClick }: { activeSection: string; onItemClick?: (id: string) => void }) {
-    return (
-        <nav className="space-y-1 border-r-amber-600/50 border-r rounded-tr-2xl rounded-br-2xl py-10">
-            <h2 className="mb-3 text-sm font-semibold text-white">On This Page</h2>
-            {TOC_ITEMS.map((item) => (
-                <a
-                    key={item.id}
-                    href={`#${item.id}`}
-                    onClick={(e) => {
-                         // Prevent default anchor jump, use smooth scroll
-                         e.preventDefault();
-                         const element = document.getElementById(item.id);
-                         if (element) {
-                             element.scrollIntoView({ behavior: 'smooth' });
-                             window.history.replaceState(null, "", `#${item.id}`);
-                         }
-                         onItemClick?.(item.id);
-                    }}
-                    className={cn(
-                        "block py-1.5 px-3 text-sm transition-colors rounded-md cursor-pointer", 
-                        activeSection === item.id
-                            ? "text-amber-400 bg-amber-400/10 font-medium"
-                            : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
-                    )}
-                >
-                    {item.label}
-                </a>
-            ))}
-        </nav>
-    )
-}
-
-function Sidebar({
-    activeSection,
-    onSectionSelect,
-}: {
-    activeSection: string
-    onSectionSelect: (id: string) => void
-}) {
-    const [open, setOpen] = useState(false)
-
-    return (
-        <>
-            {/* Mobile TOC Drawer */}
-            <Sheet open={open} onOpenChange={setOpen}>
-                <SheetTrigger asChild>
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="lg:hidden fixed bottom-6 left-6 z-50 h-12 w-12 rounded-full border-white/10 bg-black/60 backdrop-blur-sm hover:bg-black/80 cursor-pointer"
-                        aria-label="Open table of contents"
-                    >
-                        <Menu className="h-5 w-5" />
-                    </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-64 bg-zinc-900/95 backdrop-blur-sm border-white/10">
-                    {/* Add this block to fix the accessibility error */}
-                    <SheetHeader className="sr-only">
-                        <SheetTitle>Documentation Navigation</SheetTitle>
-                        <SheetDescription>
-                            Select a section to jump to its content.
-                        </SheetDescription>
-                    </SheetHeader>
-                    
-                    <div className="">
-                        <SidebarNav
-                            activeSection={activeSection}
-                            onItemClick={(id) => {
-                                onSectionSelect(id)
-                                setOpen(false)
-                            }}
-                        />
-                    </div>
-                </SheetContent>
-            </Sheet>
-
-            {/* Desktop Sidebar remains unchanged */}
-            <aside className="hidden lg:block w-64 shrink-0">
-                <div className="sticky top-6 h-[calc(100vh-3rem)]">
-                    <SidebarNav activeSection={activeSection} onItemClick={onSectionSelect} />
-                </div>
-            </aside>
-        </>
-    )
-}
 
 export default function DocsPage() {
     const router = useRouter()
@@ -228,12 +143,6 @@ export default function DocsPage() {
     
     return (
         <>
-            {/* Main content with sidebar */}
-            <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-                <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
-                    {/* Sidebar navigation */}
-                    <Sidebar activeSection={activeSection} onSectionSelect={setActiveSection} />
-
                     {/* Main article content - Responsive widths */}
                     <article className="flex-1 min-w-0 w-full max-w-full lg:max-w-3xl markdown text-zinc-200 pb-16">
                         <ReactMarkdown
@@ -323,8 +232,7 @@ export default function DocsPage() {
                         </ReactMarkdown>
 
                     </article>
-                </div>
-            </div>
+
         </>
         )
 }
