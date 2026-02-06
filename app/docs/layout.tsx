@@ -34,7 +34,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
 
   return (
-    <nav className="space-y-1 border-r border-amber-600/40 py-10">
+    <nav className="space-y-1 border-r border-amber-600/50 rounded-tr-2xl rounded-br-2xl py-10">
       <h2 className="mb-3 px-3 text-sm font-semibold text-white">
         Documentation
       </h2>
@@ -48,7 +48,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "block rounded-md px-3 py-1.5 text-sm transition-colors",
+              "block rounded-md px-3 py-1.5 text-sm transition-colors cursor-pointer",
               active
                 ? "bg-amber-400/10 text-amber-400 font-medium"
                 : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
@@ -74,14 +74,14 @@ function Sidebar() {
           <Button
             variant="outline"
             size="icon"
-            className="lg:hidden fixed bottom-6 left-6 z-50 h-12 w-12 rounded-full border-white/10 bg-black/60 backdrop-blur-sm"
+            className="lg:hidden fixed bottom-6 left-6 z-50 h-12 w-12 rounded-full border-white/10 bg-black/60 backdrop-blur-sm hover:bg-black/80 cursor-pointer"
             aria-label="Open docs navigation"
           >
             <Menu className="h-5 w-5" />
           </Button>
         </SheetTrigger>
 
-        <SheetContent side="left" className="w-64 bg-zinc-900/95 border-white/10">
+        <SheetContent side="left" className="w-64 bg-zinc-900/95 backdrop-blur-sm border-white/10">
           <SheetHeader className="sr-only">
             <SheetTitle>Docs Navigation</SheetTitle>
             <SheetDescription>
@@ -125,7 +125,8 @@ export default function DocsLayout({
             <button
               type="button"
               onClick={() => router.push("/")}
-              className="text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 transition-all"
+              className="text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:ring-offset-2 focus:ring-offset-zinc-950 rounded cursor-pointer"
+              aria-label="Navigate to home page"
             >
               Git Genie
             </button>
@@ -140,7 +141,10 @@ export default function DocsLayout({
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
           <Sidebar />
-          {children}
+          {/* Main content wrapper with responsive width constraints */}
+          <div className="flex-1 min-w-0 w-full max-w-full lg:max-w-3xl pb-16">
+            {children}
+          </div>
         </div>
       </div>
     </main>
