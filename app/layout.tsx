@@ -7,6 +7,7 @@ import "./globals.css"
 import { Plus_Jakarta_Sans } from "next/font/google"
 import SmoothScrollProvider from "@/components/SmoothScrollerProvider"
 import { ScrollToTop } from "@/components/ScrollToTop"
+
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   display: "swap",
@@ -20,13 +21,15 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://gitgenie.vercel.app" },
   openGraph: {
     title: "Git Genie — AI powered Git assistant",
-    description: "Automate staging, commit messages, branch flow, and pushes in one command. Open-source NPM package.",
+    description:
+      "Automate staging, commit messages, branch flow, and pushes in one command. Open-source NPM package.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "Git Genie — AI powered Git assistant",
-    description: "Automate staging, commit messages, branch flow, and pushes in one command.",
+    description:
+      "Automate staging, commit messages, branch flow, and pushes in one command.",
   },
 }
 
@@ -36,18 +39,27 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark scroll-smooth" data-scroll-behavior="smooth">
+    <html
+      lang="en"
+      className="dark" // removed scroll-smooth so Lenis fully controls it
+      data-scroll-behavior="smooth"
+    >
       <head>
-        <style dangerouslySetInnerHTML={{
-          __html: `
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
           ::-webkit-scrollbar { width: 8px; }
           ::-webkit-scrollbar-track { background: #1a1a1a; }
           ::-webkit-scrollbar-thumb { background: #ffda35; border-radius: 10px; }
           ::-webkit-scrollbar-thumb:hover { background: #ee9919; }
           * { scrollbar-width: thin; scrollbar-color: #eb9524 #1a1a1a; }
-        `}} />
+        `,
+          }}
+        />
       </head>
-      <body className={`font-sans ${plusJakarta.variable} ${GeistMono.variable}`}>
+      <body
+        className={`font-sans ${plusJakarta.variable} ${GeistMono.variable}`}
+      >
         <SmoothScrollProvider>
           <Suspense fallback={null}>{children}</Suspense>
           <Analytics />

@@ -1,8 +1,13 @@
 "use client"
 
+import { useEffect, useRef } from "react"
+import gsap from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { AnimateIn } from "./parts/animate-in"
 import { CopyButton } from "./parts/copy-button"
 import AmbientBackground from "./parts/ambient-two"
+
+gsap.registerPlugin(ScrollTrigger)
 
 export default function HowItWorks() {
   const steps = [
@@ -10,7 +15,7 @@ export default function HowItWorks() {
       badge: "Step 1",
       title: "Install",
       cmd: "npm install -g @gunjanghate/git-genie",
-      desc: "Install Globally or Root of the project .",
+      desc: "Install Globally or Root of the project.",
     },
     {
       badge: "Step 2",
@@ -30,12 +35,16 @@ export default function HowItWorks() {
       cmd: 'gg "finish oauth flow" --push-to-main',
       desc: "Either accept push prompts or auto merge to main & push in one go.",
     },
-  ];
+  ]
 
   return (
-    <section id="how-it-works" aria-labelledby="how-title" className="relative mx-auto lg:mx-32 max-w-6xl px-6 py-20 sm:py-24">
+    <section
+      id="how-it-works"
+      aria-labelledby="how-title"
+      className="relative mx-auto lg:mx-32 max-w-6xl px-6 py-20 sm:py-24"
+    >
       <AmbientBackground />
-      <div className="mb-10">
+      <div className="mb-16">
         <AnimateIn>
           <div>
             <h2 id="how-title" className="text-2xl font-semibold sm:text-3xl">
@@ -51,43 +60,116 @@ export default function HowItWorks() {
         </AnimateIn>
       </div>
 
-      {/* Roadmap Timeline */}
-      <div className="relative max-w-4xl mx-auto">
-        {/* Vertical Line - hidden on mobile, visible on sm+ */}
-        <div className="absolute left-5 sm:left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 hidden sm:block" 
-             aria-hidden="true"></div>
-
-        <ol className="space-y-6 sm:space-y-10">
-          {steps.map((s, i) => (
-            <AnimateIn key={s.badge} delay={i * 90}>
-              <li className="relative flex items-start gap-4 sm:gap-6 group">
-                {/* Circle Marker */}
-                <div className="relative z-10 flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full border-2 border-amber-400 bg-zinc-900 text-base sm:text-lg font-bold text-amber-400 shadow-lg shadow-amber-400/20 transition-all duration-300 group-hover:scale-110 group-hover:shadow-amber-400/40">
-                  {i + 1}
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 space-y-2 sm:space-y-3 pb-2 min-w-0">
-                  <div>
-                    <h3 className="text-base sm:text-lg font-semibold text-zinc-100">{s.title}</h3>
-                    <p className="mt-1 text-xs sm:text-sm text-zinc-400">{s.desc}</p>
-                  </div>
-
-                  {/* Command Box */}
-                  <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/60 px-2 sm:px-3 py-2 font-mono text-[10px] sm:text-xs text-zinc-200 transition-all duration-200 group-hover:border-amber-400/40">
-                    <code className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap min-w-0" title={s.cmd}>
-                      {s.cmd}
-                    </code>
-                    <div className="shrink-0">
-                      <CopyButton text={s.cmd} />
-                    </div>
-                  </div>
-                </div>
-              </li>
-            </AnimateIn>
-          ))}
-        </ol>
+      {/* Scroll Stack Container */}
+      <div className="relative space-y-4">
+        {steps.map((s, i) => (
+          <StackCard
+            key={s.badge}
+            step={s}
+            index={i}
+            total={steps.length}
+          />
+        ))}
       </div>
     </section>
+  )
+}
+
+interface StackCardProps {
+  step: {
+    badge: string
+    title: string
+    cmd: string
+    desc: string
+  }
+  index: number
+  total: number
+}
+
+function StackCard({ step, index, total }: StackCardProps) {
+  const cardRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!cardRef.current) return
+
+    const el = cardRef.current
+
+    // Initial state
+    gsap.set(el, {
+      y: 80,
+      scale: 0.9,
+      opacity: 0.4,
+    })
+
+    const trigger = ScrollTrigger.create({
+      trigger: el,
+      start: "top bottom",     
+      end: "top center",       
+      scrub: true,
+      onUpdate: (self) => {
+        const p = self.progress
+
+        const eased = gsap.utils.clamp(0, 1, p)
+
+        gsap.to(el, {
+          y: 80 - eased * 80,               
+          scale: 0.9 + eased * 0.1,        
+          opacity: 0.4 + eased * 0.6,     
+          overwrite: "auto",
+          duration: 0.1,
+          ease: "none",
+        })
+      },
+    })
+
+    return () => {
+      trigger.kill()
+    }
+  }, [])
+
+  const stickyTop = 80 + index * 16
+
+  return (
+    <div
+      ref={cardRef}
+      style={{
+        position: "sticky",
+        top: `${stickyTop}px`,
+        zIndex: total - index,
+      }}
+      className="will-change-transform"
+    >
+      <div className="relative flex items-start gap-4 sm:gap-6 group bg-zinc-900/90 backdrop-blur-sm border border-white/10 rounded-2xl p-5 sm:p-6 hover:border-amber-400/40 transition-all duration-300 shadow-xl hover:shadow-amber-400/10">
+        {/* Circle Marker */}
+        <div className="relative z-10 flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-full border-2 border-amber-400 bg-zinc-900 text-base sm:text-lg font-bold text-amber-400 shadow-lg shadow-amber-400/20 transition-all duration-300 group-hover:scale-110 group-hover:shadow-amber-400/40">
+          {index + 1}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 space-y-2 sm:space-y-3 min-w-0">
+          <div>
+            <h3 className="text-base sm:text-lg font-semibold text-zinc-100">
+              {step.title}
+            </h3>
+            <p className="mt-1 text-xs sm:text-sm text-zinc-400">
+              {step.desc}
+            </p>
+          </div>
+
+          {/* Command Box */}
+          <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/60 px-2 sm:px-3 py-2 font-mono text-[10px] sm:text-xs text-zinc-200 transition-all duration-200 group-hover:border-amber-400/40">
+            <code
+              className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap min-w-0"
+              title={step.cmd}
+            >
+              {step.cmd}
+            </code>
+            <div className="shrink-0">
+              <CopyButton text={step.cmd} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
