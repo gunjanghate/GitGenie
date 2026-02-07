@@ -276,6 +276,83 @@ gg config <api-key>    # Save Gemini API key for persistent use
 - `build`: Build system changes
 - `perf`: Performance improvements
 
+## 🏗 Architecture & Workflow
+
+To help visualize how GitGenie handles your Git operations, the following diagrams outline the internal logic.
+
+### 1. Main Command Flow (`gg <desc>`)
+
+```mermaid
+graph TD
+    Start([gg command]) --> Repo{Repo exists?}
+    Repo -- No --> Init[git init]
+    Repo -- Yes --> BranchOpt{--no-branch?}
+    Init --> BranchOpt
+    
+    BranchOpt -- No --> BranchMenu[Interactive Branch Menu]
+    BranchOpt -- Yes --> Main[Stay on main]
+    
+    BranchMenu --> OSC{--osc flag?}
+    OSC -- Yes --> OSCFlow[Issue-based Branch Name]
+    OSC -- No --> StdFlow[Type/Desc Branch Name]
+    
+    Main --> Stage[Check & Stage Files]
+    StdFlow --> Stage
+    OSCFlow --> Stage
+    
+    Stage --> Genie{--genie flag?}
+    Genie -- Yes --> AI[Gemini AI Analysis]
+    Genie -- No --> Auto[Auto-detect Commit Type]
+    
+    AI --> Commit[Execute Commit]
+    Auto --> Commit
+    
+    Commit --> PushOpt{--push-to-main?}
+    PushOpt -- Yes --> Merge[Merge to main & Push]
+    PushOpt -- No --> Prompt[Optional Push Prompt]
+    
+    Merge --> End([End])
+    Prompt --> End
+```
+
+### 2. Intelligent Commit Splitting (`gg split`)
+```mermaid
+graph TD
+    S[gg split] --> Diff[Analyze Staged Changes]
+    Diff --> Mode{--no-genie?}
+    
+    Mode -- No --> AI[Gemini API: Group by Logic]
+    Mode -- Yes --> Heuristic[Heuristic: Group by File Type]
+    
+    AI --> Review[Interactive Review Menu]
+    Heuristic --> Review
+    
+    Review --> Choice{User Choice}
+    Choice -- Edit --> Edit[Modify Groups/Messages]
+    Choice -- Merge --> Merge[Combine Groups]
+    Choice -- Commit --> Exec[Loop: Atomic Commits]
+    
+    Edit --> Review
+    Merge --> Review
+    Exec --> Done([Clean Working Tree])
+  ```
+
+### 3. Push & Merge Automation
+```mermaid
+graph LR
+    subgraph "Push & Merge Logic"
+    Check[Current Branch?] -->|is main| P[Direct Push]
+    Check -->|is feature| M[Merge into main]
+    M --> P
+    P --> Retry{Success?}
+    Retry -- No --> R[Retry Logic]
+    R --> P
+    Retry -- Yes --> Exit[Success Message]
+    end
+```
+
+> **Note for Contributors:** If you modify the orchestration logic in `index.js` or `split.js`, please ensure these diagrams are updated to reflect those changes.
+
 ## Project Structure
 
 ```
