@@ -7,9 +7,14 @@ import { AnimateIn } from "./parts/animate-in"
 import { CopyButton } from "./parts/copy-button"
 import AmbientBackground from "./parts/ambient-two"
 
-gsap.registerPlugin(ScrollTrigger)
-
 export default function HowItWorks() {
+  // Ensure ScrollTrigger is registered only on the client
+  useEffect(() => {
+    if (!gsap.core.globals().ScrollTrigger) {
+      gsap.registerPlugin(ScrollTrigger)
+    }
+  }, [])
+
   const steps = [
     {
       badge: "Step 1",
@@ -94,36 +99,30 @@ function StackCard({ step, index, total }: StackCardProps) {
 
     const el = cardRef.current
 
-    // Initial state
-    gsap.set(el, {
-      y: 80,
-      scale: 0.9,
-      opacity: 0.4,
-    })
-
-    const trigger = ScrollTrigger.create({
-      trigger: el,
-      start: "top bottom",     
-      end: "top center",       
-      scrub: true,
-      onUpdate: (self) => {
-        const p = self.progress
-
-        const eased = gsap.utils.clamp(0, 1, p)
-
-        gsap.to(el, {
-          y: 80 - eased * 80,               
-          scale: 0.9 + eased * 0.1,        
-          opacity: 0.4 + eased * 0.6,     
-          overwrite: "auto",
-          duration: 0.1,
-          ease: "none",
-        })
+    // Single scrubbed timeline instead of manual onUpdate tweens
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: el,
+        start: "top bottom",
+        end: "top center",
+        scrub: true,
       },
     })
 
+    tl.fromTo(
+      el,
+      { y: 80, scale: 0.9, opacity: 0.4 },
+      {
+        y: 0,
+        scale: 1,
+        opacity: 1,
+        ease: "none",
+      }
+    )
+
     return () => {
-      trigger.kill()
+      tl.scrollTrigger?.kill()
+      tl.kill()
     }
   }, [])
 
