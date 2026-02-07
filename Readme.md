@@ -286,33 +286,49 @@ To help visualize how GitGenie handles your Git operations, the following diagra
 graph TD
     Start([gg command]) --> Repo{Repo exists?}
     Repo -- No --> Init[git init]
-    Repo -- Yes --> BranchOpt{--no-branch?}
-    Init --> BranchOpt
+    Repo -- Yes --> Remote[Remote Origin Setup]
     
-    BranchOpt -- No --> BranchMenu[Interactive Branch Menu]
-    BranchOpt -- Yes --> Main[Stay on main]
+    Init --> Remote
+    Remote --> History{Existing Commits?}
     
-    BranchMenu --> OSC{--osc flag?}
-    OSC -- Yes --> OSCFlow[Issue-based Branch Name]
-    OSC -- No --> StdFlow[Type/Desc Branch Name]
+    History -- No --> MainOnly[Force Main Branch]
+    History -- Yes --> BranchCheck{--no-branch or Detached HEAD?}
     
-    Main --> Stage[Check & Stage Files]
-    StdFlow --> Stage
-    OSCFlow --> Stage
+    MainOnly --> Staging
+    BranchCheck -- Yes --> Staging
+    BranchCheck -- No --> Menu[Interactive Branch Menu]
     
-    Stage --> Genie{--genie flag?}
-    Genie -- Yes --> AI[Gemini AI Analysis]
-    Genie -- No --> Auto[Auto-detect Commit Type]
+    Menu --> BranchType{Choice}
+    BranchType -- Current --> Staging
+    BranchType -- New --> OSCCheck{--osc flag?}
     
-    AI --> Commit[Execute Commit]
+    OSCCheck -- Yes --> OSC[OSC/Issue-branch Flow]
+    OSCCheck -- No --> Std[Std Branch Flow]
+    
+    OSC --> Staging
+    Std --> Staging
+    
+    subgraph Staging_Process [Multi-Step Staging]
+    Staging[Check Cached Diff] --> DiffCheck{Changes Found?}
+    DiffCheck -- No --> StageAll[Prompt & git add .]
+    DiffCheck -- Yes --> Verify[Verify Staging]
+    StageAll --> Verify
+    end
+    
+    Verify --> GenieMode{--genie flag?}
+    GenieMode -- Yes --> AI[Gemini Mode: Skip Auto-detect]
+    GenieMode -- No --> TypeCheck{--type provided?}
+    
+    TypeCheck -- Yes --> Manual[Apply Manual Type]
+    TypeCheck -- No --> Auto[Auto-detect Commit Type]
+    
+    AI --> Commit[git commit]
+    Manual --> Commit
     Auto --> Commit
     
-    Commit --> PushOpt{--push-to-main?}
-    PushOpt -- Yes --> Merge[Merge to main & Push]
-    PushOpt -- No --> Prompt[Optional Push Prompt]
-    
-    Merge --> End([End])
-    Prompt --> End
+    Commit --> PostCommit{--push-to-main?}
+    PostCommit -- Yes --> PushLogic
+    PostCommit -- No --> PushPrompt[Interactive Push Prompt]
 ```
 
 ### 2. Intelligent Commit Splitting (`gg split`)
@@ -339,15 +355,22 @@ graph TD
 
 ### 3. Push & Merge Automation
 ```mermaid
-graph LR
-    subgraph "Push & Merge Logic"
-    Check[Current Branch?] -->|is main| P[Direct Push]
-    Check -->|is feature| M[Merge into main]
-    M --> P
-    P --> Retry{Success?}
-    Retry -- No --> R[Retry Logic]
-    R --> P
-    Retry -- Yes --> Exit[Success Message]
+graph TD
+    PushStart[Start Push Workflow] --> RemoteCheck[ensureRemoteOriginInteractive]
+    RemoteCheck --> BranchLoc{Current Branch?}
+    
+    BranchLoc -- is main --> Direct[git push origin main]
+    
+    BranchLoc -- is feature --> Merge[Merge into main]
+    Merge --> P[git push origin main]
+    P --> Cleanup[Delete Local & Remote Feature Branch]
+    
+    Direct --> Final([Success Message])
+    Cleanup --> Final
+    
+    subgraph Error_State [Process Exit]
+    Direct -- Fail --> Err[Throw Error & Exit]
+    P -- Fail --> Err
     end
 ```
 
