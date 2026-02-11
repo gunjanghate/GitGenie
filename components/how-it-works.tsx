@@ -88,14 +88,12 @@ export default function HowItWorks() {
         const start = segment * (index - 1)
         const end = segment * index
 
-        // ensure new card is on top before movement
         tl.set(
           card,
           { zIndex: topZ + index },
           start - 0.001
         )
 
-        // nudge previous card down slightly first
         tl.to(
           prev,
           {
@@ -105,7 +103,6 @@ export default function HowItWorks() {
           start
         )
 
-        // bring new card from bottom into place
         tl.fromTo(
           card,
           {
@@ -120,7 +117,6 @@ export default function HowItWorks() {
           start
         )
 
-        // then move previous card into stacked position
         tl.to(
           prev,
           {
@@ -172,37 +168,37 @@ export default function HowItWorks() {
       {/* Pinned stack */}
       <div ref={pinRef} className="relative h-[80vh] overflow-visible">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          {/* fixed, consistent height for all cards */}
-          <div className="relative w-full max-w-3xl h-[420px] sm:h-[430px]">
+          {/* narrower card so text wraps and height grows slightly */}
+          <div className="relative w-full max-w-2xl sm:max-w-xl h-[200px] sm:h-[220px]">
             {STEPS.map((step, index) => (
               <div
                 key={step.badge}
                 ref={(el) => {
                   if (el) cardsRef.current[index] = el
                 }}
-                className="absolute inset-0 will-change-transform pointer-events-auto"
+                className="absolute inset-0 will-change-transform pointer-events-auto flex justify-center"
               >
-                <div className="flex h-full flex-col rounded-2xl border border-white/8 bg-zinc-900/95 px-6 py-6 sm:px-7 sm:py-7 shadow-lg shadow-black/40 backdrop-blur-md">
+                <div className="flex h-full w-full max-w-xl flex-col rounded-2xl border border-white/8 bg-zinc-900/95 px-6 py-5 sm:px-7 sm:py-6 shadow-lg shadow-black/40 backdrop-blur-md">
                   <div className="flex items-start gap-4 sm:gap-5">
-                    <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full border border-amber-400/70 bg-zinc-900 text-sm sm:text-base font-semibold text-amber-300">
+                    <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-amber-400/70 bg-zinc-900 text-xs sm:text-sm font-semibold text-amber-300">
                       {index + 1}
                     </div>
 
-                    <div className="flex-1 space-y-2.5 min-w-0">
+                    <div className="flex-1 space-y-2 min-w-0">
                       <div>
-                        <div className="text-[10px] sm:text-xs font-semibold text-amber-400/70 uppercase tracking-[0.18em] mb-1">
+                        <div className="text-[10px] sm:text-xs font-semibold text-amber-400/70 uppercase tracking-[0.18em] mb-0.5">
                           {step.badge}
                         </div>
-                        <h3 className="text-lg sm:text-xl font-semibold text-zinc-50 mb-1">
+                        <h3 className="text-lg sm:text-xl font-semibold text-zinc-50">
                           {step.title}
                         </h3>
-                        <p className="text-[13px] sm:text-[15px] text-zinc-400 leading-relaxed">
+                        <p className="mt-1 text-[13px] sm:text-[15px] text-zinc-400 leading-relaxed">
                           {step.desc}
                         </p>
                       </div>
 
-                      <div className="mt-3 flex items-center gap-2 rounded-lg border border-white/12 bg-black/80 px-3 sm:px-4 py-2.5 font-mono text-[11px] sm:text-sm text-zinc-200">
-                        <code className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                      <div className="mt-2.5 flex items-center gap-2 rounded-lg border border-white/12 bg-black/80 px-3 sm:px-4 py-2.5 font-mono text-[11px] sm:text-sm text-zinc-200">
+                        <code className="flex-1 whitespace-normal break-words">
                           {step.cmd}
                         </code>
                         <CopyButton text={step.cmd} />
@@ -210,7 +206,7 @@ export default function HowItWorks() {
                     </div>
                   </div>
 
-                  <div className="mt-4 h-px w-full bg-zinc-800" />
+                  <div className="mt-3 h-px w-full bg-zinc-800" />
                 </div>
               </div>
             ))}
