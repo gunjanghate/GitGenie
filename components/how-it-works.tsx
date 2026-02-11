@@ -47,12 +47,12 @@ export default function HowItWorks() {
       const cards = cardsRef.current
       if (!cards.length) return
 
-      const stackDistance = 18   // tighter stack
+      const stackDistance = 18
       const baseScale = 0.9
       const scaleStep = 0.03
       const topZ = cards.length * 5
 
-      // initial state
+      // initial positions
       cards.forEach((card, index) => {
         if (index === 0) {
           gsap.set(card, {
@@ -73,7 +73,7 @@ export default function HowItWorks() {
         scrollTrigger: {
           trigger: pinRef.current,
           start: "top top",
-          end: "+=110%",        // slightly shorter for less lag
+          end: "+=110%",
           scrub: true,
           pin: true,
         },
@@ -88,14 +88,14 @@ export default function HowItWorks() {
         const start = segment * (index - 1)
         const end = segment * index
 
-        // ensure new card is on top before moving
+        // ensure new card is on top before movement
         tl.set(
           card,
           { zIndex: topZ + index },
           start - 0.001
         )
 
-        // nudge previous card down a bit first
+        // nudge previous card down slightly first
         tl.to(
           prev,
           {
@@ -105,7 +105,7 @@ export default function HowItWorks() {
           start
         )
 
-        // bring new card from bottom to front
+        // bring new card from bottom into place
         tl.fromTo(
           card,
           {
@@ -120,7 +120,7 @@ export default function HowItWorks() {
           start
         )
 
-        // then move previous card into its stacked position
+        // then move previous card into stacked position
         tl.to(
           prev,
           {
@@ -172,7 +172,8 @@ export default function HowItWorks() {
       {/* Pinned stack */}
       <div ref={pinRef} className="relative h-[80vh] overflow-visible">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="relative w-full max-w-3xl h-[440px] sm:h-[460px]">
+          {/* fixed, consistent height for all cards */}
+          <div className="relative w-full max-w-3xl h-[420px] sm:h-[430px]">
             {STEPS.map((step, index) => (
               <div
                 key={step.badge}
@@ -181,12 +182,13 @@ export default function HowItWorks() {
                 }}
                 className="absolute inset-0 will-change-transform pointer-events-auto"
               >
-                <div className="flex h-full flex-col rounded-2xl border border-white/8 bg-zinc-900/95 px-6 py-5 sm:px-7 sm:py-7 shadow-lg shadow-black/40 backdrop-blur-md">
+                <div className="flex h-full flex-col rounded-2xl border border-white/8 bg-zinc-900/95 px-6 py-6 sm:px-7 sm:py-7 shadow-lg shadow-black/40 backdrop-blur-md">
                   <div className="flex items-start gap-4 sm:gap-5">
-                    <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full border border-amber-400/70 bg-zinc-900 text-base sm:text-lg font-semibold text-amber-300">
+                    <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full border border-amber-400/70 bg-zinc-900 text-sm sm:text-base font-semibold text-amber-300">
                       {index + 1}
                     </div>
-                    <div className="flex-1 space-y-3 min-w-0">
+
+                    <div className="flex-1 space-y-2.5 min-w-0">
                       <div>
                         <div className="text-[10px] sm:text-xs font-semibold text-amber-400/70 uppercase tracking-[0.18em] mb-1">
                           {step.badge}
@@ -194,12 +196,12 @@ export default function HowItWorks() {
                         <h3 className="text-lg sm:text-xl font-semibold text-zinc-50 mb-1">
                           {step.title}
                         </h3>
-                        <p className="text-sm sm:text-[15px] text-zinc-400">
+                        <p className="text-[13px] sm:text-[15px] text-zinc-400 leading-relaxed">
                           {step.desc}
                         </p>
                       </div>
 
-                      <div className="mt-4 flex items-center gap-2 rounded-lg border border-white/12 bg-black/80 px-3 sm:px-4 py-2.5 font-mono text-xs sm:text-sm text-zinc-200">
+                      <div className="mt-3 flex items-center gap-2 rounded-lg border border-white/12 bg-black/80 px-3 sm:px-4 py-2.5 font-mono text-[11px] sm:text-sm text-zinc-200">
                         <code className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
                           {step.cmd}
                         </code>
