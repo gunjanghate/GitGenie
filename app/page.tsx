@@ -8,6 +8,7 @@ import SiteFooter from "@/components/site-footer"
 import DemoVideoSection from "@/components/demo-video"
 import FAQ from "@/components/faq"
 import HeroNav from "@/components/hero-nav"
+import NewAddOns from "@/components/new-add-ons"
 
 
 export const metadata: Metadata = {
@@ -49,6 +50,7 @@ export default function Page() {
         </div>
       </div>
       <Features />
+      <NewAddOns />
       <HowItWorks />
       <DemoVideoSection />
       <Usage />

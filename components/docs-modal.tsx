@@ -4,6 +4,7 @@
 import type React from "react"
 import Link from "next/link"
 
+/* ================= GETTING STARTED ================= */
 // UPDATED: 'Contents' list is clickable Markdown links [Title](#id)
 export const DOCS_GETTING_STARTED = `# Git Genie — Usage Guide 
 
@@ -72,6 +73,7 @@ rm ~/.gitgenie/config.json
 
 Rotating keys: you can always run \`gg config <NEW_GEMINI_API_KEY>\` again to overwrite the existing one (useful when hitting quota limits).
 `
+/* ================= COMMANDS ================= */
 export const DOCS_COMMANDS = `
 ## Command syntax
 \`\`\`bash
@@ -114,6 +116,7 @@ Available actions (subject to evolve):
 
 Tip: See the “Command palette demo” section on the homepage for a visual walkthrough of the UI.
 `
+/* ================= WORKFLOWS ================= */
 export const DOCS_WORKFLOWS = `
 ## How it works (mapped to source)
 1. Parse args via Commander (main action wrapper).
@@ -169,6 +172,7 @@ gg "update docs for API v2" --type docs --osc
 - \`--push-to-main\` triggers: checkout main → pull (non-fatal if remote missing) → merge → push main → optional feature cleanup.
 - Branch cleanup: interactive confirm; deletes local + tries remote (ignored if absent).
 `
+/* ================= AI ================= */
 export const DOCS_AI = `
 ## AI commit generation
 Model: \`gemini-2.0-flash\`.
@@ -188,6 +192,7 @@ Failure path: logs warning + fallback commit string.
 - Follows conventional commit style but optimized for PR context.
 - Generated from branch changes and commit history.
 `
+/* ================= OPEN SOURCE ================= */
 export const DOCS_OPEN_SOURCE = `
 ## Open Source Contributions (\`--osc\`)
 Use the \`--osc\` flag for open source workflows:
@@ -211,7 +216,7 @@ Use the \`--osc\` flag for open source workflows:
 
 This works seamlessly with your existing workflow and helps keep branches organized for open source contributions.
 `
-
+/* ================= REFERENCE ================= */
 export const DOCS_REFERENCE = `
 ## Examples
 Plain conventional commit (no AI):
@@ -257,6 +262,7 @@ gg "improve error handling" --type refactor --osc --genie
 - Files not staged → Check .gitignore rules; manually stage with \`git add <files>\`.
 - Large files causing issues → Use .gitignore or Git LFS for binary/large files.
 `
+/* ================= SECURITY ================= */
 
 export const DOCS_SECURITY = `
 ## Security & privacy
@@ -302,6 +308,69 @@ npm publish --access public
 - NPM: https://www.npmjs.com/package/@gunjanghate/git-genie
 - X / Twitter: @gunjanghate11
 `
+/* ================= NEW ADD ONS ================= */
+
+export const DOCS_NEW_ADDONS = `
+# New Add-Ons
+
+Extend Git Genie with powerful optional capabilities designed to improve commit hygiene and developer workflow efficiency.
+
+---
+
+## gg split
+
+**gg split** is an intelligent commit-splitting tool that analyzes mixed changes in your working directory and helps you break them into clean, logical commits.
+
+### What gg split Does
+
+- Analyzes staged and unstaged changes
+- Groups related modifications together
+- Suggests logical commit boundaries
+- Allows interactive review before committing
+
+### The Problem It Solves
+
+Developers often make multiple types of changes in a single working session — bug fixes, refactors, formatting updates, and feature additions. These frequently get committed together, resulting in:
+
+- Messy commit history
+- Difficult code reviews
+- Harder rollbacks
+- Reduced traceability
+
+**gg split** ensures each commit represents one logical unit of work.
+
+### When & Why Developers Should Use It
+
+- After long coding sessions with mixed changes
+- Before opening a pull request
+- When preparing clean commits for open-source contributions
+- When maintaining high-quality project history
+
+### Key Usage Examples
+
+**Standard intelligent split:**
+\`\`\`bash
+gg split
+\`\`\`
+
+**Preview changes without committing:**
+\`\`\`bash
+gg split --dry-run
+\`\`\`
+
+**Enable AI-powered grouping:**
+\`\`\`bash
+gg split --genie
+\`\`\`
+
+### Intelligent Capabilities
+
+- **AI-powered grouping (opt-in)** — Uses intelligent analysis to cluster related changes.
+- **Heuristic fallback** — Ensures grouping works even without AI enabled.
+- **Interactive review flow** — Lets you confirm or adjust commit boundaries before finalizing.
+`
+/* ================= DEFAULT ================= */
+
 export const DOCS_MD = DOCS_GETTING_STARTED
 
 export default function DocsModal() {
