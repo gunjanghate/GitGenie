@@ -24,6 +24,7 @@ const DOC_GROUPS = [
   { label: "Core Commands", href: "/docs/commands" },
   { label: "Workflows & Internals", href: "/docs/workflows" },
   { label: "AI Features", href: "/docs/ai" },
+  { label: "New Add Ons", href: "/docs/new-add-ons" },
   { label: "Open Source & Collaboration", href: "/docs/open-source" },
   { label: "Reference & Examples", href: "/docs/reference" },
   { label: "Security & Community", href: "/docs/security" },
