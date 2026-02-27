@@ -21,7 +21,7 @@ export function useKeyboardShortcuts(handlers: ShortcutHandlers) {
       if (tag === "input" || tag === "textarea") return
 
       //  Ctrl/Cmd + Enter → Generate
-      if (ctrl && e.key === "Enter") {
+      if (ctrl && !e.shiftKey && e.key === "Enter") {
         e.preventDefault()
         handlers.onGenerate?.()
       }
