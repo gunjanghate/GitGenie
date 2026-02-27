@@ -102,7 +102,16 @@ html {
   width: 100%;
   transition:
     transform 0.3s ease,
-    opacity 0.3s ease;
+    opacity 0.3s ease,
+    box-shadow 0.3s ease;
+  transform-origin: top center;
+}
+
+/* give older sections a subtle depth appearance */
+.scroll-stack-section:not(:first-child) .sticky-wrapper {
+  transform: scale(0.97) translateY(8px);
+  opacity: 0.92;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
 }
 
 /* Disable stacking on small/mobile screens to avoid layout issues */

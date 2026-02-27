@@ -24,9 +24,13 @@
     const zIndexCount = (text.match(/style="[^"]*z-index[^"]*"/g) || []).length;
     console.log("✓ Z-index styles found:", zIndexCount);
 
-    // Check for smooth scroll
-    const smoothScroll = text.includes("scroll-behavior: smooth");
-    console.log("✓ Smooth scroll enabled:", smoothScroll);
+    // Check for **inline** smooth-scroll style declaration.
+    // Note: this only searches the HTML string. Detecting rules in
+    // external stylesheets would require fetching linked CSS and scanning
+    // them separately. For now we simply report whether the page contains
+    // an inline `scroll-behavior: smooth` string.
+    const inlineSmoothScroll = text.includes("scroll-behavior: smooth");
+    console.log("✓ Inline smooth scroll present:", inlineSmoothScroll);
 
     console.log("\n✅ Scroll stack animation feature is READY!");
     console.log("\nTo test the effect:");

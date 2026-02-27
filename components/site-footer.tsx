@@ -1,7 +1,7 @@
-import Link from "next/link"
-import AmbientBackground from "./parts/ambient-background"
-import chirag from "@/public/chirag.png"
-import Image from "next/image"
+import Link from "next/link";
+import AmbientBackground from "./parts/ambient-background";
+import chirag from "@/public/chirag.png";
+import Image from "next/image";
 
 export default function SiteFooter() {
   return (
@@ -13,8 +13,14 @@ export default function SiteFooter() {
         <FooterCol
           title="GitGenie"
           links={[
-            { href: "https://github.com/gunjanghate/GitGenie", label: "GitHub Repo" },
-            { href: "https://www.npmjs.com/package/@gunjanghate/git-genie", label: "NPM Package" },
+            {
+              href: "https://github.com/gunjanghate/GitGenie",
+              label: "GitHub Repo",
+            },
+            {
+              href: "https://www.npmjs.com/package/@gunjanghate/git-genie",
+              label: "NPM Package",
+            },
             { href: "/docs", label: "Docs" },
           ]}
         />
@@ -22,9 +28,18 @@ export default function SiteFooter() {
         <FooterCol
           title="Community"
           links={[
-            { href: "https://github.com/gunjanghate/GitGenie#contributing", label: "Contribute" },
-            { href: "https://github.com/gunjanghate/GitGenie/issues", label: "Report Issues" },
-            { href: "https://github.com/gunjanghate/GitGenie/discussions", label: "Discussion" },
+            {
+              href: "https://github.com/gunjanghate/GitGenie#contributing",
+              label: "Contribute",
+            },
+            {
+              href: "https://github.com/gunjanghate/GitGenie/issues",
+              label: "Report Issues",
+            },
+            {
+              href: "https://github.com/gunjanghate/GitGenie/discussions",
+              label: "Discussion",
+            },
           ]}
         />
 
@@ -34,6 +49,7 @@ export default function SiteFooter() {
             { href: "#how-it-works", label: "Install" },
             { href: "#usage", label: "Usage" },
             { href: "#usage", label: "Flags" },
+            { href: "#branch-management", label: "Branches" },
           ]}
         />
 
@@ -41,8 +57,14 @@ export default function SiteFooter() {
           title="Follow"
           links={[
             { href: "https://twitter.com/gunjanghate11", label: "Twitter/X" },
-            { href: "https://www.npmjs.com/package/@gunjanghate/git-genie", label: "NPM" },
-            { href: "https://github.com/gunjanghate/GitGenie", label: "GitHub" },
+            {
+              href: "https://www.npmjs.com/package/@gunjanghate/git-genie",
+              label: "NPM",
+            },
+            {
+              href: "https://github.com/gunjanghate/GitGenie",
+              label: "GitHub",
+            },
           ]}
         />
       </div>
@@ -79,22 +101,22 @@ export default function SiteFooter() {
         </div>
       </div>
     </footer>
-  )
+  );
 }
 
 function FooterCol({
   title,
   links,
 }: {
-  title: string
-  links: { href: string; label: string }[]
+  title: string;
+  links: { href: string; label: string }[];
 }) {
   return (
     <nav aria-label={title}>
       <h3 className="text-sm font-semibold text-amber-400/70">{title}</h3>
       <ul className="mt-4 space-y-3">
         {links.map((l) => {
-          const isExternal = l.href.startsWith("http")
+          const isExternal = l.href.startsWith("http");
 
           return (
             <li key={`${l.href}-${l.label}`}>
@@ -108,9 +130,9 @@ function FooterCol({
                 <span className="absolute left-0 -bottom-1 w-0 h-0.5 bg-amber-500 transition-all duration-300 group-hover:w-full" />
               </Link>
             </li>
-          )
+          );
         })}
       </ul>
     </nav>
-  )
+  );
 }
