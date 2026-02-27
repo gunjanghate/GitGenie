@@ -23,10 +23,14 @@ export default function TerminalDemo() {
     setOutput(" Changes staged")
   }, [])
 
-  const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText("feat: add keyboard shortcuts")
-    setOutput(" Copied commit message")
-  }, [])
+ const handleCopy = useCallback(async () => {
+  try {
+    await navigator.clipboard.writeText("feat: add keyboard shortcuts")
+    setOutput("Copied commit message")
+  } catch (error) {
+    setOutput("Failed to copy")
+  }
+}, [])
 
   const handleRefresh = useCallback(() => {
     setOutput(" Refreshed changes")
