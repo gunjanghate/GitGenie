@@ -43,7 +43,7 @@ export default function Page() {
   return (
     <main className="relative min-h-screen bg-black text-white overflow-x-hidden">
       {/* stack-wrapped sections will stick and layer */}
-      <ScrollSection zIndex={70}>
+      <ScrollSection zIndex={1}>
         <div className="relative">
           <Hero />
           {/* Navigation bar positioned at the top */}
@@ -53,15 +53,15 @@ export default function Page() {
         </div>
       </ScrollSection>
 
-      <ScrollSection zIndex={60}>
+      <ScrollSection zIndex={5}>
         <Features />
       </ScrollSection>
 
-      <ScrollSection zIndex={50}>
+      <ScrollSection zIndex={10}>
         <NewAddOns />
       </ScrollSection>
 
-      <ScrollSection zIndex={40}>
+      <ScrollSection zIndex={20}>
         <HowItWorks />
       </ScrollSection>
 
@@ -69,19 +69,19 @@ export default function Page() {
         <DemoVideoSection />
       </ScrollSection>
 
-      <ScrollSection zIndex={20}>
+      <ScrollSection zIndex={40}>
         <Usage />
       </ScrollSection>
 
-      <ScrollSection zIndex={10}>
+      <ScrollSection zIndex={50}>
         <FAQ />
       </ScrollSection>
 
-      <ScrollSection zIndex={5}>
+      <ScrollSection zIndex={60}>
         <Community />
       </ScrollSection>
 
-      <ScrollSection zIndex={1}>
+      <ScrollSection zIndex={70}>
         <SiteFooter />
       </ScrollSection>
     </main>

@@ -1,56 +1,64 @@
-"use client"
+"use client";
 
-import { useEffect, useRef } from "react"
-import gsap from "gsap"
-import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { CopyButton } from "./parts/copy-button"
-import AmbientBackground from "./parts/ambient-two"
-import { AnimateIn } from "./parts/animate-in"
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { CopyButton } from "./parts/copy-button";
+import AmbientBackground from "./parts/ambient-two";
+import { AnimateIn } from "./parts/animate-in";
 
-gsap.registerPlugin(ScrollTrigger)
+gsap.registerPlugin(ScrollTrigger);
 
 const STEPS = [
   {
     badge: "Step 1",
     title: "Install",
+    icon: "📦",
     cmd: "npm install -g @gunjanghate/git-genie",
-    desc: "Install globally or in your project root.",
+    desc: "Get started by installing Git Genie globally or locally in your project. One command is all you need.",
+    highlight: "Easy Setup",
   },
   {
     badge: "Step 2",
     title: "Configure AI (once)",
+    icon: "🔑",
     cmd: "gg config YOUR_GEMINI_API_KEY",
-    desc: "Stores the key in ~/.gitgenie/config.json so --genie can generate commits.",
+    desc: "Add your Gemini API key once. It's stored securely in ~/.gitgenie/config.json for future use.",
+    highlight: "Secure Config",
   },
   {
     badge: "Step 3",
     title: "Commit with AI",
+    icon: "✨",
     cmd: 'gg "add user profile section" --type feat --scope ui --genie',
-    desc: "Stages changes if needed, builds a Conventional Commit via Gemini, then commits.",
+    desc: "Describe your changes naturally. Git Genie generates Conventional Commits using AI in seconds.",
+    highlight: "AI-Powered",
   },
   {
     badge: "Step 4",
     title: "Push / Merge",
+    icon: "🚀",
     cmd: 'gg "finish oauth flow" --push-to-main',
-    desc: "Accept prompts or auto-merge to main and push in one go.",
+    desc: "Finalize and push to your branch or auto-merge to main. Streamline your entire workflow.",
+    highlight: "One-Click Deploy",
   },
-]
+];
 
 export default function HowItWorks() {
-  const pinRef = useRef<HTMLDivElement | null>(null)
-  const cardsRef = useRef<HTMLDivElement[]>([])
+  const pinRef = useRef<HTMLDivElement | null>(null);
+  const cardsRef = useRef<HTMLDivElement[]>([]);
 
   useEffect(() => {
-    if (!pinRef.current) return
+    if (!pinRef.current) return;
 
     const ctx = gsap.context(() => {
-      const cards = cardsRef.current
-      if (!cards.length) return
+      const cards = cardsRef.current;
+      if (!cards.length) return;
 
-      const stackDistance = 18
-      const baseScale = 0.9
-      const scaleStep = 0.03
-      const topZ = cards.length * 5
+      const stackDistance = 18;
+      const baseScale = 0.9;
+      const scaleStep = 0.03;
+      const topZ = cards.length * 5;
 
       // initial positions
       cards.forEach((card, index) => {
@@ -59,15 +67,15 @@ export default function HowItWorks() {
             y: 0,
             scale: 1,
             zIndex: topZ,
-          })
+          });
         } else {
           gsap.set(card, {
             y: "100vh",
             scale: baseScale,
             zIndex: topZ - (index + 1),
-          })
+          });
         }
-      })
+      });
 
       const tl = gsap.timeline({
         scrollTrigger: {
@@ -77,22 +85,18 @@ export default function HowItWorks() {
           scrub: true,
           pin: true,
         },
-      })
+      });
 
-      const segment = 1 / (cards.length - 1)
+      const segment = 1 / (cards.length - 1);
 
       cards.forEach((card, index) => {
-        if (index === 0) return
-        const prev = cards[index - 1]
+        if (index === 0) return;
+        const prev = cards[index - 1];
 
-        const start = segment * (index - 1)
-        const end = segment * index
+        const start = segment * (index - 1);
+        const end = segment * index;
 
-        tl.set(
-          card,
-          { zIndex: topZ + index },
-          start - 0.001
-        )
+        tl.set(card, { zIndex: topZ + index }, start - 0.001);
 
         tl.to(
           prev,
@@ -100,8 +104,8 @@ export default function HowItWorks() {
             y: 6 - stackDistance * (index - 1),
             ease: "none",
           },
-          start
-        )
+          start,
+        );
 
         tl.fromTo(
           card,
@@ -114,8 +118,8 @@ export default function HowItWorks() {
             scale: 1,
             ease: "none",
           },
-          start
-        )
+          start,
+        );
 
         tl.to(
           prev,
@@ -124,21 +128,17 @@ export default function HowItWorks() {
             scale: baseScale + scaleStep * (index - 1),
             ease: "none",
           },
-          start + segment * 0.3
-        )
+          start + segment * 0.3,
+        );
 
-        tl.set(
-          card,
-          { zIndex: topZ + index },
-          end - 0.001
-        )
-      })
-    }, pinRef)
+        tl.set(card, { zIndex: topZ + index }, end - 0.001);
+      });
+    }, pinRef);
 
     return () => {
-      ctx.revert()
-    }
-  }, [])
+      ctx.revert();
+    };
+  }, []);
 
   return (
     <section
@@ -160,7 +160,9 @@ export default function HowItWorks() {
         </AnimateIn>
         <AnimateIn delay={60}>
           <p className="mt-3 max-w-2xl text-zinc-300">
-            Four steps with sensible defaults. Use flags to tailor your flow.
+            Just 4 steps to streamline your commit workflow. From installation
+            to pushing production-ready commits, Git Genie handles the heavy
+            lifting with AI-powered Conventional Commits.
           </p>
         </AnimateIn>
       </div>
@@ -174,20 +176,23 @@ export default function HowItWorks() {
               <div
                 key={step.badge}
                 ref={(el) => {
-                  if (el) cardsRef.current[index] = el
+                  if (el) cardsRef.current[index] = el;
                 }}
                 className="absolute inset-0 will-change-transform pointer-events-auto flex justify-center"
               >
                 <div className="flex h-full w-full max-w-xl flex-col rounded-2xl border border-white/8 bg-zinc-900/95 px-6 py-5 sm:px-7 sm:py-6 shadow-lg shadow-black/40 backdrop-blur-md">
                   <div className="flex items-start gap-4 sm:gap-5">
-                    <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-amber-400/70 bg-zinc-900 text-xs sm:text-sm font-semibold text-amber-300">
-                      {index + 1}
+                    <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full border border-amber-400/70 bg-gradient-to-br from-amber-500/20 to-amber-900/20 text-lg sm:text-2xl font-semibold">
+                      {step.icon}
                     </div>
 
                     <div className="flex-1 space-y-2 min-w-0">
                       <div>
-                        <div className="text-[10px] sm:text-xs font-semibold text-amber-400/70 uppercase tracking-[0.18em] mb-0.5">
-                          {step.badge}
+                        <div className="text-[10px] sm:text-xs font-semibold text-amber-400/70 uppercase tracking-[0.18em] mb-0.5 flex items-center gap-2">
+                          <span>{step.badge}</span>
+                          <span className="inline-block px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[9px]">
+                            {step.highlight}
+                          </span>
                         </div>
                         <h3 className="text-lg sm:text-xl font-semibold text-zinc-50">
                           {step.title}
@@ -214,5 +219,5 @@ export default function HowItWorks() {
         </div>
       </div>
     </section>
-  )
+  );
 }

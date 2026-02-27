@@ -1,7 +1,12 @@
-const fetch = require("node-fetch");
 (async () => {
   try {
     const res = await fetch("http://localhost:3000");
+
+    // Treat non-2xx responses as failures
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+
     const text = await res.text();
     console.log("✓ Successfully fetched homepage");
     console.log("  Page length:", text.length, "bytes");

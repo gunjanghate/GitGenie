@@ -6,7 +6,7 @@
 
 </div>
 
-<img src="https://contributors-img.web.app/image?repo=gunjanghate/GitGenie"/>
+<img src="https://contributors-img.web.app/image?repo=gunjanghate/GitGenie" alt="GitGenie project contributors"/>
 
 # GitGenie CLI - Complete Documentation
 
@@ -747,10 +747,10 @@ If you find a bug or want to suggest an improvement:
 * Create a feature branch:
   `git checkout -b docs/improve-readme`
 * Commit Your Changes
-  - ` bashgit add .`
-  - `bash git commit -m "docs: improve contributor onboarding section"`
+  - `git add .`
+  - `git commit -m "docs: improve contributor onboarding section"`
 * Push and Open a PR
-  ` bash git push origin docs/improve-readme`
+  - `git push origin docs/improve-readme`
 * Then open a Pull Request on GitHub:
   - Base branch → main
   - Compare branch → your feature branch

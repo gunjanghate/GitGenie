@@ -303,7 +303,7 @@ html {
 
 ### Build Status
 
-```
+```text
 ✅ Compiled successfully in 7.3s
 ✅ Generated 13 static pages
 ✅ Optimized for production
@@ -385,7 +385,7 @@ html {
 
 ### Section 1: Hero (Z-index: 70)
 
-```
+```text
 ✅ Component: /components/hero.tsx
 ✅ Content: Main landing area with GitGenie logo
 ✅ Height: Min 85vh (responsive)
@@ -395,7 +395,7 @@ html {
 
 ### Section 2: Features (Z-index: 60)
 
-```
+```text
 ✅ Component: /components/features.tsx
 ✅ Content: Key features showcase
 ✅ Height: Full viewport + content
@@ -487,7 +487,7 @@ html {
 
 ### Z-Index Stack Order
 
-```
+```text
 Hero (70)           <- Top of visual stack
 ↓
 Features (60)       <- Stacks over Hero
@@ -610,7 +610,7 @@ Updated `checkScroll.js` for automated testing
 
 ### Build Performance
 
-```
+```text
 ✅ Build time: 7.3 seconds
 ✅ Generated pages: 13 static pages
 ✅ JavaScript bundle size: Minimal impact
@@ -620,7 +620,7 @@ Updated `checkScroll.js` for automated testing
 
 ### Runtime Performance
 
-```
+```text
 ✅ Initial page load: Fast
 ✅ Smooth scrolling: 60fps
 ✅ No layout thrashing
@@ -631,7 +631,7 @@ Updated `checkScroll.js` for automated testing
 
 ### Accessibility
 
-```
+```text
 ✅ Semantic HTML maintained
 ✅ ARIA roles preserved
 ✅ Keyboard navigation works

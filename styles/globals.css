@@ -6,6 +6,16 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Respect users who prefer reduced motion: disable smooth scrolling and transitions */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .scroll-stack-section .sticky-wrapper {
+    transition: none !important;
+  }
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -121,4 +131,13 @@ html {
 }
 .scroll-stack-section:nth-child(6) .sticky-wrapper {
   z-index: 60;
+}
+.scroll-stack-section:nth-child(7) .sticky-wrapper {
+  z-index: 70;
+}
+.scroll-stack-section:nth-child(8) .sticky-wrapper {
+  z-index: 80;
+}
+.scroll-stack-section:nth-child(9) .sticky-wrapper {
+  z-index: 90;
 }
