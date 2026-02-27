@@ -1,8 +1,8 @@
 <img width="1319" height="423" alt="image" src="https://github.com/user-attachments/assets/1149290d-c196-4c1f-b5ab-a0caba45b10c" />
 <div align="center">
 
-  [![npm version](https://img.shields.io/npm/v/@gunjanghate/git-genie.svg)](https://www.npmjs.com/package/@gunjanghate/git-genie)
-  [![Downloads](https://img.shields.io/npm/dm/@gunjanghate/git-genie.svg)](https://www.npmjs.com/package/@gunjanghate/git-genie)
+[![npm version](https://img.shields.io/npm/v/@gunjanghate/git-genie.svg)](https://www.npmjs.com/package/@gunjanghate/git-genie)
+[![Downloads](https://img.shields.io/npm/dm/@gunjanghate/git-genie.svg)](https://www.npmjs.com/package/@gunjanghate/git-genie)
 
 </div>
 
@@ -10,14 +10,13 @@
 
 # GitGenie CLI - Complete Documentation
 
-
-
 ## Overview
 
 **GitGenie** is an intelligent command-line interface (CLI) tool designed to simplify and automate Git workflows. It handles common Git operations like committing, branch management, staging, and pushing, while optionally integrating AI-generated commit messages using Google Gemini. This comprehensive documentation details all features, configurations, and functionality implemented to date.
 
 ## What's New
 
+- **Website scroll stack animation** – sections on the landing page now stack smoothly as you scroll. Hero, Features, How It Works, Use Cases, FAQ, and footer/call-to-action layers use sticky positioning and z-index transitions for a more immersive experience.
 - Interactive Command Palette: running `gg` with no arguments opens a menu to pick actions; it shows the exact command it will run.
 - Shortcuts: `gg b`, `gg s`, `gg wt`, `gg cl` for fast branch/worktree/clone flows.
 - Auto-Detect Commit Type: in non-genie mode, if you don’t pass `--type`, the CLI infers a sensible commit type from the diff.
@@ -191,16 +190,16 @@ gg split
 
 # Output:
 # 📋 Detected Groups:
-# 
+#
 # [Group 1] feat(auth): add login session handling
 #   Files (2):
 #   • src/auth.js
 #   • src/auth.test.js
-# 
+#
 # [Group 2] fix(ui): resolve navbar z-index issue
 #   Files (1):
 #   • src/components/Navbar.css
-# 
+#
 # [Group 3] docs: update installation guide
 #   Files (1):
 #   • README.md
@@ -231,13 +230,13 @@ gg split
 #### Error Handling
 
 The split command handles all error scenarios gracefully:
+
 - No staged changes → prompts to stage
 - Single file → suggests using regular commit
 - API failures → falls back to heuristic grouping
 - Network timeouts → automatic fallback
 - Git operation failures → option to continue or abort
 - User cancellation (Ctrl+C) → clean exit
-
 
 ### Main Command
 
@@ -287,87 +286,89 @@ graph TD
     Start([gg command]) --> Repo{Repo exists?}
     Repo -- No --> Init[git init]
     Repo -- Yes --> Remote[Remote Origin Setup]
-    
+
     Init --> Remote
     Remote --> History{Existing Commits?}
-    
+
     History -- No --> MainOnly[Force Main Branch]
     History -- Yes --> BranchCheck{--no-branch or Detached HEAD?}
-    
+
     MainOnly --> Staging
     BranchCheck -- Yes --> Staging
     BranchCheck -- No --> Menu[Interactive Branch Menu]
-    
+
     Menu --> BranchType{Choice}
     BranchType -- Current --> Staging
     BranchType -- New --> OSCCheck{--osc flag?}
-    
+
     OSCCheck -- Yes --> OSC[OSC/Issue-branch Flow]
     OSCCheck -- No --> Std[Std Branch Flow]
-    
+
     OSC --> Staging
     Std --> Staging
-    
+
     subgraph Staging_Process [Multi-Step Staging]
     Staging[Check Cached Diff] --> DiffCheck{Changes Found?}
     DiffCheck -- No --> StageAll[Prompt & git add .]
     DiffCheck -- Yes --> Verify[Verify Staging]
     StageAll --> Verify
     end
-    
+
     Verify --> GenieMode{--genie flag?}
     GenieMode -- Yes --> AI[Gemini Mode: Skip Auto-detect]
     GenieMode -- No --> TypeCheck{--type provided?}
-    
+
     TypeCheck -- Yes --> Manual[Apply Manual Type]
     TypeCheck -- No --> Auto[Auto-detect Commit Type]
-    
+
     AI --> Commit[git commit]
     Manual --> Commit
     Auto --> Commit
-    
+
     Commit --> PostCommit{--push-to-main?}
     PostCommit -- Yes --> PushLogic
     PostCommit -- No --> PushPrompt[Interactive Push Prompt]
 ```
 
 ### 2. Intelligent Commit Splitting (`gg split`)
+
 ```mermaid
 graph TD
     S[gg split] --> Diff[Analyze Staged Changes]
     Diff --> Mode{--no-genie?}
-    
+
     Mode -- No --> AI[Gemini API: Group by Logic]
     Mode -- Yes --> Heuristic[Heuristic: Group by File Type]
-    
+
     AI --> Review[Interactive Review Menu]
     Heuristic --> Review
-    
+
     Review --> Choice{User Choice}
     Choice -- Edit --> Edit[Modify Groups/Messages]
     Choice -- Merge --> Merge[Combine Groups]
     Choice -- Commit --> Exec[Loop: Atomic Commits]
-    
+
     Edit --> Review
     Merge --> Review
     Exec --> Done([Clean Working Tree])
-  ```
+```
 
 ### 3. Push & Merge Automation
+
 ```mermaid
 graph TD
     PushStart[Start Push Workflow] --> RemoteCheck[ensureRemoteOriginInteractive]
     RemoteCheck --> BranchLoc{Current Branch?}
-    
+
     BranchLoc -- is main --> Direct[git push origin main]
-    
+
     BranchLoc -- is feature --> Merge[Merge into main]
     Merge --> P[git push origin main]
     P --> Cleanup[Delete Local & Remote Feature Branch]
-    
+
     Direct --> Final([Success Message])
     Cleanup --> Final
-    
+
     subgraph Error_State [Process Exit]
     Direct -- Fail --> Err[Throw Error & Exit]
     P -- Fail --> Err
@@ -645,51 +646,56 @@ This section is meant for first-time contributors who want to understand how the
 
 At a high level, GitGenie works as follows:
 
-+ Reads CLI input and flags using commander
-+ Validates the current directory as a Git repository (or initializes one)
-+ Handles branch selection (interactive or non-interactive)
-+ Stages files automatically when needed
-+ Generates a commit message:
-  * Manually (default)
-  * Or using Google Gemini when --genie is enabled
-  * Commits changes
-  * Optionally pushes or merges to main
+- Reads CLI input and flags using commander
+- Validates the current directory as a Git repository (or initializes one)
+- Handles branch selection (interactive or non-interactive)
+- Stages files automatically when needed
+- Generates a commit message:
+  - Manually (default)
+  - Or using Google Gemini when --genie is enabled
+  - Commits changes
+  - Optionally pushes or merges to main
 
 Most logic lives inside index.js, which orchestrates Git operations using simple-git and user prompts via inquirer.
 
 You do not need to understand the full internal flow to contribute documentation or small fixes.
 
 ### 🛠️ How to Clone & Run GitGenie Locally
-***1️⃣ Fork the Repository***
+
+**_1️⃣ Fork the Repository_**
 
 Click `Fork` on GitHub to create your own copy of the repository.
 
-***2️⃣ Clone Your Fork***
-``` bash
+**_2️⃣ Clone Your Fork_**
+
+```bash
 git clone https://github.com/<your-username>/gitgenie-cli.git
 cd gitgenie-cli
 ```
 
-***3️⃣ Install Dependencies***
-``` bash
+**_3️⃣ Install Dependencies_**
+
+```bash
 npm install
 ```
 
-***4️⃣ Link the CLI Locally***
+**_4️⃣ Link the CLI Locally_**
 
-+ This allows you to run the gg command while developing:
-``` bash
+- This allows you to run the gg command while developing:
+
+```bash
 npm link
 ```
 
-+ Verify installation:
-` gg --help `
+- Verify installation:
+  `gg --help`
 
 **If the help output appears, GitGenie is running locally ✅**
 
 ### 🧪 How to Test Changes
 
 It’s recommended to test GitGenie inside a temporary Git repository.
+
 ```bash
 mkdir test-repo
 cd test-repo
@@ -699,49 +705,52 @@ git init
 Example test commands:
 
 # Basic commit (manual)
-` gg "test basic commit" --no-branch `
+
+`gg "test basic commit" --no-branch`
 
 # Test AI commit message
-` gg "test ai commit" --genie `
+
+`gg "test ai commit" --genie`
 
 # Test branch creation
-` gg "test branch flow" --type feat `
+
+`gg "test branch flow" --type feat`
 
 # Test error handling (no changes)
-` gg "test no changes" --no-branch `
 
+`gg "test no changes" --no-branch`
 
 ### Make sure:
 
-* Commands execute without crashing
-* Prompts behave as expected
-* No unintended Git changes occur
+- Commands execute without crashing
+- Prompts behave as expected
+- No unintended Git changes occur
 
 ### 🐛 Opening Issues
 
 If you find a bug or want to suggest an improvement:
 
-* Go to the Issues tab on GitHub
-* Click New Issue
-* Choose the appropriate issue template (if available)
-* Clearly describe:
-  + What you expected
-  + What actually happened
-  + Steps to reproduce (if applicable)  
-  + Well-described issues help maintainers respond faster.
+- Go to the Issues tab on GitHub
+- Click New Issue
+- Choose the appropriate issue template (if available)
+- Clearly describe:
+  - What you expected
+  - What actually happened
+  - Steps to reproduce (if applicable)
+  - Well-described issues help maintainers respond faster.
 
 ### 🔁 Opening a Pull Request (PR)
 
-+ ***Branching***
+- **_Branching_**
 
-* ***Do not commit directly to main.***
+* **_Do not commit directly to main._**
 * Create a feature branch:
   `git checkout -b docs/improve-readme`
 * Commit Your Changes
-  - ``` bashgit add .```
-  - ``` bash git commit -m "docs: improve contributor onboarding section" ```
+  - ` bashgit add .`
+  - `bash git commit -m "docs: improve contributor onboarding section"`
 * Push and Open a PR
-``` bash git push origin docs/improve-readme```
+  ` bash git push origin docs/improve-readme`
 * Then open a Pull Request on GitHub:
   - Base branch → main
   - Compare branch → your feature branch
@@ -749,7 +758,7 @@ If you find a bug or want to suggest an improvement:
 
 ### 🧩 Scope Guidelines (Important)
 
-***To keep contributions focused:***
+**_To keep contributions focused:_**
 
 ❌ Do NOT add new CLI features
 ❌ Do NOT refactor existing CLI logic
@@ -759,15 +768,16 @@ If you find a bug or want to suggest an improvement:
 ✅ Bug fixes
 ✅ Small usability improvements
 
-***If unsure, open an issue first and ask.***
+**_If unsure, open an issue first and ask._**
 
 ### 🙌 Need Help?
 
 If you get stuck:
-+ Comment on the issue you’re working on
-+ Ask questions in the PR
-+ Share error messages or screenshots
-+ We would rather help than guess.
+
+- Comment on the issue you’re working on
+- Ask questions in the PR
+- Share error messages or screenshots
+- We would rather help than guess.
 
 ## Notes & Future Considerations
 

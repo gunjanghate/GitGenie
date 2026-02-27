@@ -1,5 +1,10 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* smooth scroll to improve transitions between sticky sections */
+html {
+  scroll-behavior: smooth;
+}
 
 :root {
   --background: oklch(1 0 0);
@@ -70,4 +75,50 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
+}
+
+/* Scroll stack animation utility */
+.scroll-stack-section {
+  position: relative;
+  /* base z-index is applied inline when needed */
+  overflow: hidden;
+}
+
+.scroll-stack-section .sticky-wrapper {
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  /* allow children to take full viewport height */
+  width: 100%;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
+}
+
+/* Disable stacking on small/mobile screens to avoid layout issues */
+@media (max-width: 640px) {
+  .scroll-stack-section .sticky-wrapper {
+    position: relative;
+    top: auto;
+  }
+}
+
+/* optional layering helpers for n-th sections */
+.scroll-stack-section:nth-child(1) .sticky-wrapper {
+  z-index: 10;
+}
+.scroll-stack-section:nth-child(2) .sticky-wrapper {
+  z-index: 20;
+}
+.scroll-stack-section:nth-child(3) .sticky-wrapper {
+  z-index: 30;
+}
+.scroll-stack-section:nth-child(4) .sticky-wrapper {
+  z-index: 40;
+}
+.scroll-stack-section:nth-child(5) .sticky-wrapper {
+  z-index: 50;
+}
+.scroll-stack-section:nth-child(6) .sticky-wrapper {
+  z-index: 60;
 }
