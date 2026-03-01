@@ -1,21 +1,22 @@
-"use client"
+"use client";
 
 export default function HeroNav() {
   const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId)
+    const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" })
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }
+  };
 
   const navItems = [
     { id: "features", label: "Features" },
     { id: "how-it-works", label: "How it Works" },
     { id: "demo", label: "Demo" },
     { id: "usage", label: "Usage" },
+    { id: "branch-management", label: "Branches" },
     { id: "faq", label: "FAQ" },
     { id: "community", label: "Community" },
-  ]
+  ];
 
   return (
     <nav className="hidden md:flex items-center gap-1 md:gap-2 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-full px-2 md:px-3 py-2 md:py-2.5 shadow-lg">
@@ -29,5 +30,5 @@ export default function HeroNav() {
         </button>
       ))}
     </nav>
-  )
+  );
 }
