@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { CopyButton } from "./parts/copy-button";
 import AmbientBackground from "./parts/ambient-two";
 import { AnimateIn } from "./parts/animate-in";
+import { Package, KeyRound, Sparkles, GitBranch } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -13,7 +14,7 @@ const STEPS = [
   {
     badge: "Step 1",
     title: "Install",
-    icon: "📦",
+    icon: Package,
     cmd: "npm install -g @gunjanghate/git-genie",
     desc: "Get started by installing Git Genie globally or locally in your project. One command is all you need.",
     highlight: "Easy Setup",
@@ -21,7 +22,7 @@ const STEPS = [
   {
     badge: "Step 2",
     title: "Configure AI (once)",
-    icon: "🔑",
+    icon: KeyRound,
     cmd: "gg config YOUR_GEMINI_API_KEY",
     desc: "Add your Gemini API key once. It's stored securely in ~/.gitgenie/config.json for future use.",
     highlight: "Secure Config",
@@ -29,7 +30,7 @@ const STEPS = [
   {
     badge: "Step 3",
     title: "Commit with AI",
-    icon: "✨",
+    icon: Sparkles,
     cmd: 'gg "add user profile section" --type feat --scope ui --genie',
     desc: "Describe your changes naturally. Git Genie generates Conventional Commits using AI in seconds.",
     highlight: "AI-Powered",
@@ -37,7 +38,7 @@ const STEPS = [
   {
     badge: "Step 4",
     title: "Push / Merge",
-    icon: "🚀",
+    icon: GitBranch,
     cmd: 'gg "finish oauth flow" --push-to-main',
     desc: "Finalize and push to your branch or auto-merge to main. Streamline your entire workflow.",
     highlight: "One-Click Deploy",
@@ -55,9 +56,9 @@ export default function HowItWorks() {
       const cards = cardsRef.current;
       if (!cards.length) return;
 
-      const stackDistance = 18;
-      const baseScale = 0.9;
-      const scaleStep = 0.03;
+      const stackDistance = 28;
+      const baseScale = 0.86;
+      const scaleStep = 0.04;
       const topZ = cards.length * 5;
 
       // initial positions
@@ -70,7 +71,7 @@ export default function HowItWorks() {
           });
         } else {
           gsap.set(card, {
-            y: "100vh",
+            y: "120%",
             scale: baseScale,
             zIndex: topZ - (index + 1),
           });
@@ -81,9 +82,10 @@ export default function HowItWorks() {
         scrollTrigger: {
           trigger: pinRef.current,
           start: "top top",
-          end: "+=110%",
+          end: "+=220%",
           scrub: true,
           pin: true,
+          anticipatePin: 1,
         },
       });
 
@@ -98,19 +100,10 @@ export default function HowItWorks() {
 
         tl.set(card, { zIndex: topZ + index }, start - 0.001);
 
-        tl.to(
-          prev,
-          {
-            y: 6 - stackDistance * (index - 1),
-            ease: "none",
-          },
-          start,
-        );
-
         tl.fromTo(
           card,
           {
-            y: "100vh",
+            y: "120%",
             scale: baseScale,
           },
           {
@@ -168,10 +161,10 @@ export default function HowItWorks() {
       </div>
 
       {/* Pinned stack */}
-      <div ref={pinRef} className="relative h-[80vh] overflow-visible">
+      <div ref={pinRef} className="relative h-[70vh] min-h-[420px] overflow-visible">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           {/* narrower card so text wraps and height grows slightly */}
-          <div className="relative w-full max-w-2xl sm:max-w-xl h-[200px] sm:h-[220px]">
+          <div className="relative w-full max-w-2xl sm:max-w-xl h-[260px] sm:h-[280px] md:h-[300px]">
             {STEPS.map((step, index) => (
               <div
                 key={step.badge}
@@ -182,8 +175,10 @@ export default function HowItWorks() {
               >
                 <div className="flex h-full w-full max-w-xl flex-col rounded-2xl border border-white/8 bg-zinc-900/95 px-6 py-5 sm:px-7 sm:py-6 shadow-lg shadow-black/40 backdrop-blur-md">
                   <div className="flex items-start gap-4 sm:gap-5">
-                    <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full border border-amber-400/70 bg-gradient-to-br from-amber-500/20 to-amber-900/20 text-lg sm:text-2xl font-semibold">
-                      {step.icon}
+                    <div className="flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full border border-amber-400/70 bg-gradient-to-br from-amber-500/20 to-amber-900/20 text-lg sm:text-2xl font-semibold text-amber-200">
+                      {step.icon && (
+                        <step.icon className="h-6 w-6 sm:h-7 sm:w-7" aria-hidden="true" />
+                      )}
                     </div>
 
                     <div className="flex-1 space-y-2 min-w-0">

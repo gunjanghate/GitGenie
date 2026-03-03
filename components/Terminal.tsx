@@ -110,7 +110,7 @@ export default function TerminalDemo() {
         )}
 
         {/* Shortcuts Panel */}
-        <div className="hidden md:block fixed right-10 top-1/2 -translate-y-1/2 w-64 border border-zinc-700 rounded-lg bg-black/70 px-4 py-3 text-xs text-zinc-300 backdrop-blur">
+        {/* <div className="hidden md:block fixed right-10 top-1/2 -translate-y-1/2 w-64 border border-zinc-700 rounded-lg bg-black/70 px-4 py-3 text-xs text-zinc-300 backdrop-blur">
 
           <div className="space-y-1">
             <p><span className="text-zinc-500">generate</span> → Ctrl/Cmd + Enter</p>
@@ -120,7 +120,7 @@ export default function TerminalDemo() {
             <p><span className="text-zinc-500">refresh</span> → Ctrl/Cmd + R</p>
             <p><span className="text-zinc-500">toggle-ai</span> → Ctrl/Cmd + Shift + A</p>
           </div>
-        </div>
+        </div> */}
 
       </div>
     </Terminal>

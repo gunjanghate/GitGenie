@@ -2,7 +2,7 @@
 
 import { AnimateIn } from "./parts/animate-in";
 import AmbientBackground from "./parts/ambient-two";
-import { Badge } from "@/components/UI/badge";
+import { Badge } from "@/components/ui/badge";
 import { Sparkles } from "lucide-react";
 import Link from "next/link";
 
@@ -22,13 +22,13 @@ export default function NewAddOns() {
           </ul>
 
           <div className="mt-4 text-xs">
-  <Link
-    href="/docs/new-add-ons"
-    className="text-amber-400 hover:text-amber-300 transition-colors underline underline-offset-4"
-  >
-    Know more in docs →
-  </Link>
-</div>
+            <Link
+              href="/docs/new-add-ons"
+              className="text-amber-400 hover:text-amber-300 transition-colors underline underline-offset-4"
+            >
+              Know more in docs →
+            </Link>
+          </div>
         </>
       ),
     },
@@ -38,7 +38,7 @@ export default function NewAddOns() {
     <section
       id="add-ons"
       aria-labelledby="add-ons-title"
-      className="relative mx-auto lg:mx-32 max-w-6xl px-6 py-20 sm:py-24"
+      className="relative mx-auto lg:mx-32 max-w-6xl px-6 pt-2 pb-20  "
     >
       <AmbientBackground />
 
@@ -55,21 +55,21 @@ export default function NewAddOns() {
       </div>
 
       <div className="relative z-10 flex justify-start">
-  <div className="w-full sm:w-[70%] lg:w-[55%]">
-        {items.map((it, idx) => (
-          <AnimateIn key={it.title} delay={idx * 80}>
-            <article className="group flex flex-col gap-1 rounded-2xl border border-white/10 bg-zinc-900/40 p-6 backdrop-blur transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.15)]">
-              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
-                {it.icon}
-              </div>
+        <div className="w-full sm:w-[70%] lg:w-[55%]">
+          {items.map((it, idx) => (
+            <AnimateIn key={it.title} delay={idx * 80}>
+              <article className="group flex flex-col gap-1 rounded-2xl border border-white/10 bg-zinc-900/40 p-6 backdrop-blur transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.15)]">
+                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
+                  {it.icon}
+                </div>
 
-              <h3 className="text-lg font-semibold">{it.title}</h3>
-              <div className="mt-2 text-zinc-300">{it.body}</div>
-            </article>
-          </AnimateIn>
-        ))}
+                <h3 className="text-lg font-semibold">{it.title}</h3>
+                <div className="mt-2 text-zinc-300">{it.body}</div>
+              </article>
+            </AnimateIn>
+          ))}
+        </div>
       </div>
-    </div>  
     </section>
   );
 }
