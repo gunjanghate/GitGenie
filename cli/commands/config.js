@@ -3,6 +3,10 @@ import os from 'os';
 import path from 'path';
 import crypto from 'crypto';
 import chalk from 'chalk';
+import inquirer from 'inquirer';
+
+// Local providers don't use API keys — they connect to a running local server
+const LOCAL_PROVIDERS = ['ollama', 'lmstudio'];
 
 // Try to import keytar, but make it optional for environments without native dependencies
 let keytar = null;
@@ -264,11 +268,134 @@ export async function setActiveProvider(providerName) {
 
     // Check if provider is configured
     if (!config.providers[providerName]) {
-        throw new Error(`Provider "${providerName}" is not configured. Please configure it first with: gg config <apikey> --provider ${providerName}`);
+        const isLocal = LOCAL_PROVIDERS.includes(providerName.toLowerCase());
+        const hint = isLocal
+            ? `gg config --provider ${providerName} --url <server-url> --model <model-name>`
+            : `gg config <apikey> --provider ${providerName}`;
+        throw new Error(`Provider "${providerName}" is not configured. Please configure it first with: ${hint}`);
     }
 
     config.activeProvider = providerName;
     fs.writeFileSync(configFile, JSON.stringify(config, null, 2));
+}
+
+/**
+ * Fetch available models from a local AI server.
+ * Returns an array of model name strings, or empty array if server is unreachable.
+ * @param {string} providerName - 'ollama' | 'lmstudio'
+ * @param {string} baseUrl
+ * @returns {Promise<string[]>}
+ */
+async function fetchAvailableModels(providerName, baseUrl) {
+    try {
+        if (providerName === 'ollama') {
+            const res = await fetch(`${baseUrl.replace(/\/$/, '')}/api/tags`, {
+                signal: AbortSignal.timeout(3000),
+            });
+            if (!res.ok) return [];
+            const data = await res.json();
+            return (data.models || []).map(m => m.name).filter(Boolean);
+        } else {
+            // LM Studio — OpenAI-compatible /v1/models
+            const res = await fetch(`${baseUrl.replace(/\/$/, '')}/v1/models`, {
+                signal: AbortSignal.timeout(3000),
+            });
+            if (!res.ok) return [];
+            const data = await res.json();
+            return (data.data || []).map(m => m.id).filter(Boolean);
+        }
+    } catch {
+        return [];
+    }
+}
+
+/**
+ * Determine the model to use for a local provider.
+ * If --model was explicitly given, use it.
+ * Otherwise try to fetch models from the live server:
+ *   - 1 model  → use it automatically
+ *   - multiple → prompt the user to pick one
+ *   - 0 / unreachable → warn and fall back to the default
+ * @param {string} providerName
+ * @param {string} baseUrl
+ * @param {string|undefined} explicitModel - value of --model flag
+ * @param {string} fallbackModel
+ * @returns {Promise<string>}
+ */
+async function resolveModel(providerName, baseUrl, explicitModel, fallbackModel) {
+    if (explicitModel) return explicitModel;
+
+    console.log(chalk.gray(`  Fetching available models from ${baseUrl}...`));
+    const models = await fetchAvailableModels(providerName, baseUrl);
+
+    if (models.length === 0) {
+        console.log(chalk.yellow(`  ⚠  Could not reach server at ${baseUrl} — using default model "${fallbackModel}".`));
+        console.log(chalk.gray(`     Start the server then run: gg config --provider ${providerName} --url ${baseUrl} --model <model>`));
+        return fallbackModel;
+    }
+
+    if (models.length === 1) {
+        console.log(chalk.green(`  ✓ Found model: ${models[0]}`));
+        return models[0];
+    }
+
+    // Multiple models — let the user pick
+    const { chosen } = await inquirer.prompt([
+        {
+            type: 'list',
+            name: 'chosen',
+            message: `Select a model for ${providerName}:`,
+            choices: models,
+        },
+    ]);
+    return chosen;
+}
+
+/**
+ * Save configuration for a local provider (Ollama, LM Studio).
+ * Stores baseUrl and model in config.json — no API key involved.
+ * @param {string} providerName - e.g. 'ollama', 'lmstudio'
+ * @param {string} baseUrl - e.g. 'http://localhost:11434'
+ * @param {string} model - e.g. 'llama3.2'
+ */
+export async function saveLocalProviderConfig(providerName, baseUrl, model) {
+    if (!baseUrl || typeof baseUrl !== 'string' || baseUrl.trim().length === 0) {
+        throw new Error('Base URL must be a non-empty string');
+    }
+    if (!model || typeof model !== 'string' || model.trim().length === 0) {
+        throw new Error('Model name must be a non-empty string');
+    }
+
+    try {
+        if (!fs.existsSync(configDir)) fs.mkdirSync(configDir, { recursive: true });
+
+        const config = await getProviderConfig();
+        if (!config.providers) config.providers = {};
+
+        config.providers[providerName] = {
+            baseUrl: baseUrl.trim(),
+            model: model.trim(),
+            configuredAt: new Date().toISOString(),
+        };
+        config.activeProvider = providerName;
+
+        fs.writeFileSync(configFile, JSON.stringify(config, null, 2));
+        return true;
+    } catch (err) {
+        throw new Error(`Failed to save local provider config: ${err.message}`);
+    }
+}
+
+/**
+ * Get configuration for a local provider.
+ * @param {string} providerName - e.g. 'ollama', 'lmstudio'
+ * @returns {Promise<{baseUrl: string, model: string}|null>}
+ */
+export async function getLocalProviderConfig(providerName) {
+    const config = await getProviderConfig();
+    const providerConfig = config.providers?.[providerName];
+    if (!providerConfig || !providerConfig.baseUrl) return null;
+    return { baseUrl: providerConfig.baseUrl, model: providerConfig.model };
 }
 
 /**
@@ -281,6 +408,24 @@ export async function getActiveProviderInstance() {
     const activeProviderName = await getActiveProvider();
     if (!activeProviderName) return null;
 
+    // Local providers (Ollama, LM Studio): initialize with baseUrl + model, no API key
+    if (ProviderFactory.isLocalProvider(activeProviderName)) {
+        const localConfig = await getLocalProviderConfig(activeProviderName);
+        if (!localConfig) {
+            console.error(chalk.red(`Local provider "${activeProviderName}" is not configured.`));
+            console.log(chalk.cyan(`Run: gg config --provider ${activeProviderName} --url <url> --model <model>`));
+            return null;
+        }
+        try {
+            return ProviderFactory.getProvider(activeProviderName, localConfig);
+        } catch (err) {
+            console.error(chalk.red(`Failed to initialize ${activeProviderName} provider.`));
+            console.error(chalk.yellow(err.message));
+            return null;
+        }
+    }
+
+    // Cloud providers: get encrypted API key (backward compatible)
     const apiKey = await getProviderApiKey(activeProviderName);
     if (!apiKey) return null;
 
@@ -312,8 +457,11 @@ export function registerConfigCommand(program) {
     program
         .command('config [apikey]')
         .description('Save your AI provider API key or check configuration status')
-        .option('--provider <name>', 'Provider name (gemini, mistral, groq)', 'gemini')
+        .option('--provider <name>', 'Provider name (gemini, mistral, groq, ollama, lmstudio)', 'gemini')
         .option('--status', 'Check configuration status of all providers')
+        // Local provider options (ollama / lmstudio)
+        .option('--url <url>', 'Base URL for local AI server (e.g. http://localhost:11434)')
+        .option('--model <model>', 'Model name for local AI provider (e.g. llama3.2)')
         .action(async (apikey, options) => {
             try {
                 const { ProviderFactory } = await import('../providers/index.js');
@@ -326,31 +474,37 @@ export function registerConfigCommand(program) {
                     let hasConfigured = false;
 
                     for (const provider of providers) {
-                        const key = await getProviderApiKey(provider);
-                        const isConfigured = !!key;
-                        const statusColor = isConfigured ? chalk.green : chalk.gray;
-                        const statusIcon = isConfigured ? '✅' : '❌';
-                        const statusText = isConfigured ? 'Configured' : 'Not configured';
                         const padding = ' '.repeat(10 - provider.length);
+                        const label = chalk.cyan(provider.charAt(0).toUpperCase() + provider.slice(1));
 
-                        console.log(`  ${chalk.cyan(provider.charAt(0).toUpperCase() + provider.slice(1))}${padding}: ${statusIcon} ${statusColor(statusText)}`);
-                        if (isConfigured) hasConfigured = true;
+                        if (ProviderFactory.isLocalProvider(provider)) {
+                            // Local providers: show URL + model instead of API key status
+                            const localConfig = await getLocalProviderConfig(provider);
+                            const isConfigured = !!localConfig;
+                            const statusIcon = isConfigured ? '✅' : '❌';
+                            const statusText = isConfigured
+                                ? chalk.green(`${localConfig.baseUrl}  model: ${localConfig.model}`)
+                                : chalk.gray('Not configured');
+                            console.log(`  ${label}${padding}: ${statusIcon} ${statusText}`);
+                            if (isConfigured) hasConfigured = true;
+                        } else {
+                            // Cloud providers: show Configured / Not configured
+                            const key = await getProviderApiKey(provider);
+                            const isConfigured = !!key;
+                            const statusIcon = isConfigured ? '✅' : '❌';
+                            const statusText = isConfigured ? chalk.green('Configured') : chalk.gray('Not configured');
+                            console.log(`  ${label}${padding}: ${statusIcon} ${statusText}`);
+                            if (isConfigured) hasConfigured = true;
+                        }
                     }
 
                     console.log(''); // Empty line
                     if (!hasConfigured) {
                         console.log(chalk.yellow('  No providers configured yet.'));
-                        console.log(chalk.cyan('  Run: gg config <your-key> --provider <name>'));
+                        console.log(chalk.cyan('  Cloud:  gg config <your-key> --provider <name>'));
+                        console.log(chalk.cyan('  Local:  gg config --provider ollama --url http://localhost:11434 --model llama3.2'));
                     }
                     process.exit(0);
-                }
-
-                // Mode 2: Save API Key
-                if (!apikey) {
-                    console.error(chalk.red('Error: API key is required when not using --status'));
-                    console.log(chalk.cyan('Usage: gg config <apikey>'));
-                    console.log(chalk.cyan('Check Status: gg config --status'));
-                    process.exit(1);
                 }
 
                 const providerName = options.provider.toLowerCase();
@@ -359,7 +513,39 @@ export function registerConfigCommand(program) {
                 if (!ProviderFactory.isProviderSupported(providerName)) {
                     console.error(chalk.red(`Unknown AI provider: "${providerName}"`));
                     console.log(chalk.yellow(`Supported providers: ${ProviderFactory.getSupportedProviders().join(', ')}`));
-                    console.log(chalk.cyan('Set your provider with: gg key --gemini <your-key>'));
+                    process.exit(1);
+                }
+
+                // Mode 2a: Save local provider config (Ollama / LM Studio)
+                if (ProviderFactory.isLocalProvider(providerName)) {
+                    const defaults = providerName === 'ollama'
+                        ? { url: 'http://localhost:11434', model: 'llama3.2' }
+                        : { url: 'http://localhost:1234', model: 'llama-3.2-3b-instruct' };
+
+                    // Accept URL from either --url flag or the positional argument
+                    // (users naturally type: gg config http://localhost:11434 --provider ollama)
+                    const urlFromPositional =
+                        apikey && (apikey.startsWith('http://') || apikey.startsWith('https://'))
+                            ? apikey
+                            : null;
+                    const baseUrl = options.url || urlFromPositional || defaults.url;
+
+                    // Resolve model: --model flag → live server query → fallback default
+                    const model = await resolveModel(providerName, baseUrl, options.model, defaults.model);
+
+                    await saveLocalProviderConfig(providerName, baseUrl, model);
+                    console.log(chalk.green(`\n${providerName.charAt(0).toUpperCase() + providerName.slice(1)} configured successfully!`));
+                    console.log(chalk.cyan(`  Server : ${baseUrl}`));
+                    console.log(chalk.cyan(`  Model  : ${model}`));
+                    console.log(chalk.cyan(`  Switch : gg use --${providerName}`));
+                    process.exit(0);
+                }
+
+                // Mode 2b: Save cloud provider API key
+                if (!apikey) {
+                    console.error(chalk.red('Error: API key is required for cloud providers when not using --status'));
+                    console.log(chalk.cyan('Usage: gg config <apikey> --provider <name>'));
+                    console.log(chalk.cyan('Check Status: gg config --status'));
                     process.exit(1);
                 }
 
@@ -367,7 +553,7 @@ export function registerConfigCommand(program) {
                 console.log(chalk.green(`${providerName.charAt(0).toUpperCase() + providerName.slice(1)} API key saved successfully!`));
                 console.log(chalk.cyan(`${providerName} is now your active AI provider`));
             } catch (err) {
-                console.error(chalk.red('Failed to save API key.'));
+                console.error(chalk.red('Failed to save configuration.'));
                 console.error(chalk.yellow(err.message));
             }
             process.exit(0);
@@ -380,6 +566,8 @@ export function registerConfigCommand(program) {
         .option('--gemini', 'Switch to Gemini AI')
         .option('--mistral', 'Switch to Mistral AI')
         .option('--groq', 'Switch to Groq AI')
+        .option('--ollama', 'Switch to Ollama (local)')
+        .option('--lmstudio', 'Switch to LM Studio (local)')
         .action(async (options) => {
             try {
                 let providerName = null;
@@ -387,12 +575,16 @@ export function registerConfigCommand(program) {
                 if (options.gemini) providerName = 'gemini';
                 else if (options.mistral) providerName = 'mistral';
                 else if (options.groq) providerName = 'groq';
+                else if (options.ollama) providerName = 'ollama';
+                else if (options.lmstudio) providerName = 'lmstudio';
 
                 if (!providerName) {
                     console.error(chalk.red('Please specify a provider:'));
                     console.log(chalk.cyan('  gg use --gemini'));
                     console.log(chalk.cyan('  gg use --mistral'));
                     console.log(chalk.cyan('  gg use --groq'));
+                    console.log(chalk.cyan('  gg use --ollama'));
+                    console.log(chalk.cyan('  gg use --lmstudio'));
                     process.exit(1);
                 }
 

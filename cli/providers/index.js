@@ -1,6 +1,8 @@
 import { GeminiProvider } from './gemini.js';
 import { MistralProvider } from './mistral.js';
 import { GroqProvider } from './groq.js';
+import { OllamaProvider } from './ollama.js';
+import { LMStudioProvider } from './lmstudio.js';
 
 /**
  * Provider registry and factory
@@ -10,15 +12,22 @@ export class ProviderFactory {
         gemini: GeminiProvider,
         mistral: MistralProvider,
         groq: GroqProvider,
+        ollama: OllamaProvider,
+        lmstudio: LMStudioProvider,
     };
 
     /**
+     * Providers that run locally and require a baseUrl + model instead of an API key.
+     */
+    static localProviders = ['ollama', 'lmstudio'];
+
+    /**
      * Get an instance of the specified provider
-     * @param {string} providerName - Name of the provider (gemini, mistral)
-     * @param {string} apiKey - API key for the provider
+     * @param {string} providerName - Name of the provider (gemini, mistral, groq, ollama, lmstudio)
+     * @param {string|Object} apiKeyOrConfig - API key string for cloud providers, or {baseUrl, model} for local providers
      * @returns {AIProvider} Provider instance
      */
-    static getProvider(providerName, apiKey) {
+    static getProvider(providerName, apiKeyOrConfig) {
         const normalizedName = providerName.toLowerCase();
         const ProviderClass = this.providers[normalizedName];
 
@@ -26,7 +35,7 @@ export class ProviderFactory {
             throw new Error(`Unknown provider: ${providerName}. Supported providers: ${this.getSupportedProviders().join(', ')}`);
         }
 
-        return new ProviderClass(apiKey);
+        return new ProviderClass(apiKeyOrConfig);
     }
 
     /**
@@ -52,5 +61,14 @@ export class ProviderFactory {
      */
     static isProviderSupported(providerName) {
         return this.providers.hasOwnProperty(providerName.toLowerCase());
+    }
+
+    /**
+     * Check if a provider is a local provider (no API key required).
+     * @param {string} providerName - Provider name to check
+     * @returns {boolean} True if local provider
+     */
+    static isLocalProvider(providerName) {
+        return this.localProviders.includes(providerName.toLowerCase());
     }
 }

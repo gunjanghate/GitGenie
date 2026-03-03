@@ -1,16 +1,37 @@
 /**
  * Base abstract class for AI providers
  * All AI providers must extend this class and implement its methods
+ *
+ * Cloud providers: pass apiKey as a string (strict validation preserved)
+ * Local providers: pass a config object { baseUrl, model } — no API key needed
  */
 export class AIProvider {
-    constructor(apiKey) {
+    constructor(apiKeyOrConfig) {
         if (new.target === AIProvider) {
             throw new Error('AIProvider is an abstract class and cannot be instantiated directly');
         }
-        if (!apiKey || typeof apiKey !== 'string') {
-            throw new Error('API key is required and must be a string');
+
+        if (apiKeyOrConfig !== null && typeof apiKeyOrConfig === 'object') {
+            // Local provider path — config object { baseUrl, model }
+            this.apiKey = null;
+            this.localConfig = apiKeyOrConfig;
+        } else {
+            // Cloud provider path — strict API key validation (backward compat)
+            if (!apiKeyOrConfig || typeof apiKeyOrConfig !== 'string') {
+                throw new Error('API key is required and must be a string');
+            }
+            this.apiKey = apiKeyOrConfig;
+            this.localConfig = null;
         }
-        this.apiKey = apiKey;
+    }
+
+    /**
+     * Whether this provider runs locally (no API key required).
+     * Local providers override this to return true.
+     * @returns {boolean}
+     */
+    isLocalProvider() {
+        return false;
     }
 
     /**
