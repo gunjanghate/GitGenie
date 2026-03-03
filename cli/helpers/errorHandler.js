@@ -43,6 +43,24 @@ function parseLocalProviderError(error, providerName) {
     const hints = LOCAL_PROVIDER_HINTS[providerName] || LOCAL_PROVIDER_HINTS.ollama;
     const displayName = LOCAL_PROVIDER_NAMES[providerName] || providerName;
 
+    // Context window overflow (e.g. LM Studio HTTP 400 "Cannot truncate prompt")
+    if (
+        msgLow.includes('n_ctx') ||
+        msgLow.includes('context') ||
+        msgLow.includes('truncate prompt') ||
+        msgLow.includes('context length') ||
+        (error?.status === 400 || msgLow.includes('http 400'))
+    ) {
+        return {
+            type: ErrorType.GENERIC_API_ERROR,
+            message: `${displayName}: the diff is too large for this model's context window.`,
+            helpfulAction:
+                `Try loading a model with a larger context window in ${displayName}.\n` +
+                `   Or stage fewer files at a time before committing.\n` +
+                `   ${chalk.gray(hints.configHint)}`,
+        };
+    }
+
     // Server not reachable (thrown by our #ensureRunning guard)
     if (
         msgLow.includes('not reachable') ||

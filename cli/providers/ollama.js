@@ -23,6 +23,9 @@ export class OllamaProvider extends AIProvider {
     getDocsUrl() { return 'https://ollama.com/library'; }
     validateApiKey() { return true; }
 
+    // Max diff characters to send — keeps prompt safely within small context windows
+    static MAX_DIFF_CHARS = 3000;
+
     async ping() {
         try {
             const res = await fetch(`${this.baseUrl}/api/tags`, { signal: AbortSignal.timeout(3000) });
@@ -72,6 +75,9 @@ export class OllamaProvider extends AIProvider {
 
     async generateCommitMessage(diff, opts, desc) {
         await this.#ensureRunning();
+        const safeDiff = diff.length > OllamaProvider.MAX_DIFF_CHARS
+            ? diff.substring(0, OllamaProvider.MAX_DIFF_CHARS) + '\n... (diff truncated to fit context window)'
+            : diff;
         const prompt = `You are a senior software engineer. Generate a professional git commit message.
 
 REQUIREMENTS:
@@ -85,7 +91,7 @@ REQUIREMENTS:
 - Include scope when relevant (component/module/area affected)
 
 Code diff to analyze:
-${diff}
+${safeDiff}
 
 Return ONLY the commit message, no explanations or quotes.`;
         return (await this.#chat(prompt, 100)) || `${opts.type}: ${desc}`;
@@ -93,6 +99,9 @@ Return ONLY the commit message, no explanations or quotes.`;
 
     async generatePRTitle(diff, opts, desc) {
         await this.#ensureRunning();
+        const safeDiff = diff.length > OllamaProvider.MAX_DIFF_CHARS
+            ? diff.substring(0, OllamaProvider.MAX_DIFF_CHARS) + '\n... (diff truncated to fit context window)'
+            : diff;
         const prompt = `You are a senior software engineer creating a Pull Request title.
 
 REQUIREMENTS:
@@ -103,7 +112,7 @@ REQUIREMENTS:
 - Professional tone
 
 Code diff to analyze:
-${diff}
+${safeDiff}
 
 Context: ${desc}
 
