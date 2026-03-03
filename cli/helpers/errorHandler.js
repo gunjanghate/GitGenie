@@ -4,6 +4,115 @@ import path from 'path';
 import os from 'os';
 
 /**
+ * Local providers that run on-device — no API keys, different error surface.
+ */
+const LOCAL_PROVIDERS = ['ollama', 'lmstudio'];
+
+/** Display names for local providers */
+const LOCAL_PROVIDER_NAMES = {
+    ollama: 'Ollama',
+    lmstudio: 'LM Studio',
+};
+
+/** Setup hints for local providers */
+const LOCAL_PROVIDER_HINTS = {
+    ollama: {
+        serverHint: 'Start the server with: ollama serve',
+        modelHint: (model) => `Pull the model with: ollama pull ${model}`,
+        configHint: 'Reconfigure with: gg config --provider ollama --url <url> --model <model>',
+        docsUrl: 'https://ollama.com/library',
+    },
+    lmstudio: {
+        serverHint: 'Open LM Studio → load a model → enable the local server (port 1234)',
+        modelHint: (_model) => 'Make sure a model is loaded and the server is enabled in LM Studio',
+        configHint: 'Reconfigure with: gg config --provider lmstudio --url <url> --model <model>',
+        docsUrl: 'https://lmstudio.ai/docs',
+    },
+};
+
+/**
+ * Parse errors from local AI providers (Ollama, LM Studio).
+ * These have no API keys — errors are about server reachability and model availability.
+ * @param {Error} error
+ * @param {string} providerName - 'ollama' | 'lmstudio'
+ * @returns {Object} { type, message, helpfulAction }
+ */
+function parseLocalProviderError(error, providerName) {
+    const msg = error?.message || '';
+    const msgLow = msg.toLowerCase();
+    const hints = LOCAL_PROVIDER_HINTS[providerName] || LOCAL_PROVIDER_HINTS.ollama;
+    const displayName = LOCAL_PROVIDER_NAMES[providerName] || providerName;
+
+    // Context window overflow (e.g. LM Studio HTTP 400 "Cannot truncate prompt")
+    if (
+        msgLow.includes('n_ctx') ||
+        msgLow.includes('context') ||
+        msgLow.includes('truncate prompt') ||
+        msgLow.includes('context length') ||
+        (error?.status === 400 || msgLow.includes('http 400'))
+    ) {
+        return {
+            type: ErrorType.GENERIC_API_ERROR,
+            message: `${displayName}: the diff is too large for this model's context window.`,
+            helpfulAction:
+                `Try loading a model with a larger context window in ${displayName}.\n` +
+                `   Or stage fewer files at a time before committing.\n` +
+                `   ${chalk.gray(hints.configHint)}`,
+        };
+    }
+
+    // Server not reachable (thrown by our #ensureRunning guard)
+    if (
+        msgLow.includes('not reachable') ||
+        msgLow.includes('econnrefused') ||
+        msgLow.includes('etimedout') ||
+        msgLow.includes('timeout') ||
+        msgLow.includes('enotfound') ||
+        msgLow.includes('network') ||
+        error?.code === 'ECONNREFUSED' ||
+        error?.code === 'ETIMEDOUT' ||
+        error?.code === 'ENOTFOUND'
+    ) {
+        return {
+            type: ErrorType.NETWORK_ERROR,
+            message: `${displayName} server is not running or not reachable.`,
+            helpfulAction:
+                `${hints.serverHint}\n` +
+                `   ${chalk.gray(hints.configHint)}`,
+        };
+    }
+
+    // Model not found / not loaded (thrown by our #chat guard)
+    if (
+        msgLow.includes('not found') ||
+        msgLow.includes('not loaded') ||
+        msgLow.includes('model') ||
+        (error?.status === 404)
+    ) {
+        // Try to extract model name from the error message
+        const modelMatch = msg.match(/["\u201c]([^"\u201d]+)["\u201d]/);
+        const modelName = modelMatch ? modelMatch[1] : 'the configured model';
+        return {
+            type: ErrorType.GENERIC_API_ERROR,
+            message: `${displayName}: model "${modelName}" is not available.`,
+            helpfulAction:
+                `${hints.modelHint(modelName)}\n` +
+                `   ${chalk.gray(hints.configHint)}`,
+        };
+    }
+
+    // Generic local error
+    return {
+        type: ErrorType.UNKNOWN_ERROR,
+        message: `${displayName} returned an unexpected error.`,
+        helpfulAction:
+            `Check that ${displayName} is running and the model is loaded.\n` +
+            `   ${chalk.gray(hints.configHint)}\n` +
+            `   Docs: ${chalk.cyan(hints.docsUrl)}`,
+    };
+}
+
+/**
  * Error types for AI provider API failures
  */
 export const ErrorType = {
@@ -55,6 +164,11 @@ function getProviderErrorPatterns(providerName) {
  * @returns {Object} - { type, message, helpfulAction }
  */
 export function parseProviderError(error, providerName = 'gemini') {
+    // Local providers have a completely different error surface — no API keys involved
+    if (LOCAL_PROVIDERS.includes(providerName.toLowerCase())) {
+        return parseLocalProviderError(error, providerName.toLowerCase());
+    }
+
     const errorMessage = error?.message?.toLowerCase() || '';
     const errorString = error?.toString?.()?.toLowerCase() || '';
     const statusCode = error?.status || error?.statusCode;

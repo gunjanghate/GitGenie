@@ -13,7 +13,8 @@ import path from 'path';
 import crypto from 'crypto';
 const {
   registerConfigCommand,
-  getActiveProviderInstance
+  getActiveProviderInstance,
+  getActiveProvider
 } = await import(
   new URL('./commands/config.js', import.meta.url)
 );
@@ -689,9 +690,16 @@ async function generateCommitMessage(diff, opts, desc) {
 
   if (!opts.genie || !provider) {
     if (opts.genie && !provider) {
+      const { ProviderFactory } = await import(new URL('./providers/index.js', import.meta.url));
+      const isLocal = providerName && ProviderFactory.isLocalProvider(providerName);
       console.warn(chalk.yellow('⚠ AI provider not configured. Falling back to manual commit message.'));
-      console.warn(chalk.cyan('To enable AI commit messages, configure an API key:'));
-      console.warn(chalk.gray('Example: gg config <your_api_key> --provider gemini'));
+      if (isLocal) {
+        console.warn(chalk.cyan(`To enable AI commit messages, make sure your ${providerName} server is running and configured:`));
+        console.warn(chalk.gray(`Example: gg config --provider ${providerName} --url <url> --model <model>`));
+      } else {
+        console.warn(chalk.cyan('To enable AI commit messages, configure an API key:'));
+        console.warn(chalk.gray('Example: gg config <your_api_key> --provider gemini'));
+      }
     }
     return `${opts.type}${opts.scope ? `(${opts.scope})` : ''}: ${desc}`;
   }
@@ -715,9 +723,16 @@ async function generatePRTitle(diff, opts, desc) {
 
   if (!opts.genie || !provider) {
     if (opts.genie && !provider) {
+      const { ProviderFactory } = await import(new URL('./providers/index.js', import.meta.url));
+      const isLocal = providerName && ProviderFactory.isLocalProvider(providerName);
       console.warn(chalk.yellow('⚠ AI provider not configured. Falling back to manual PR title.'));
-      console.warn(chalk.cyan('To enable AI PR titles, configure an API key:'));
-      console.warn(chalk.gray('Example: gg config <your_api_key> --provider gemini'));
+      if (isLocal) {
+        console.warn(chalk.cyan(`To enable AI PR titles, make sure your ${providerName} server is running and configured:`));
+        console.warn(chalk.gray(`Example: gg config --provider ${providerName} --url <url> --model <model>`));
+      } else {
+        console.warn(chalk.cyan('To enable AI PR titles, configure an API key:'));
+        console.warn(chalk.gray('Example: gg config <your_api_key> --provider gemini'));
+      }
     }
     return `${opts.type}${opts.scope ? `(${opts.scope})` : ''}: ${desc}`;
   }
