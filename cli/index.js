@@ -191,7 +191,7 @@ program.command('cl')
       console.log(chalk.gray(`  cd ${targetDir}`));
       console.log(chalk.gray('  code .'));
 
-      // Try to automatically open the repo in VS Code
+     
       try {
         await execaCommand('code .', { cwd: path.resolve(process.cwd(), targetDir) });
         console.log(chalk.green(`Opened "${targetDir}" in VS Code`));
