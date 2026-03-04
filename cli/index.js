@@ -1,16 +1,14 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
-import simpleGit from 'simple-git';
-import dotenv from 'dotenv';
 import chalk from 'chalk';
-import ora from 'ora';
-import inquirer from 'inquirer';
+import { Command } from 'commander';
+import dotenv from 'dotenv';
 import { execaCommand } from 'execa';
 import fs from 'fs';
-import os from 'os';
+import inquirer from 'inquirer';
+import ora from 'ora';
 import path from 'path';
-import crypto from 'crypto';
+import simpleGit from 'simple-git';
 const {
   registerConfigCommand,
   getActiveProviderInstance
@@ -45,6 +43,10 @@ const { stageAllFiles } = await import(
 
 const { registerSplitCommand } = await import(
   new URL('./commands/split.js', import.meta.url)
+);
+
+const { registerPRCommand } = await import(
+  new URL('./commands/pr.js', import.meta.url)
 );
 
 const {
@@ -156,6 +158,7 @@ ${banner}
 // Register commands
 registerConfigCommand(program);
 await registerSplitCommand(program);
+await registerPRCommand(program);
 // Register `config`
 
 
