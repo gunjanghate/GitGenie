@@ -37,9 +37,87 @@ export async function registerSplitCommand(program) {
         new URL('./config.js', import.meta.url)
     );
 
+<<<<<<< Updated upstream
     const { stageAllFiles } = await import(
         new URL('../helpers/gitUtils.js', import.meta.url)
     );
+=======
+// ✅ Centralized Git Executor — preview mode intercepts all git calls
+function createGitExecutor(preview) {
+    return {
+        async raw(args) {
+            if (preview) {
+                console.log(chalk.gray(`  ↳ [preview] git raw ${JSON.stringify(args)}`));
+                return;
+            }
+            return git.raw(args);
+        },
+        async add(file) {
+            if (preview) {
+                console.log(chalk.gray(`  ↳ [preview] git add ${file}`));
+                return;
+            }
+            return git.add(file);
+        },
+        async commit(message) {
+            if (preview) {
+                console.log(chalk.gray(`  ↳ [preview] git commit "${message}"`));
+                return;
+            }
+            return git.commit(message);
+        },
+        async push(remote, branch) {
+            if (preview) {
+                console.log(chalk.gray(`  ↳ [preview] git push ${remote} ${branch}`));
+                return;
+            }
+            return git.push(remote, branch);
+        },
+        async checkout(branch) {
+            if (preview) {
+                console.log(chalk.gray(`  ↳ [preview] git checkout ${branch}`));
+                return;
+            }
+            return git.checkout(branch);
+        },
+        async merge(branch) {
+            if (preview) {
+                console.log(chalk.gray(`  ↳ [preview] git merge ${branch}`));
+                return;
+            }
+            return git.merge([branch]);
+        },
+        async revparse(args) {
+            if (preview) {
+                console.log(chalk.gray(`  ↳ [preview] git rev-parse ${JSON.stringify(args)}`));
+                // Simulate HEAD exists in preview
+                return 'preview-sha';
+            }
+            return git.revparse(args);
+        },
+        async branch() {
+            if (preview) {
+                console.log(chalk.gray(`  ↳ [preview] git branch --show-current`));
+                return { current: 'preview-branch' };
+            }
+            return git.branch();
+        }
+    };
+}
+
+// ✅ NOT async — Commander needs sync registration
+export function registerSplitCommand(program) {
+>>>>>>> Stashed changes
+
+    // Register SIGINT once — prevents duplicate listeners on repeated command execution
+    if (!process.listenerCount('SIGINT')) {
+        process.on('SIGINT', () => {
+            console.log(chalk.yellow('\n\n⚠ Split operation cancelled by user.'));
+            console.log(chalk.cyan('Your staged changes remain unchanged.'));
+            console.log(chalk.gray('Tip: Run gg split again when ready'));
+            process.exit(0);
+        });
+    }
 
     program
         .command('split')
@@ -47,23 +125,26 @@ export async function registerSplitCommand(program) {
         .option('--genie', 'Enable AI-powered grouping (requires API key)')
         .option('--auto', 'Auto-commit all groups without confirmation')
         .option('--dry-run', 'Preview groups without committing')
+        .option('--preview', 'Simulate all Git actions without executing them')
+        .option('--push-to-main', 'Push and merge changes into main after splitting')
         .option('--max-groups <n>', 'Maximum number of groups', '5')
         .action(async (opts) => {
             try {
-                // Handle Ctrl+C gracefully
-                process.on('SIGINT', () => {
-                    console.log(chalk.yellow('\n\n⚠ Split operation cancelled by user.'));
-                    console.log(chalk.cyan('Your staged changes remain unchanged.'));
-                    console.log(chalk.gray('Tip: Run gg split again when ready'));
-                    process.exit(0);
-                });
+                // Initialize preview mode
+                const preview = opts.preview || false;
+                if (preview) {
+                    console.log(chalk.cyan('\n🔍 Running in PREVIEW mode (no Git commands will execute)'));
+                    console.log(chalk.gray('Preview executor initialized – git writes are disabled.\n'));
+                }
+
+                // Centralized git executor
+                const gitExec = createGitExecutor(preview);
 
                 // 1️⃣ Analyze staged changes
                 let filesData = await analyzeStagedChanges();
 
                 // Handle no staged changes
                 if (filesData.files.length === 0) {
-                    // Check if there are unstaged changes
                     const unstagedDiff = await git.diff();
                     const hasUnstagedChanges = !!unstagedDiff;
 
@@ -111,14 +192,12 @@ export async function registerSplitCommand(program) {
                 const provider = await getActiveProviderInstance();
                 const providerName = await getActiveProvider();
 
-                // Determine if we should use AI (only if explicitly requested and provider exists)
                 const useAI = opts.genie && provider;
 
                 if (useAI) {
                     try {
                         groups = await groupFilesWithAI(filesData, provider, maxGroups);
 
-                        // Validate AI-generated groups
                         const validationErrors = validateGroups(groups, filesData);
                         if (validationErrors) {
                             console.error(chalk.red('AI grouping validation failed:'));
@@ -156,7 +235,6 @@ export async function registerSplitCommand(program) {
                         process.exit(0);
                     }
 
-                    // Generate commit messages for preview
                     const msgSpinner = opts.genie ? ora('🧞 Generating preview messages with AI...').start() : null;
                     try {
                         for (const group of groups) {
@@ -182,7 +260,11 @@ export async function registerSplitCommand(program) {
                 }
 
                 // 4️⃣ Interactive or auto mode
-                let action = opts.auto ? 'commit-all' : await promptGroupActions(groups);
+                // Preview mode forces commit-all so entire flow (including push-to-main) is simulated
+                let action;
+                if (opts.auto) action = 'commit-all';
+                else if (preview) action = 'commit-all';
+                else action = await promptGroupActions(groups);
 
                 // Handle merge action
                 if (action === 'merge') {
@@ -209,8 +291,12 @@ export async function registerSplitCommand(program) {
                 const summary = { committed: 0, skipped: 0, failed: 0 };
 
                 if (action === 'commit-all') {
+<<<<<<< Updated upstream
                     // Confirm before committing all
                     if (!opts.auto) {
+=======
+                    if (!opts.auto && !preview) {
+>>>>>>> Stashed changes
                         const confirmed = await confirmCommitAll(groups);
                         if (!confirmed) {
                             console.log(chalk.yellow('Operation cancelled.'));
@@ -224,6 +310,7 @@ export async function registerSplitCommand(program) {
                         const spinner = ora(`Committing group ${i + 1}/${groups.length}...`).start();
 
                         try {
+<<<<<<< Updated upstream
                             // Unstage all files first (but keep committed changes)
                             // Check if repository has commits (HEAD exists)
                             try {
@@ -236,15 +323,29 @@ export async function registerSplitCommand(program) {
                             }
 
                             // Stage only files for this group
+=======
+                            // Unstage all, then restage only this group's files
+                            try {
+                                await gitExec.revparse(['--verify', 'HEAD']);
+                                await gitExec.raw(['reset', '--mixed']);
+                            } catch {
+                                await gitExec.raw(['rm', '--cached', '-r', '.']);
+                            }
+
+>>>>>>> Stashed changes
                             for (const file of group.files) {
-                                await git.add(file);
+                                await gitExec.add(file);
                             }
 
                             // Generate commit message
                             const message = group.customMessage || await generateCommitMessageForGroup(group, filesData, opts.genie ? provider : null);
 
+<<<<<<< Updated upstream
                             // Commit
                             await git.commit(message);
+=======
+                            await gitExec.commit(message);
+>>>>>>> Stashed changes
                             spinner.succeed(chalk.green(`✓ Committed: ${message}`));
                             summary.committed++;
                             group.committed = true;
@@ -284,24 +385,35 @@ export async function registerSplitCommand(program) {
                                 // Unstage all files first (but keep committed changes)
                                 // Check if repository has commits (HEAD exists)
                                 try {
+<<<<<<< Updated upstream
                                     await git.revparse(['--verify', 'HEAD']);
                                     // HEAD exists, use it for reset
                                     await git.reset(['HEAD']);
                                 } catch {
                                     // No commits yet, just remove all from staging
                                     await git.raw(['rm', '--cached', '-r', '.']);
+=======
+                                    await gitExec.revparse(['--verify', 'HEAD']);
+                                    await gitExec.raw(['reset', '--mixed']);
+                                } catch {
+                                    await gitExec.raw(['rm', '--cached', '-r', '.']);
+>>>>>>> Stashed changes
                                 }
 
                                 // Stage only files for this group
                                 for (const file of updatedGroup.files) {
-                                    await git.add(file);
+                                    await gitExec.add(file);
                                 }
 
                                 // Generate or use custom commit message
                                 const message = updatedGroup.customMessage || await generateCommitMessageForGroup(updatedGroup, filesData, opts.genie ? provider : null);
 
+<<<<<<< Updated upstream
                                 // Commit
                                 await git.commit(message);
+=======
+                                await gitExec.commit(message);
+>>>>>>> Stashed changes
                                 spinner.succeed(chalk.green(`✓ Committed: ${message}`));
                                 summary.committed++;
                                 group.committed = true;
@@ -322,6 +434,33 @@ export async function registerSplitCommand(program) {
 
                 // 6️⃣ Show summary
                 showSplitSummary(summary);
+
+                // DEBUG — remove after confirming push block runs
+                if (process.env.GITGENIE_DEBUG) {
+                    console.log(chalk.gray(`\nDEBUG push check: pushToMain=${opts.pushToMain}, committed=${summary.committed}, preview=${preview}`));
+                }
+
+                // 7️⃣ Push to main (if requested and commits were made)
+                if (opts.pushToMain && !preview && summary.committed === 0) {
+                    console.log(chalk.yellow('\n⚠ No commits were created. Skipping push-to-main.'));
+                }
+
+                if (opts.pushToMain && summary.committed > 0) {
+                    const branchInfo = await gitExec.branch();
+                    const currentBranch = branchInfo.current;
+                    console.log(chalk.cyan(`\n🚀 Pushing to origin/${currentBranch} and merging into main...`));
+
+                    await gitExec.push('origin', currentBranch);
+                    await gitExec.checkout('main');
+                    await gitExec.merge(currentBranch);
+
+                    console.log(chalk.green('\n✓ Changes pushed and merged to main'));
+                }
+
+                // Preview mode final confirmation
+                if (preview) {
+                    console.log(chalk.cyan('\n✅ Preview complete. No changes were made to your repository.'));
+                }
 
                 // Restage any uncommitted files
                 if (summary.skipped > 0 || summary.failed > 0) {
