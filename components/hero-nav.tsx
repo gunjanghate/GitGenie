@@ -19,15 +19,21 @@ export default function HeroNav() {
   ];
 
   return (
-    <nav className="hidden md:flex items-center gap-1 md:gap-2 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-full px-2 md:px-3 py-2 md:py-2.5 shadow-lg">
+<nav className="hidden md:flex items-center gap-1 md:gap-2 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-full px-2 md:px-3 py-2 md:py-2.5 shadow-lg pointer-events-auto">
       {navItems.map((item) => (
-        <button
-          key={item.id}
-          onClick={() => scrollToSection(item.id)}
-          className="px-3 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-medium text-zinc-400 hover:text-orange-500 hover:bg-zinc-800/80 rounded-full transition-all duration-200 cursor-pointer whitespace-nowrap"
-        >
-          {item.label}
-        </button>
+       <button
+  key={item.id}
+  onClick={() => scrollToSection(item.id)}
+  className="flex items-center justify-center px-3 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-medium text-zinc-400 hover:text-orange-500 hover:bg-zinc-800/80 rounded-full transition-all duration-200 cursor-pointer whitespace-nowrap w-full"
+>
+ <a
+  key={item.id}
+  href={`#${item.id}`}
+  className="inline-flex items-center justify-center px-5 py-2 text-sm font-medium text-zinc-400 hover:text-orange-500 hover:bg-zinc-800/80 rounded-full transition-all duration-200 cursor-pointer whitespace-nowrap"
+>
+  {item.label}
+</a>
+</button>
       ))}
     </nav>
   );
