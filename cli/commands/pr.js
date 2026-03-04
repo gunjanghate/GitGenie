@@ -7,7 +7,8 @@ export async function registerPRCommand(program) {
   program
     .command("pr")
     .description("Generate PR description from recent commits")
-    .option("-n, --number <num>", "Number of commits to analyze", "5")
+    .option("--number <num>", "Number of commits to analyze", "5")
+    
     .action(async (options) => {
       try {
         const count = parseInt(options.number) || 5;
