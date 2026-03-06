@@ -1,5 +1,7 @@
 import chalk from "chalk";
+import ora from "ora";
 import simpleGit from "simple-git";
+import { getActiveProviderInstance } from "../commands/config.js";
 
 const git = simpleGit();
 
@@ -7,11 +9,12 @@ export async function registerPRCommand(program) {
   program
     .command("pr")
     .description("Generate PR description from recent commits")
-    .option("--number <num>", "Number of commits to analyze", "5")
-    
+    .option("--count <number>", "Number of commits to analyze", "5")
+    .option("--genie", "Generate PR description using AI")
     .action(async (options) => {
       try {
-        const count = parseInt(options.number) || 5;
+        const count = parseInt(options.count) || 5;
+        const useAI = options.genie || false;
 
         console.log(chalk.blue(`Analyzing last ${count} commits...\n`));
 
@@ -34,6 +37,35 @@ export async function registerPRCommand(program) {
         ]);
 
         const files = [...new Set(filesRaw.split("\n").filter(Boolean))];
+
+        // ================= AI MODE =================
+        if (useAI) {
+          const provider = await getActiveProviderInstance();
+
+          if (!provider) {
+            console.log(
+              chalk.yellow(
+                "⚠ AI provider not configured. Falling back to structured mode."
+              )
+            );
+          } else {
+            const spinner = ora("Generating PR description using AI...").start();
+
+            try {
+              const aiDescription = await provider.generatePRDescription(
+                commits.join("\n")
+              );
+
+              spinner.succeed("AI PR description generated\n");
+              console.log(aiDescription);
+              return;
+            } catch (err) {
+              spinner.fail("AI generation failed. Falling back to structured mode.");
+            }
+          }
+        }
+
+        // ================= STRUCTURED MODE =================
 
         // -------- Commit Classification --------
         const features = [];
@@ -60,22 +92,22 @@ export async function registerPRCommand(program) {
 
         if (features.length) {
           changes += "### Features\n";
-          changes += features.map(c => `- ${c}`).join("\n") + "\n\n";
+          changes += features.map((c) => `- ${c}`).join("\n") + "\n\n";
         }
 
         if (fixes.length) {
           changes += "### Bug Fixes\n";
-          changes += fixes.map(c => `- ${c}`).join("\n") + "\n\n";
+          changes += fixes.map((c) => `- ${c}`).join("\n") + "\n\n";
         }
 
         if (refactors.length) {
           changes += "### Refactoring\n";
-          changes += refactors.map(c => `- ${c}`).join("\n") + "\n\n";
+          changes += refactors.map((c) => `- ${c}`).join("\n") + "\n\n";
         }
 
         if (others.length) {
           changes += "### Other Changes\n";
-          changes += others.map(c => `- ${c}`).join("\n") + "\n";
+          changes += others.map((c) => `- ${c}`).join("\n") + "\n";
         }
 
         // -------- Generate Summary --------
@@ -88,7 +120,9 @@ export async function registerPRCommand(program) {
         let summary = "This PR includes updates from recent commits.";
 
         if (summaryParts.length) {
-          summary = `This PR includes ${summaryParts.join(", ")} based on recent commits.`;
+          summary = `This PR includes ${summaryParts.join(
+            ", "
+          )} based on recent commits.`;
         }
 
         // -------- Files Modified --------
@@ -114,7 +148,6 @@ None
 
         console.log(chalk.green("Generated PR Description:\n"));
         console.log(prDescription);
-
       } catch (err) {
         console.error(chalk.red("Failed to generate PR description"));
         console.error(err.message);
