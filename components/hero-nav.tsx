@@ -1,13 +1,6 @@
 "use client";
 
 export default function HeroNav() {
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
-
   const navItems = [
     { id: "features", label: "Features" },
     { id: "how-it-works", label: "How it Works" },
@@ -18,23 +11,25 @@ export default function HeroNav() {
     { id: "community", label: "Community" },
   ];
 
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
-<nav className="hidden md:flex items-center gap-1 md:gap-2 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-full px-2 md:px-3 py-2 md:py-2.5 shadow-lg pointer-events-auto">
-      {navItems.map((item) => (
-       <button
-  key={item.id}
-  onClick={() => scrollToSection(item.id)}
-  className="flex items-center justify-center px-3 md:px-5 py-2 md:py-2.5 text-xs md:text-sm font-medium text-zinc-400 hover:text-orange-500 hover:bg-zinc-800/80 rounded-full transition-all duration-200 cursor-pointer whitespace-nowrap w-full"
->
- <a
-  key={item.id}
-  href={`#${item.id}`}
-  className="inline-flex items-center justify-center px-5 py-2 text-sm font-medium text-zinc-400 hover:text-orange-500 hover:bg-zinc-800/80 rounded-full transition-all duration-200 cursor-pointer whitespace-nowrap"
->
-  {item.label}
-</a>
-</button>
-      ))}
-    </nav>
+  <nav className="hidden md:flex items-center gap-6 bg-zinc-900/60 backdrop-blur-md border border-zinc-800 rounded-full px-6 py-3 shadow-lg fixed top-4 left-1/2 -translate-x-1/2 z-[110] whitespace-nowrap">
+  {navItems.map((item) => (
+    <button
+      key={item.id}
+      onClick={() => scrollToSection(item.id)}
+      className="text-zinc-300 text-sm font-medium transition-colors duration-200 rounded-full px-3 py-1 
+                 hover:text-amber-400 hover:bg-zinc-700/50 
+                 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 
+                 active:bg-zinc-700/50"
+    >
+      {item.label}
+    </button>
+  ))}
+</nav>
   );
 }

@@ -118,7 +118,7 @@ html {
 @media (max-width: 640px) {
   .scroll-stack-section .sticky-wrapper {
     position: relative;
-    top: auto;
+    top: 100%;
   }
 }
 
