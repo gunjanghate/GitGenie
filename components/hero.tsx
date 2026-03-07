@@ -20,31 +20,23 @@ export default function Hero() {
       className="relative overflow-hidden border-b border-white/5"
     >
       <BackgroundParticles />
-      <div
-        className="absolute top-5 left-0 right-0 z-[100] px-6
-  flex flex-row items-center justify-center gap-3
-  md:justify-between"
-      >
-        <Link
-        target="_blank"
-          href="https://github.com/gunjanghate/GitGenie"
-          className="group inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-black transition-transform duration-200 hover:scale-[1.03] hover:shadow-[0_0_0_3px_rgba(245,158,11,0.30)]"
-          aria-label="Star on GitHub"
-        >
-          <Star className="h-4 w-4 text-amber-500" aria-hidden="true" />
-          <span>Star on GitHub</span>
-        </Link>
-        <Link
-        target="_blank"
-          href="https://www.npmjs.com/package/@gunjanghate/git-genie"
-          className="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:scale-[1.03] hover:border-amber-400/40 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.18)]"
-          aria-label="Install via npm"
-        >
-          <Package className="h-4 w-4 text-amber-400" aria-hidden="true" />
-          <span>Install via npm</span>
-        </Link>
-      </div>
-
+   <div className="absolute top-5 mt-5 left-0 right-0 z-[100] px-6 flex justify-center md:justify-between pointer-events-none">
+  {/* GitHub + NPM buttons */}
+  <Link
+    target="_blank"
+    href="https://github.com/gunjanghate/GitGenie"
+    className="pointer-events-auto inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-base font-medium text-white transition-all duration-200 hover:scale-[1.03] hover:border-amber-400/40 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.18)]"
+  >
+    Star on GitHub
+  </Link>
+  <Link
+    target="_blank"
+    href="https://www.npmjs.com/package/@gunjanghate/git-genie"
+    className="pointer-events-auto inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:scale-[1.03] hover:border-amber-400/40 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.18)]"
+  >
+    Install via npm
+  </Link>
+</div>
       <div className="relative z-10 mx-auto flex max-w-6xl flex-col items-center justify-center px-6 py-24 sm:py-28 md:py-32 min-h-[85svh] pt-40 md:pt-35">
         <AnimateIn delay={40}>
           <div className="group relative mx-auto flex items-center justify-center rounded-full px-4 py-1.5 shadow-[inset_0_-8px_10px_#8fdfff1f] transition-shadow duration-500 ease-out hover:shadow-[inset_0_-5px_10px_#8fdfff3f] mb-5">
