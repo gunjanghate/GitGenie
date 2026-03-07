@@ -1,16 +1,14 @@
 #!/usr/bin/env node
 
-import { Command } from 'commander';
-import simpleGit from 'simple-git';
-import dotenv from 'dotenv';
 import chalk from 'chalk';
-import ora from 'ora';
-import inquirer from 'inquirer';
+import { Command } from 'commander';
+import dotenv from 'dotenv';
 import { execaCommand } from 'execa';
 import fs from 'fs';
-import os from 'os';
+import inquirer from 'inquirer';
+import ora from 'ora';
 import path from 'path';
-import crypto from 'crypto';
+import simpleGit from 'simple-git';
 const {
   registerConfigCommand,
   getActiveProviderInstance,
@@ -46,6 +44,10 @@ const { stageAllFiles } = await import(
 
 const { registerSplitCommand } = await import(
   new URL('./commands/split.js', import.meta.url)
+);
+
+const { registerPRCommand } = await import(
+  new URL('./commands/pr.js', import.meta.url)
 );
 
 const {
@@ -157,6 +159,8 @@ ${banner}
 // Register commands
 registerConfigCommand(program);
 await registerSplitCommand(program);
+
+await registerPRCommand(program);
 // Register `config`
 
 
@@ -188,16 +192,16 @@ program.command('cl')
       console.log(chalk.gray(`  cd ${targetDir}`));
       console.log(chalk.gray('  code .'));
 
-      // Try to automatically open the repo in VS Code
+     
       try {
         await execaCommand('code .', { cwd: path.resolve(process.cwd(), targetDir) });
-        console.log(chalk.green(`✅ Opened "${targetDir}" in VS Code`));
+        console.log(chalk.green(`Opened "${targetDir}" in VS Code`));
       } catch (openErr) {
         console.log(chalk.yellow('⚠ Could not open VS Code automatically.'));
         console.log(chalk.cyan('Tip: Ensure the "code" command is on your PATH. In VS Code, use: Command Palette → Shell Command: Install "code" command in PATH.'));
       }
     } catch (err) {
-      spinner.fail('❌ Failed to clone repository.');
+      spinner.fail('Failed to clone repository.');
       console.log(chalk.red(err.message));
       console.log(chalk.cyan('Tip: Ensure the URL is correct and you have access (SSH/HTTPS).'));
     }
@@ -557,7 +561,7 @@ program
     const first = process.argv[2];
 
     // 🚫 If first arg is a known subcommand, do nothing here
-    if (['commit', 'b', 's', 'wt', 'cl', 'config', 'split', 'ignore'].includes(first)) return;
+     if (['commit', 'b', 's', 'wt', 'cl', 'config', 'split', 'ignore', 'pr'].includes(first)) return;
 
     // No args → open menu
     if (!desc) {
