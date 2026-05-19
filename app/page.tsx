@@ -47,7 +47,7 @@ export default function Page() {
         <div className="relative">
           <Hero />
           {/* Navigation bar positioned at the top */}
-          <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50">
+          <div className="absolute top-0 inset-x-0 z-50">
             <HeroNav />
           </div>
         </div>
