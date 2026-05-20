@@ -4,6 +4,7 @@ import path from 'path';
 import crypto from 'crypto';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
+import { resolveApiKey } from '../utils/resolveApiKey.js';
 
 // Local providers don't use API keys — they connect to a running local server
 const LOCAL_PROVIDERS = ['ollama', 'lmstudio'];
@@ -48,6 +49,8 @@ export async function getEncryptionKey() {
     }
 
     // Fallback: generate a unique key based on user's home directory and machine
+    // Fallback key is deterministic (not cryptographically secure storage)
+    // Used only when keytar is unavailable
     const uniqueData = os.homedir() + os.hostname() + os.userInfo().username;
     return crypto.createHash('sha256').update(uniqueData).digest('hex');
 }
@@ -167,9 +170,14 @@ export async function getProviderConfig() {
  * @returns {Promise<string|null>} Decrypted API key or null
  */
 export async function getProviderApiKey(providerName) {
-    // First check environment variable for Gemini (backward compatibility)
-    if (providerName === 'gemini' && process.env.GEMINI_API_KEY) {
-        return process.env.GEMINI_API_KEY;
+    // First check environment variable using the centralized resolver
+    // resolveApiKey is intentionally synchronous (pure ENV lookup)
+    const envKey = resolveApiKey(providerName);
+    if (envKey) {
+        if (process.env.GITGENIE_DEBUG === 'true') {
+            console.log(chalk.gray(`[DEBUG] Using ENV API key for provider: ${providerName}`));
+        }
+        return envKey;
     }
 
     // Check keytar (secure storage) if available
