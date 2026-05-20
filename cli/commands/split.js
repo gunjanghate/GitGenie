@@ -6,43 +6,7 @@ import inquirer from 'inquirer';
 
 const git = simpleGit();
 
-export async function registerSplitCommand(program) {
-    const {
-        analyzeStagedChanges,
-        groupFilesWithAI,
-        groupFilesHeuristic,
-        generateCommitMessageForGroup,
-        validateGroups
-    } = await import(
-        new URL('../helpers/splitLogic.js', import.meta.url)
-    );
-
-    const {
-        promptGroupActions,
-        promptGroupReview,
-        promptMergeGroups,
-        confirmCommitAll,
-        promptStageChanges,
-        promptContinueAfterError,
-        showSplitSummary,
-        promptDryRun
-    } = await import(
-        new URL('../helpers/splitUI.js', import.meta.url)
-    );
-
-    const {
-        getActiveProviderInstance,
-        getActiveProvider
-    } = await import(
-        new URL('./config.js', import.meta.url)
-    );
-
-<<<<<<< Updated upstream
-    const { stageAllFiles } = await import(
-        new URL('../helpers/gitUtils.js', import.meta.url)
-    );
-=======
-// ✅ Centralized Git Executor — preview mode intercepts all git calls
+// Centralized Git Executor — preview mode intercepts all git calls
 function createGitExecutor(preview) {
     return {
         async raw(args) {
@@ -105,9 +69,40 @@ function createGitExecutor(preview) {
     };
 }
 
-// ✅ NOT async — Commander needs sync registration
-export function registerSplitCommand(program) {
->>>>>>> Stashed changes
+export async function registerSplitCommand(program) {
+    const {
+        analyzeStagedChanges,
+        groupFilesWithAI,
+        groupFilesHeuristic,
+        generateCommitMessageForGroup,
+        validateGroups
+    } = await import(
+        new URL('../helpers/splitLogic.js', import.meta.url)
+    );
+
+    const {
+        promptGroupActions,
+        promptGroupReview,
+        promptMergeGroups,
+        confirmCommitAll,
+        promptStageChanges,
+        promptContinueAfterError,
+        showSplitSummary,
+        promptDryRun
+    } = await import(
+        new URL('../helpers/splitUI.js', import.meta.url)
+    );
+
+    const {
+        getActiveProviderInstance,
+        getActiveProvider
+    } = await import(
+        new URL('./config.js', import.meta.url)
+    );
+
+    const { stageAllFiles } = await import(
+        new URL('../helpers/gitUtils.js', import.meta.url)
+    );
 
     // Register SIGINT once — prevents duplicate listeners on repeated command execution
     if (!process.listenerCount('SIGINT')) {
@@ -291,12 +286,7 @@ export function registerSplitCommand(program) {
                 const summary = { committed: 0, skipped: 0, failed: 0 };
 
                 if (action === 'commit-all') {
-<<<<<<< Updated upstream
-                    // Confirm before committing all
-                    if (!opts.auto) {
-=======
                     if (!opts.auto && !preview) {
->>>>>>> Stashed changes
                         const confirmed = await confirmCommitAll(groups);
                         if (!confirmed) {
                             console.log(chalk.yellow('Operation cancelled.'));
@@ -310,20 +300,6 @@ export function registerSplitCommand(program) {
                         const spinner = ora(`Committing group ${i + 1}/${groups.length}...`).start();
 
                         try {
-<<<<<<< Updated upstream
-                            // Unstage all files first (but keep committed changes)
-                            // Check if repository has commits (HEAD exists)
-                            try {
-                                await git.revparse(['--verify', 'HEAD']);
-                                // HEAD exists, use it for reset
-                                await git.reset(['HEAD']);
-                            } catch {
-                                // No commits yet, just remove all from staging
-                                await git.raw(['rm', '--cached', '-r', '.']);
-                            }
-
-                            // Stage only files for this group
-=======
                             // Unstage all, then restage only this group's files
                             try {
                                 await gitExec.revparse(['--verify', 'HEAD']);
@@ -332,7 +308,6 @@ export function registerSplitCommand(program) {
                                 await gitExec.raw(['rm', '--cached', '-r', '.']);
                             }
 
->>>>>>> Stashed changes
                             for (const file of group.files) {
                                 await gitExec.add(file);
                             }
@@ -340,12 +315,7 @@ export function registerSplitCommand(program) {
                             // Generate commit message
                             const message = group.customMessage || await generateCommitMessageForGroup(group, filesData, opts.genie ? provider : null);
 
-<<<<<<< Updated upstream
-                            // Commit
-                            await git.commit(message);
-=======
                             await gitExec.commit(message);
->>>>>>> Stashed changes
                             spinner.succeed(chalk.green(`✓ Committed: ${message}`));
                             summary.committed++;
                             group.committed = true;
@@ -385,19 +355,10 @@ export function registerSplitCommand(program) {
                                 // Unstage all files first (but keep committed changes)
                                 // Check if repository has commits (HEAD exists)
                                 try {
-<<<<<<< Updated upstream
-                                    await git.revparse(['--verify', 'HEAD']);
-                                    // HEAD exists, use it for reset
-                                    await git.reset(['HEAD']);
-                                } catch {
-                                    // No commits yet, just remove all from staging
-                                    await git.raw(['rm', '--cached', '-r', '.']);
-=======
                                     await gitExec.revparse(['--verify', 'HEAD']);
                                     await gitExec.raw(['reset', '--mixed']);
                                 } catch {
                                     await gitExec.raw(['rm', '--cached', '-r', '.']);
->>>>>>> Stashed changes
                                 }
 
                                 // Stage only files for this group
@@ -408,12 +369,7 @@ export function registerSplitCommand(program) {
                                 // Generate or use custom commit message
                                 const message = updatedGroup.customMessage || await generateCommitMessageForGroup(updatedGroup, filesData, opts.genie ? provider : null);
 
-<<<<<<< Updated upstream
-                                // Commit
-                                await git.commit(message);
-=======
                                 await gitExec.commit(message);
->>>>>>> Stashed changes
                                 spinner.succeed(chalk.green(`✓ Committed: ${message}`));
                                 summary.committed++;
                                 group.committed = true;
