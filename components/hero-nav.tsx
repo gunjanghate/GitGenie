@@ -91,8 +91,8 @@ export default function HeroNav() {
 
           {/* DOCS BUTTON */}
           <a
-            href="#"
-            className="rounded-full bg-amber-400 px-4 py-2 text-sm font-medium text-black transition-all duration-200 hover:scale-[1.03] hover:opacity-90 whitespace-nowrap"
+            href="/docs"
+            className="rounded-full bg-amber-500 px-4 py-2 text-sm font-medium text-black transition-all duration-200 hover:scale-[1.03] hover:opacity-90 whitespace-nowrap"
           >
             📖 View Docs
           </a>
