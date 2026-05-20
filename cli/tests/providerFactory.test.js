@@ -24,7 +24,12 @@ function runTests() {
         assert(providers.includes('gemini'), 'Should support gemini provider');
         assert(providers.includes('mistral'), 'Should support mistral provider');
         assert(providers.includes('groq'), 'Should support groq provider');
-        assert.strictEqual(providers.length, 5, 'Should have exactly 5 providers');
+
+        const expected = ['gemini', 'mistral', 'groq', 'ollama', 'lmstudio'];
+        assert.deepStrictEqual(
+            providers.sort(),
+            expected.sort()
+        );
 
         console.log('✅ Test 1 PASSED: Get supported providers');
         passed++;

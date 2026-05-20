@@ -108,10 +108,10 @@ async function runTests() {
     try {
         clearEnv();
         process.env.GEMINI_API_KEY = 'invalid';
-        await setupConfig('gemini', 'sk-valid_config_api_key_more_than_20_chars');
+        await setupConfig('gemini', 'AIzaSy-valid_config_api_key_more_than_20_chars');
 
         const key = await getProviderApiKey('gemini');
-        assert.strictEqual(key, 'sk-valid_config_api_key_more_than_20_chars', 'Should fall back to valid config key');
+        assert.strictEqual(key, 'AIzaSy-valid_config_api_key_more_than_20_chars', 'Should fall back to valid config key');
         console.log('✅ Test 2 PASSED: Invalid ENV + Valid Config');
         passed++;
     } catch (e) {
@@ -122,10 +122,10 @@ async function runTests() {
     // Case 3: No ENV + Valid Config
     try {
         clearEnv();
-        await setupConfig('gemini', 'sk-valid_config_api_key_more_than_20_chars');
+        await setupConfig('gemini', 'AIzaSy-valid_config_api_key_more_than_20_chars');
 
         const key = await getProviderApiKey('gemini');
-        assert.strictEqual(key, 'sk-valid_config_api_key_more_than_20_chars', 'Should use valid config key when no env');
+        assert.strictEqual(key, 'AIzaSy-valid_config_api_key_more_than_20_chars', 'Should use valid config key when no env');
         console.log('✅ Test 3 PASSED: No ENV + Valid Config');
         passed++;
     } catch (e) {
@@ -151,10 +151,10 @@ async function runTests() {
     try {
         clearEnv();
         process.env.GEMINI_API_KEY = '';
-        await setupConfig('gemini', 'sk-valid_config_api_key_more_than_20_chars');
+        await setupConfig('gemini', 'AIzaSy-valid_config_api_key_more_than_20_chars');
 
         const key = await getProviderApiKey('gemini');
-        assert.strictEqual(key, 'sk-valid_config_api_key_more_than_20_chars', 'Should ignore empty env key and fall back to config');
+        assert.strictEqual(key, 'AIzaSy-valid_config_api_key_more_than_20_chars', 'Should ignore empty env key and fall back to config');
         console.log('✅ Test 5 PASSED: Empty ENV');
         passed++;
     } catch (e) {
@@ -181,10 +181,10 @@ async function runTests() {
     try {
         clearEnv();
         process.env.GEMINI_API_KEY = 'this is definitely not a valid key but long enough';
-        await setupConfig('gemini', 'sk-valid_config_api_key_more_than_20_chars');
+        await setupConfig('gemini', 'AIzaSy-valid_config_api_key_more_than_20_chars');
 
         const key = await getProviderApiKey('gemini');
-        assert.strictEqual(key, 'sk-valid_config_api_key_more_than_20_chars', 'Should reject malformed long env key containing spaces');
+        assert.strictEqual(key, 'AIzaSy-valid_config_api_key_more_than_20_chars', 'Should reject malformed long env key containing spaces');
         console.log('✅ Test 7 PASSED: Malformed Long ENV Key');
         passed++;
     } catch (e) {

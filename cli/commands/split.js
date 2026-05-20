@@ -427,7 +427,7 @@ export async function registerSplitCommand(program) {
                         .flatMap(g => g.files);
                     for (const file of uncommittedFiles) {
                         try {
-                            await git.add(file);
+                            await gitExec.add(file);
                         } catch (e) {
                             // File may have been deleted
                         }

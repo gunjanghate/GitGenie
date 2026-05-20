@@ -7,29 +7,40 @@ const PROVIDER_RULES = {
   mistral: { patterns: [/^sk-[A-Za-z0-9\-_.=/]{15,}$/] }
 };
 
-function isValidKey(provider, key) {
-  if (!key || typeof key !== "string") return false;
+/**
+ * Validates and normalizes an API key for a provider.
+ * Returns the trimmed key if it passes validation, otherwise null.
+ * 
+ * @param {string} provider The name of the provider (e.g. 'gemini', 'openai')
+ * @param {string} key The raw API key string
+ * @returns {string|null} The normalized key, or null if invalid
+ */
+export function validateApiKey(provider, key) {
+  if (!key || typeof key !== "string") return null;
+
   const trimmed = key.trim();
-  if (trimmed === "") return false;
-
-  // Prevent excessively large inputs that could impact performance or logging systems
-  if (trimmed.length > 200) return false;
-
-  // Key must only contain alphanumeric, dash, underscore, dot, slash, and equals characters
-  if (!BASIC_KEY_REGEX.test(trimmed)) return false;
+  if (trimmed === "") return null;
+  if (trimmed.length > 200) return null;
+  if (!BASIC_KEY_REGEX.test(trimmed)) return null;
 
   const normalizedProvider = provider?.toLowerCase();
   const rule = PROVIDER_RULES[normalizedProvider];
 
   if (rule?.patterns) {
-    return rule.patterns.some(regex => regex.test(trimmed));
+    return rule.patterns.some(regex => regex.test(trimmed)) ? trimmed : null;
   }
 
   // Stricter fallback for unknown/dynamic providers
-  return trimmed.length > 30;
+  return trimmed.length > 30 ? trimmed : null;
 }
 
-function getEnvKey(provider) {
+/**
+ * Gets the raw environment variable key for the specified provider.
+ * 
+ * @param {string} provider The name of the provider
+ * @returns {string|null} The raw environment key value, or null if not found
+ */
+export function getEnvKey(provider) {
   if (!provider) return null;
   const normalized = provider.toLowerCase();
   const envVar = `${normalized.toUpperCase()}_API_KEY`;
@@ -37,15 +48,19 @@ function getEnvKey(provider) {
   return typeof value === "string" ? value : null;
 }
 
+/**
+ * Resolves, validates, and normalizes the environment-provided API key for a provider.
+ * If invalid, prints debug logs and falls back to config.
+ * 
+ * @param {string} provider The name of the provider
+ * @returns {string|null} The validated normalized environment key, or null
+ */
 export function resolveApiKey(provider) {
   const envKey = getEnvKey(provider);
   if (!envKey) return null;
 
-  const trimmed = envKey.trim();
-
-  if (isValidKey(provider, trimmed)) {
-    return trimmed;
-  }
+  const validated = validateApiKey(provider, envKey);
+  if (validated) return validated;
 
   // Traceable fallback logging under debug mode
   if (process.env.GITGENIE_DEBUG === "true") {
