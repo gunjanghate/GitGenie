@@ -7,6 +7,7 @@ import "./globals.css"
 import { Plus_Jakarta_Sans } from "next/font/google"
 import SmoothScrollProvider from "@/components/SmoothScrollerProvider"
 import { ScrollToTop } from "@/components/ScrollToTop"
+import SiteFooter from "@/components/site-footer"
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -36,36 +37,42 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html
       lang="en"
-      className="dark" // removed scroll-smooth so Lenis fully controls it
+      className="dark"
       data-scroll-behavior="smooth"
     >
       <head>
         <style
           dangerouslySetInnerHTML={{
             __html: `
-          ::-webkit-scrollbar { width: 8px; }
-          ::-webkit-scrollbar-track { background: #1a1a1a; }
-          ::-webkit-scrollbar-thumb { background: #ffda35; border-radius: 10px; }
-          ::-webkit-scrollbar-thumb:hover { background: #ee9919; }
-          * { scrollbar-width: thin; scrollbar-color: #eb9524 #1a1a1a; }
-        `,
+              ::-webkit-scrollbar { width: 8px; }
+              ::-webkit-scrollbar-track { background: #1a1a1a; }
+              ::-webkit-scrollbar-thumb { background: #ffda35; border-radius: 10px; }
+              ::-webkit-scrollbar-thumb:hover { background: #ee9919; }
+              * { scrollbar-width: thin; scrollbar-color: #eb9524 #1a1a1a; }
+            `,
           }}
         />
       </head>
+
       <body
-        className={`font-sans ${plusJakarta.variable} ${GeistMono.variable}`}
+        className={`min-h-screen flex flex-col bg-black text-white font-sans ${plusJakarta.variable} ${GeistMono.variable}`}
       >
         <SmoothScrollProvider>
-          <Suspense fallback={null}>{children}</Suspense>
+
+        <Suspense fallback={null}>{children}</Suspense>
+          {/* Footer */}
+          <SiteFooter />
+
           <Analytics />
           <ScrollToTop />
+
         </SmoothScrollProvider>
       </body>
     </html>
-  )
+  );
 }
