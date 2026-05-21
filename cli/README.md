@@ -63,6 +63,10 @@ GEMINI_API_KEY=your_api_key_here
 
 **Priority Order:** Environment variable > Config file > .env file
 
+### API Key Resolution
+
+GitGenie automatically prioritizes environment variables (`<PROVIDER>_API_KEY`) over stored config keys, with strict validation and normalization applied. Invalid or malformed environment keys are safely ignored, and the system falls back to the existing encrypted config without requiring any migration.
+
 ### Getting a Gemini API Key
 
 1. Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
