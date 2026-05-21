@@ -4,6 +4,7 @@ import path from 'path';
 import crypto from 'crypto';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
+import { resolveApiKey, validateApiKey } from '../utils/resolveApiKey.js';
 
 // Local providers don't use API keys — they connect to a running local server
 const LOCAL_PROVIDERS = ['ollama', 'lmstudio'];
@@ -48,6 +49,8 @@ export async function getEncryptionKey() {
     }
 
     // Fallback: generate a unique key based on user's home directory and machine
+    // Fallback key is deterministic (not cryptographically secure storage)
+    // Used only when keytar is unavailable
     const uniqueData = os.homedir() + os.hostname() + os.userInfo().username;
     return crypto.createHash('sha256').update(uniqueData).digest('hex');
 }
@@ -167,9 +170,14 @@ export async function getProviderConfig() {
  * @returns {Promise<string|null>} Decrypted API key or null
  */
 export async function getProviderApiKey(providerName) {
-    // First check environment variable for Gemini (backward compatibility)
-    if (providerName === 'gemini' && process.env.GEMINI_API_KEY) {
-        return process.env.GEMINI_API_KEY;
+    // First check environment variable using the centralized resolver
+    // resolveApiKey is intentionally synchronous (pure ENV lookup)
+    const envKey = resolveApiKey(providerName);
+    if (envKey) {
+        if (process.env.GITGENIE_DEBUG === 'true') {
+            console.log(chalk.gray(`[DEBUG] Using ENV API key for provider: ${providerName}`));
+        }
+        return envKey;
     }
 
     // Check keytar (secure storage) if available
@@ -177,7 +185,10 @@ export async function getProviderApiKey(providerName) {
         try {
             const keytarAccount = `${providerName}_api_key`;
             const keyFromKeytar = await keytar.getPassword(SERVICE_NAME, keytarAccount);
-            if (keyFromKeytar) return keyFromKeytar;
+            if (keyFromKeytar) {
+                const validated = validateApiKey(providerName, keyFromKeytar);
+                if (validated) return validated;
+            }
         } catch (error) {
             // Keytar failed, continue to config.json fallback
         }
@@ -190,7 +201,9 @@ export async function getProviderApiKey(providerName) {
     if (providerConfig && providerConfig.apiKey) {
         try {
             // Decrypt before returning
-            return await decrypt(providerConfig.apiKey);
+            const decrypted = await decrypt(providerConfig.apiKey);
+            const validated = validateApiKey(providerName, decrypted);
+            if (validated) return validated;
         } catch (decryptError) {
             // If decryption fails, the config file might be corrupted
             console.warn(chalk.yellow(`${providerName} API key appears corrupted. Please reconfigure.`));
