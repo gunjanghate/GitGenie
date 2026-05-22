@@ -5,8 +5,7 @@ import Image from "next/image";
 
 export default function SiteFooter() {
   return (
-    <footer className="relative border-t border-white/10 bg-black overflow-hidden mx-auto lg:mx-32 rounded-t-3xl">
-      {/* Subtle amber glow for footer cohesion */}
+<footer className="relative border-t border-white/10 bg-black overflow-hidden w-full rounded-t-3xl">      {/* Subtle amber glow for footer cohesion */}
       <AmbientBackground variant="footer" />
 
       <div className="mx-auto grid grid-cols-2 md:flex md:flex-row max-w-6xl lg:justify-center lg:items-center gap-4 md:gap-8 lg:gap-32 px-4 md:px-6 py-8 md:py-12 text-center">

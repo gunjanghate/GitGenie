@@ -81,9 +81,6 @@ export default function Page() {
         <Community />
       </ScrollSection>
 
-      <ScrollSection zIndex={70}>
-        <SiteFooter />
-      </ScrollSection>
     </main>
   );
 }
