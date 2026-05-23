@@ -11,6 +11,7 @@ html {
   html {
     scroll-behavior: auto;
   }
+
   .scroll-stack-section .sticky-wrapper {
     transition: none !important;
   }
@@ -126,32 +127,45 @@ html {
 .scroll-stack-section:nth-child(1) .sticky-wrapper {
   z-index: 10;
 }
+
 .scroll-stack-section:nth-child(2) .sticky-wrapper {
   z-index: 20;
 }
+
 .scroll-stack-section:nth-child(3) .sticky-wrapper {
   z-index: 30;
 }
+
 .scroll-stack-section:nth-child(4) .sticky-wrapper {
   z-index: 40;
 }
+
 .scroll-stack-section:nth-child(5) .sticky-wrapper {
   z-index: 50;
 }
+
 .scroll-stack-section:nth-child(6) .sticky-wrapper {
   z-index: 60;
 }
+
 .scroll-stack-section:nth-child(7) .sticky-wrapper {
   z-index: 70;
 }
+
 .scroll-stack-section:nth-child(8) .sticky-wrapper {
   z-index: 80;
 }
+
 .scroll-stack-section:nth-child(9) .sticky-wrapper {
   z-index: 90;
 }
 
+/* Ensure all native buttons display a pointer cursor by default for better UX */
 button {
   cursor: pointer;
 }
 
+/* Show a disabled cursor for inactive buttons without completely disabling pointer events */
+button:disabled {
+  cursor: not-allowed;
+}
