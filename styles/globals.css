@@ -150,3 +150,8 @@ html {
 .scroll-stack-section:nth-child(9) .sticky-wrapper {
   z-index: 90;
 }
+
+button {
+  cursor: pointer;
+}
+

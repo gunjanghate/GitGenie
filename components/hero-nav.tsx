@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import chirag from "../public/chirag.png";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Star, Package, BookOpen } from "lucide-react";
 
 export default function HeroNav() {
   const [isOpen, setIsOpen] = useState(false);
@@ -60,7 +60,7 @@ export default function HeroNav() {
             <button
               key={item.id}
               onClick={() => scrollToSection(item.id)}
-              className="text-zinc-300 text-sm font-medium transition-all duration-200 rounded-full px-3 py-2 hover:text-amber-400 hover:bg-zinc-700/50 whitespace-nowrap"
+              className="cursor-pointer text-zinc-300 text-sm font-medium transition-all duration-200 rounded-full px-3 py-2 hover:text-amber-400 hover:bg-zinc-700/50 whitespace-nowrap"
             >
               {item.label}
             </button>
@@ -74,9 +74,9 @@ export default function HeroNav() {
             href="https://github.com/gunjanghate/GitGenie"
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-amber-400/40 hover:bg-zinc-800 whitespace-nowrap"
+            className="cursor-pointer flex items-center rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-amber-400/40 hover:bg-zinc-800 whitespace-nowrap"
           >
-            ⭐ Star on GitHub
+            <Star className="w-4 h-4 mr-2" /> Star on GitHub
           </a>
 
           {/* NPM BUTTON */}
@@ -84,24 +84,24 @@ export default function HeroNav() {
             href="https://www.npmjs.com/package/@gunjanghate/git-genie"
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-amber-400/40 hover:bg-zinc-800 whitespace-nowrap"
+            className="cursor-pointer flex items-center rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-amber-400/40 hover:bg-zinc-800 whitespace-nowrap"
           >
-            📦 Install via npm
+            <Package className="w-4 h-4 mr-2" /> Install via npm
           </a>
 
           {/* DOCS BUTTON */}
           <a
             href="/docs"
-            className="rounded-full bg-amber-500 px-4 py-2 text-sm font-medium text-black transition-all duration-200 hover:scale-[1.03] hover:opacity-90 whitespace-nowrap"
+            className="cursor-pointer flex items-center rounded-full bg-amber-500 px-4 py-2 text-sm font-medium text-black transition-all duration-200 hover:scale-[1.03] hover:opacity-90 whitespace-nowrap"
           >
-            📖 View Docs
+            <BookOpen className="w-4 h-4 mr-2" /> View Docs
           </a>
         </div>
 
         {/* MOBILE MENU BUTTON */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="lg:hidden rounded-full border border-white/10 bg-white/5 p-2 text-white transition-all duration-200 hover:bg-zinc-800 z-50"
+          className="cursor-pointer lg:hidden rounded-full border border-white/10 bg-white/5 p-2 text-white transition-all duration-200 hover:bg-zinc-800 z-50"
         >
           {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
@@ -122,7 +122,7 @@ export default function HeroNav() {
                     scrollToSection(item.id);
                     setIsOpen(false);
                   }}
-                  className="w-full text-left text-zinc-300 text-base font-medium py-2 px-3 rounded-xl transition-all duration-200 hover:text-amber-400 hover:bg-zinc-900"
+                  className="cursor-pointer w-full text-left text-zinc-300 text-base font-medium py-2 px-3 rounded-xl transition-all duration-200 hover:text-amber-400 hover:bg-zinc-900"
                 >
                   {item.label}
                 </button>
@@ -142,7 +142,7 @@ export default function HeroNav() {
                 onClick={() => setIsOpen(false)}
                 className="w-full flex items-center justify-center rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-amber-400/40 hover:bg-zinc-800"
               >
-                ⭐ Star on GitHub
+                <Star className="w-4 h-4 mr-2" /> Star on GitHub
               </a>
 
               {/* NPM BUTTON */}
@@ -153,7 +153,7 @@ export default function HeroNav() {
                 onClick={() => setIsOpen(false)}
                 className="w-full flex items-center justify-center rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-amber-400/40 hover:bg-zinc-800"
               >
-                📦 Install via npm
+                <Package className="w-4 h-4 mr-2" /> Install via npm
               </a>
 
               {/* DOCS BUTTON */}
@@ -162,7 +162,7 @@ export default function HeroNav() {
                 onClick={() => setIsOpen(false)}
                 className="w-full flex items-center justify-center rounded-xl bg-amber-400 py-3 text-sm font-medium text-black transition-all duration-200 hover:opacity-90"
               >
-                📖 View Docs
+                <BookOpen className="w-4 h-4 mr-2" /> View Docs
               </a>
             </div>
 
