@@ -7,7 +7,7 @@
     "dev": "next dev",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "prepare": "husky install",
+    "prepare": "husky",
     "start": "next start",
     "lint-staged": "lint-staged"
   },
