@@ -80,7 +80,7 @@
     "zod": "3.25.67"
   },
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=22.22.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.9",
