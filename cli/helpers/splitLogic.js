@@ -2,6 +2,25 @@ import simpleGit from 'simple-git';
 import chalk from 'chalk';
 import ora from 'ora';
 
+const MAX_DIFF_LENGTH = 5000;
+const MAX_TOTAL_DIFF_SIZE = 30000;
+
+const IGNORED_PATTERNS = [
+    'package-lock.json',
+    'pnpm-lock.yaml',
+    'yarn.lock',
+    'dist/',
+    'build/',
+    '.next/',
+    'coverage/'
+];
+
+function shouldIgnoreFile(filePath) {
+    return IGNORED_PATTERNS.some(pattern =>
+        filePath.includes(pattern)
+    );
+}
+
 const git = simpleGit();
 
 /**
@@ -30,26 +49,77 @@ export async function analyzeStagedChanges() {
         const diffs = {};
         const files = [];
 
+        let totalDiffSize = 0;
+
         for (const file of stagedFiles) {
+
+            // Skip noisy/generated files
+            if (shouldIgnoreFile(file)) {
+                continue;
+            }
+
             try {
                 const diff = await git.diff(['--cached', file]);
-                diffs[file] = diff || '';
+
+                // Truncate oversized diffs
+                const safeDiff =
+                    diff.length > MAX_DIFF_LENGTH
+                        ? diff.slice(0, MAX_DIFF_LENGTH) +
+                          '\n... [Diff truncated due to size]'
+                        : diff;
+
+                totalDiffSize += safeDiff.length;
+
+                // Prevent excessive total diff processing
+                if (totalDiffSize > MAX_TOTAL_DIFF_SIZE) {
+
+                    diffs[file] =
+                        '[Skipped: total staged diff size exceeded safe processing limit]';
+
+                    files.push({
+                        path: file,
+                        status: 'truncated'
+                    });
+
+                    break; // Stop processing further diffs
+                }
+
+                diffs[file] = safeDiff || '';
 
                 // Determine status
                 let fileStatus = 'modified';
-                if (status.created.includes(file)) fileStatus = 'added';
-                if (status.deleted.includes(file)) fileStatus = 'deleted';
-                if (status.renamed.some(r => (r.to || r) === file)) fileStatus = 'renamed';
 
-                files.push({ path: file, status: fileStatus });
+                if (status.created.includes(file)) {
+                    fileStatus = 'added';
+                }
+
+                if (status.deleted.includes(file)) {
+                    fileStatus = 'deleted';
+                }
+
+                if (status.renamed.some(r => (r.to || r) === file)) {
+                    fileStatus = 'renamed';
+                }
+
+                files.push({
+                    path: file,
+                    status: fileStatus
+                });
+
             } catch (err) {
-                // If diff fails for a file, include it anyway
-                diffs[file] = '';
-                files.push({ path: file, status: 'unknown' });
+
+                // Graceful fallback if diff fails
+                diffs[file] = '[Unable to load diff]';
+
+                files.push({
+                    path: file,
+                    status: 'unknown'
+                });
             }
         }
 
         return { files, diffs };
+
     } catch (err) {
         throw new Error(`Failed to analyze staged changes: ${err.message}`);
     }
