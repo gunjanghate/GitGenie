@@ -136,7 +136,7 @@ function Sidebar() {
             </SheetDescription>
           </SheetHeader>
 
-          <div className="h-full border-r border-amber-600/50 rounded-tr-2xl rounded-br-2xl">
+          <div className="h-full overflow-y-auto overscroll-contain border-r border-amber-600/50 rounded-tr-2xl rounded-br-2xl">
             <SidebarNav onNavigate={() => setOpen(false)} />
           </div>
         </SheetContent>
@@ -144,7 +144,7 @@ function Sidebar() {
 
       {/* Desktop sidebar */}
       <aside className="hidden lg:block w-64 shrink-0">
-        <div className="sticky top-6 h-[calc(100vh-3rem)] border-r border-amber-600/50 rounded-tr-2xl rounded-br-2xl">
+        <div className="sticky top-24 h-[calc(100vh-7rem)] overflow-y-auto overscroll-contain border-r border-amber-600/50 rounded-tr-2xl rounded-br-2xl">
           <SidebarNav />
         </div>
       </aside>
@@ -168,7 +168,7 @@ export default function DocsLayout({
       </div>
 
       {/* Header */}
-      <header className="relative z-10 border-b border-white/5 bg-black/20 backdrop-blur-sm">
+      <header className="sticky top-0 z-30 border-b border-white/5 bg-black/60 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
           <h1 className="text-2xl md:text-3xl font-bold flex items-center">
             <button
