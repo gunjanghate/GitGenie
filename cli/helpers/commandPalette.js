@@ -1,6 +1,7 @@
 import inquirer from "inquirer";
 import chalk from "chalk";
 import { spawn } from "node:child_process";
+import simpleGit from "simple-git";
 
 // Fancy header (logo + banner) to show at the top of the palette
 const banner = `
@@ -35,10 +36,60 @@ function showHeader() {
     console.log(sep);
 }
 
+async function showWorkspaceStatus() {
+    const git = simpleGit();
+
+    try {
+        const isRepo = await git.checkIsRepo();
+
+        if (!isRepo) {
+            console.log(
+                chalk.yellow("\n⚠️  No Git repository detected in current directory.\n")
+            );
+            return;
+        }
+
+        const status = await git.status();
+
+        const unstagedChanges =
+            status.modified.length + status.not_added.length;
+
+        const untrackedFiles = status.created.length;
+
+        console.log(chalk.cyan("\n📦 GitGenie Workspace Status:\n"));
+
+        console.log(
+            chalk.white("  • Active Branch: ") +
+            chalk.green(status.current || "main")
+        );
+
+        console.log(
+            chalk.white("  • Unstaged Changes: ") +
+            chalk.yellow(
+                `${unstagedChanges} file${unstagedChanges !== 1 ? "s" : ""} modified`
+            )
+        );
+
+        console.log(
+            chalk.white("  • Untracked Assets: ") +
+            chalk.magenta(
+                `${untrackedFiles} new file${untrackedFiles !== 1 ? "s" : ""}`
+            )
+        );
+
+        console.log();
+    } catch (error) {
+        console.log(
+            chalk.red("\n❌ Unable to fetch repository status.\n")
+        );
+    }
+}
+
 // A simpler palette that synthesizes a commit wizard and prompts args for known commands
 export async function openCommandPalette(program) {
     // Header & intro
     showHeader();
+    await showWorkspaceStatus();
 
     // Exclude any built-in/unknown and any conflicting 'commit' command so we control the UX
     const realCommands = program.commands.filter(c => c._name !== '*' && c._name !== 'commit');
