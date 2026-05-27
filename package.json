@@ -5,8 +5,11 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "lint": "next lint",
-    "start": "next start"
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "prepare": "husky",
+    "start": "next start",
+    "lint-staged": "lint-staged"
   },
   "dependencies": {
     "@gunjanghate/git-genie": "^1.0.16",
@@ -77,16 +80,29 @@
     "zod": "3.25.67"
   },
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=22.22.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.9",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "^8.57.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.5",
     "postcss": "^8.5",
+    "prettier": "^3.8.3",
     "tailwindcss": "^4.1.9",
     "tw-animate-css": "1.3.3",
     "typescript": "^5"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
   }
 }
