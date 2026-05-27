@@ -28,7 +28,7 @@ export function AnimateIn({ children, delay = 0 }: { children: ReactNode; delay?
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ${visible ? "translate-y-0 opacity-100 blur-0" : "translate-y-4 opacity-0 blur-sm"}`}
+      className={`transition-all duration-700 ${visible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}
     >
       {children}
     </div>

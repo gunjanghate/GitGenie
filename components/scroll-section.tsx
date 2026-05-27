@@ -12,7 +12,7 @@ export default function ScrollSection({
 }: ScrollSectionProps) {
   return (
     <div className="scroll-stack-section" style={{ zIndex }}>
-      <div className="sticky-wrapper w-full">
+      <div className="sticky-wrapper w-full flex flex-col justify-center">
         {children}
       </div>
     </div>

@@ -11,7 +11,6 @@ import Image from "next/image"
 import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text";
 import { ChevronRight } from "lucide-react";
 import TerminalDemo from "./Terminal";
-import { motion } from "motion/react"
 export default function Hero() {
   const words = ["origins", "staging", "commits", "pushes"];
   return (
@@ -72,17 +71,13 @@ export default function Hero() {
         </AnimateIn>
 
         <AnimateIn delay={100}>
-          <article className="text-pretty mx-auto mt-6 max-w-3xl text-center text-lg leading-relaxed text-zinc-300 sm:text-xl mb-6">
+          <article className="text-pretty mx-auto mt-6 max-w-3xl text-center text-lg leading-relaxed text-zinc-300 sm:text-xl mb-0">
             Your AI-powered Git assistant — automate <FlipWords words={words} />{" "}
             <br /> with just one command.
           </article>
         </AnimateIn>
-        <motion.div
-          initial={{ opacity: 0, y: 20, filter: "blur(4px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="my-2 flex lg:w-96 items-center gap-2 rounded-lg border border-white/10 hover:border-amber-500/50 bg-black/60 px-4 py-2.5 font-mono text-sm text-zinc-200 transition-all duration-200 group-hover:border-amber-400/40"
-        >
+        <AnimateIn delay={200}>
+          <div className="mt-1 mb-6 flex lg:w-96 items-center gap-2 rounded-lg border border-white/10 hover:border-amber-500/50 bg-black/60 px-4 py-2.5 font-mono text-sm text-zinc-200 transition-all duration-200 group-hover:border-amber-400/40">
           <div className="flex-1 min-w-0">
             <code
               aria-label={`install command`}
@@ -95,15 +90,15 @@ export default function Hero() {
           <div className="shrink-0">
             <CopyButton text={"npm i @gunjanghate/git-genie@latest"} />
           </div>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20, filter: "blur(4px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="w-full lg:flex lg:justify-center mt-3"
-        >
-          <TerminalDemo />
-        </motion.div>
+          </div>
+        </AnimateIn>
+        <div className="w-full">
+          <AnimateIn delay={250}>
+            <div className="w-full lg:flex lg:justify-center mt-0">
+              <TerminalDemo />
+            </div>
+          </AnimateIn>
+        </div>
 
         <AnimateIn delay={150}>
           {/* Product Hunt badge */}
