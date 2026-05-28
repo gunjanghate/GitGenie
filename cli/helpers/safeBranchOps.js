@@ -1,4 +1,4 @@
-import { execaCommand } from 'execa';
+import { execa } from 'execa';
 import chalk from 'chalk';
 
 /**
@@ -24,10 +24,10 @@ export async function createRecoveryBranch(commitHash, branchName = null) {
 
   try {
     // Verify the commit exists (READ ONLY check)
-    await execaCommand(`git cat-file -e ${commitHash}`);
+    await execa('git', ['cat-file', '-e', commitHash]);
     
     // Create branch from commit hash - SAFE: no checkout, no reset, no force
-    await execaCommand(`git branch ${finalBranchName} ${commitHash}`);
+    await execa('git', ['branch', finalBranchName, commitHash]);
     
     console.log(chalk.green(`✅ Created recovery branch: ${finalBranchName}`));
     console.log(chalk.gray(`   From commit: ${commitHash}`));
@@ -57,12 +57,12 @@ export async function cherryPickToBranch(targetBranch, commitHashes) {
 
   try {
     // Switch to target branch (SAFE: no force)
-    await execaCommand(`git checkout ${targetBranch}`);
+    await execa('git', ['checkout', targetBranch]);
     
     // Cherry-pick each commit
     for (const hash of commitHashes) {
       try {
-        await execaCommand(`git cherry-pick ${hash}`);
+        await execa('git', ['cherry-pick', hash]);
         console.log(chalk.green(`✅ Applied commit: ${hash.substring(0, 8)}`));
       } catch (error) {
         if (error.message.includes('conflict')) {
@@ -86,8 +86,8 @@ export async function cherryPickToBranch(targetBranch, commitHashes) {
 export async function getCommitInfo(commitHash) {
   try {
     // Get commit details (READ ONLY)
-    const { stdout: commitInfo } = await execaCommand(
-      `git show --format=%H|%an|%ae|%ad|%s --name-only ${commitHash}`
+    const { stdout: commitInfo } = await execa(
+      'git', ['show', '--format=%H|%an|%ae|%ad|%s', '--name-only', commitHash]
     );
     
     const lines = commitInfo.trim().split('\n');
@@ -126,7 +126,7 @@ export async function validateBranchName(branchName) {
 
   try {
     // Check if branch already exists
-    await execaCommand(`git show-ref --verify refs/heads/${branchName}`);
+    await execa('git', ['show-ref', '--verify', `refs/heads/${branchName}`]);
     return false; // Branch exists
   } catch {
     return true; // Branch doesn't exist, name is available

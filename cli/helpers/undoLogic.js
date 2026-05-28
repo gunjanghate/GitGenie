@@ -1,4 +1,4 @@
-import { execaCommand } from 'execa';
+import { execa } from 'execa';
 import chalk from 'chalk';
 import inquirer from 'inquirer';
 import { confirmRecoveryAction } from './confirmationPrompt.js';
@@ -17,7 +17,7 @@ import {
  */
 export async function getRecentCommits(count) {
     try {
-        const { stdout } = await execaCommand(`git log --oneline -n ${count}`);
+        const { stdout } = await execa('git', ['log', '--oneline', '-n', String(count)]);
 
         if (!stdout || stdout.trim() === '') {
             return [];
@@ -44,7 +44,7 @@ export async function getRecentCommits(count) {
  */
 export async function checkWorkingDirectoryStatus() {
     try {
-        const { stdout } = await execaCommand('git status --porcelain');
+        const { stdout } = await execa('git', ['status', '--porcelain']);
         return stdout.trim().length > 0;
     } catch (error) {
         throw new UndoError(
@@ -104,7 +104,7 @@ export async function handleUndoSoft(n) {
             return;
         }
 
-        await execaCommand(`git reset --soft HEAD~${n}`);
+        await execa('git', ['reset', '--soft', `HEAD~${n}`]);
 
         console.log(chalk.green(`\n✅ Successfully undid ${n} commit${n === 1 ? '' : 's'}`));
         console.log(chalk.cyan('\n📋 Next steps:'));
@@ -151,7 +151,7 @@ export async function handleUndoMixed(n) {
             return;
         }
 
-        await execaCommand(`git reset --mixed HEAD~${n}`);
+        await execa('git', ['reset', '--mixed', `HEAD~${n}`]);
 
         console.log(chalk.green(`\n✅ Successfully undid ${n} commit${n === 1 ? '' : 's'}`));
         console.log(chalk.cyan('\n📋 Next steps:'));
@@ -206,7 +206,7 @@ export async function handleUndoHard(n) {
             return;
         }
 
-        await execaCommand(`git reset --hard HEAD~${n}`);
+        await execa('git', ['reset', '--hard', `HEAD~${n}`]);
 
         console.log(chalk.green(`\n✅ Hard reset completed`));
         console.log(chalk.yellow(`⚠️  ${n} commit${n === 1 ? '' : 's'} and all changes permanently deleted`));
