@@ -1,4 +1,4 @@
-import { execaCommand } from 'execa';
+import { execa } from 'execa';
 
 /**
  * Runs git reflog and parses commit hash and action
@@ -8,7 +8,7 @@ import { execaCommand } from 'execa';
 export async function parseReflog(count = 20) {
   try {
     // Run git reflog with specified count - READ ONLY operation
-    const { stdout } = await execaCommand(`git reflog -n ${count} --format=%H|%gd|%gs|%cr`);
+    const { stdout } = await execa('git', ['reflog', '-n', String(count), '--format=%H|%gd|%gs|%cr']);
     
     if (!stdout.trim()) {
       return [];
