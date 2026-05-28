@@ -81,11 +81,10 @@ export default function HowItWorks() {
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: pinRef.current,
-          start: "top top",
-          end: "+=220%",
-          scrub: true,
+          start: "center center",
+          end: "+=130%",
+          scrub: 0.2,
           pin: true,
-          anticipatePin: 1,
         },
       });
 
@@ -137,7 +136,7 @@ export default function HowItWorks() {
     <section
       id="how-it-works"
       aria-labelledby="how-title"
-      className="relative mx-auto lg:mx-32 max-w-6xl px-6 py-20 sm:py-24"
+      className="relative w-full px-6 lg:px-32 py-20 sm:py-24 min-h-screen"
     >
       <AmbientBackground />
 
@@ -161,7 +160,7 @@ export default function HowItWorks() {
       </div>
 
       {/* Pinned stack */}
-      <div ref={pinRef} className="relative h-[70vh] min-h-[420px] overflow-visible">
+      <div ref={pinRef} className="relative h-[50vh] min-h-[420px] overflow-visible">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           {/* narrower card so text wraps and height grows slightly */}
           <div className="relative w-full max-w-2xl sm:max-w-xl h-[260px] sm:h-[280px] md:h-[300px]">

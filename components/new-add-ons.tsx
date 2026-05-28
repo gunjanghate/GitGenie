@@ -38,7 +38,7 @@ export default function NewAddOns() {
     <section
       id="add-ons"
       aria-labelledby="add-ons-title"
-      className="relative mx-auto lg:mx-32 max-w-6xl px-6 pt-2 pb-20  "
+      className="relative w-full px-6 lg:px-32 py-20 sm:py-24 min-h-screen"
     >
       <AmbientBackground />
 
@@ -54,17 +54,17 @@ export default function NewAddOns() {
         <div className="h-1 mt-2 w-25 bg-gradient-to-r from-amber-400 to-amber-800 "></div>
       </div>
 
-      <div className="relative z-10 flex justify-start">
-        <div className="w-full sm:w-[70%] lg:w-[55%]">
+      <div className="relative z-10 flex justify-center w-full">
+        <div className="w-full sm:w-[70%] lg:w-[50%]">
           {items.map((it, idx) => (
             <AnimateIn key={it.title} delay={idx * 80}>
-              <article className="group flex flex-col gap-1 rounded-2xl border border-white/10 bg-zinc-900/40 p-6 backdrop-blur transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.15)]">
+              <article className="group flex flex-col gap-1 rounded-2xl border border-white/10 bg-zinc-900/40 p-8 backdrop-blur transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_0_0_3px_rgba(245,158,11,0.15)] min-h-[420px]">
                 <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/5">
                   {it.icon}
                 </div>
 
-                <h3 className="text-lg font-semibold">{it.title}</h3>
-                <div className="mt-2 text-zinc-300">{it.body}</div>
+                <h3 className="text-xl font-semibold">{it.title}</h3>
+                <div className="mt-3 text-zinc-300 text-base leading-relaxed">{it.body}</div>
               </article>
             </AnimateIn>
           ))}
