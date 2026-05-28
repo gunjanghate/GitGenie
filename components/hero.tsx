@@ -77,7 +77,7 @@ export default function Hero() {
           </article>
         </AnimateIn>
         <AnimateIn delay={200}>
-          <div className="mt-1 mb-6 flex lg:w-96 items-center gap-2 rounded-lg border border-white/10 hover:border-amber-500/50 bg-black/60 px-4 py-2.5 font-mono text-sm text-zinc-200 transition-all duration-200 group-hover:border-amber-400/40">
+          <div className="mt-1 mb-6 flex lg:w-96 mx-auto items-center gap-2 rounded-lg border border-white/10 hover:border-amber-500/50 bg-black/60 px-4 py-2.5 font-mono text-sm text-zinc-200 transition-all duration-200 group-hover:border-amber-400/40">
           <div className="flex-1 min-w-0">
             <code
               aria-label={`install command`}
@@ -94,7 +94,7 @@ export default function Hero() {
         </AnimateIn>
         <div className="w-full">
           <AnimateIn delay={250}>
-            <div className="w-full lg:flex lg:justify-center mt-0">
+            <div className="w-full flex justify-center mt-0">
               <TerminalDemo />
             </div>
           </AnimateIn>
