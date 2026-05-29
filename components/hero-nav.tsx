@@ -4,18 +4,22 @@ import { useState } from "react";
 import Image from "next/image";
 import chirag from "../public/chirag.png";
 import { Menu, X, Star, Package, BookOpen } from "lucide-react";
+import LanguageSwitcher from "./language-switcher";
+import { useTranslations } from 'next-intl';
+import { Link } from '@/lib/i18n/routing';
 
 export default function HeroNav() {
+  const t = useTranslations("Nav");
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
-    { id: "features", label: "Features" },
-    { id: "how-it-works", label: "How it Works" },
-    { id: "demo", label: "Demo" },
-    { id: "usage", label: "Usage" },
-    { id: "branch-management", label: "Branches" },
-    { id: "faq", label: "FAQ" },
-    { id: "community", label: "Community" },
+    { id: "features", label: t("features") },
+    { id: "how-it-works", label: t("how_it_works") },
+    { id: "demo", label: t("demo") },
+    { id: "usage", label: t("usage") },
+    { id: "branch-management", label: t("branches") },
+    { id: "faq", label: t("faq") },
+    { id: "community", label: t("community") },
   ];
 
   const scrollToSection = (id: string) => {
@@ -69,6 +73,7 @@ export default function HeroNav() {
 
         {/* RIGHT SECTION */}
         <div className="hidden lg:flex items-center gap-3 shrink-0 z-10">
+          <LanguageSwitcher />
           {/* STAR BUTTON */}
           <a
             href="https://github.com/gunjanghate/GitGenie"
@@ -76,7 +81,7 @@ export default function HeroNav() {
             rel="noopener noreferrer"
             className="cursor-pointer flex items-center rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-amber-400/40 hover:bg-zinc-800 whitespace-nowrap"
           >
-            <Star className="w-4 h-4 mr-2" /> Star on GitHub
+            <Star className="w-4 h-4 mr-2" /> {t("star")}
           </a>
 
           {/* NPM BUTTON */}
@@ -86,16 +91,16 @@ export default function HeroNav() {
             rel="noopener noreferrer"
             className="cursor-pointer flex items-center rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white transition-all duration-200 hover:border-amber-400/40 hover:bg-zinc-800 whitespace-nowrap"
           >
-            <Package className="w-4 h-4 mr-2" /> Install via npm
+            <Package className="w-4 h-4 mr-2" /> {t("install")}
           </a>
 
           {/* DOCS BUTTON */}
-          <a
+          <Link
             href="/docs"
             className="cursor-pointer flex items-center rounded-full bg-amber-500 px-4 py-2 text-sm font-medium text-black transition-all duration-200 hover:scale-[1.03] hover:opacity-90 whitespace-nowrap"
           >
-            <BookOpen className="w-4 h-4 mr-2" /> View Docs
-          </a>
+            <BookOpen className="w-4 h-4 mr-2" /> {t("view_docs")}
+          </Link>
         </div>
 
         {/* MOBILE MENU BUTTON */}
@@ -112,7 +117,7 @@ export default function HeroNav() {
       {isOpen && (
         <div className="lg:hidden absolute top-full left-0 w-full border-t border-zinc-800/80 bg-zinc-950/95 backdrop-blur-lg px-6 py-6 shadow-2xl transition-all duration-200">
           <div className="flex flex-col gap-6">
-            
+
             {/* Nav Links */}
             <div className="flex flex-col gap-2">
               {navItems.map((item) => (
@@ -142,7 +147,7 @@ export default function HeroNav() {
                 onClick={() => setIsOpen(false)}
                 className="w-full flex items-center justify-center rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-amber-400/40 hover:bg-zinc-800"
               >
-                <Star className="w-4 h-4 mr-2" /> Star on GitHub
+                <Star className="w-4 h-4 mr-2" /> {t("star")}
               </a>
 
               {/* NPM BUTTON */}
@@ -153,17 +158,17 @@ export default function HeroNav() {
                 onClick={() => setIsOpen(false)}
                 className="w-full flex items-center justify-center rounded-xl border border-white/15 bg-white/5 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-amber-400/40 hover:bg-zinc-800"
               >
-                <Package className="w-4 h-4 mr-2" /> Install via npm
+                <Package className="w-4 h-4 mr-2" /> {t("install")}
               </a>
 
               {/* DOCS BUTTON */}
-              <a
-                href="#"
+              <Link
+                href="/docs"
                 onClick={() => setIsOpen(false)}
                 className="w-full flex items-center justify-center rounded-xl bg-amber-400 py-3 text-sm font-medium text-black transition-all duration-200 hover:opacity-90"
               >
-                <BookOpen className="w-4 h-4 mr-2" /> View Docs
-              </a>
+                <BookOpen className="w-4 h-4 mr-2" /> {t("view_docs")}
+              </Link>
             </div>
 
           </div>

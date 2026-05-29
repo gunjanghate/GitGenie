@@ -4,21 +4,23 @@ import { AnimateIn } from "./parts/animate-in";
 import AmbientBackground from "./parts/ambient-two";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/lib/i18n/routing";
+import { useTranslations } from "next-intl";
 
 export default function NewAddOns() {
+  const t = useTranslations("NewAddOns");
   const items = [
     {
       icon: <Sparkles className="h-6 w-6 text-amber-400" aria-hidden="true" />,
       title: "gg split",
       body: (
         <>
-          <div>Intelligently split mixed changes into clean, logical commits.</div>
+          <div>{t("body")}</div>
 
           <ul className="mt-3 space-y-1 text-sm text-zinc-400 list-disc list-inside">
-            <li>AI-powered grouping (opt-in)</li>
-            <li>Heuristic fallback</li>
-            <li>Interactive review flow</li>
+            {(t.raw("bullets") as string[]).map((item) => (
+              <li key={item}>{item}</li>
+            ))}
           </ul>
 
           <div className="mt-4 text-xs">
@@ -26,7 +28,7 @@ export default function NewAddOns() {
               href="/docs/new-add-ons"
               className="text-amber-400 hover:text-amber-300 transition-colors underline underline-offset-4"
             >
-              Know more in docs →
+              {t("docs_link")}
             </Link>
           </div>
         </>
@@ -47,8 +49,8 @@ export default function NewAddOns() {
           id="add-ons-title"
           className="text-2xl font-semibold sm:text-3xl text-white flex items-center gap-3"
         >
-          New Add Ons
-          <Badge className="bg-amber-500 text-black">NEW</Badge>
+          {t("title")}
+          <Badge className="bg-amber-500 text-black">{t("badge")}</Badge>
         </h2>
 
         <div className="h-1 mt-2 w-25 bg-gradient-to-r from-amber-400 to-amber-800 "></div>

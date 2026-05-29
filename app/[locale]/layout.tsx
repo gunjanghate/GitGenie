@@ -8,7 +8,14 @@ import { Plus_Jakarta_Sans } from "next/font/google"
 import SmoothScrollProvider from "@/components/SmoothScrollerProvider"
 import { ScrollToTop } from "@/components/ScrollToTop"
 import SiteFooter from "@/components/site-footer"
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, setRequestLocale } from 'next-intl/server';
+import { routing } from '@/lib/i18n/routing';
+import { notFound } from 'next/navigation';
 
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   display: "swap",
@@ -34,14 +41,26 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
+  params
 }: Readonly<{
   children: React.ReactNode;
+  params: { locale: string };
 }>) {
+  const resolvedParams = await Promise.resolve(params);
+  const locale = resolvedParams?.locale || 'en';
+
+  if (!routing.locales.includes(locale as any)) {
+    notFound();
+  }
+
+  setRequestLocale(locale);
+  const messages = await getMessages();
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className="dark"
       data-scroll-behavior="smooth"
     >
@@ -62,16 +81,16 @@ export default function RootLayout({
       <body
         className={`min-h-screen flex flex-col bg-black text-white font-sans ${plusJakarta.variable} ${GeistMono.variable}`}
       >
-        <SmoothScrollProvider>
+        <NextIntlClientProvider messages={messages}>
+          <SmoothScrollProvider>
+            <Suspense fallback={null}>{children}</Suspense>
+            {/* Footer */}
+            <SiteFooter />
 
-        <Suspense fallback={null}>{children}</Suspense>
-          {/* Footer */}
-          <SiteFooter />
-
-          <Analytics />
-          <ScrollToTop />
-
-        </SmoothScrollProvider>
+            <Analytics />
+            <ScrollToTop />
+          </SmoothScrollProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

@@ -2,9 +2,9 @@
 
 import type React from "react"
 import { useState } from "react"
-import { useRouter, usePathname } from "next/navigation"
-import Link from "next/link"
+import { Link, usePathname, useRouter } from "@/lib/i18n/routing"
 import { Menu, Star, GitPullRequest, Package } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 import AmbientBackground from "@/components/parts/ambient-background"
 import { cn } from "@/lib/utils"
@@ -20,18 +20,20 @@ import { Button } from "@/components/ui/button"
 
 /* ===== DOC GROUPS (ROUTE-BASED) ===== */
 const DOC_GROUPS = [
-  { label: "Getting Started", href: "/docs/getting-started" },
-  { label: "Core Commands", href: "/docs/commands" },
-  { label: "Workflows & Internals", href: "/docs/workflows" },
-  { label: "AI Features", href: "/docs/ai" },
-  { label: "New Add Ons", href: "/docs/new-add-ons" },
-  { label: "Open Source & Collaboration", href: "/docs/open-source" },
-  { label: "Reference & Examples", href: "/docs/reference" },
-  { label: "Security & Community", href: "/docs/security" },
+  { labelKey: "getting_started", href: "/docs/getting-started" },
+  { labelKey: "commands", href: "/docs/commands" },
+  { labelKey: "workflows", href: "/docs/workflows" },
+  { labelKey: "ai", href: "/docs/ai" },
+  { labelKey: "new_add_ons", href: "/docs/new-add-ons" },
+  { labelKey: "open_source", href: "/docs/open-source" },
+  { labelKey: "reference", href: "/docs/reference" },
+  { labelKey: "security", href: "/docs/security" },
 ]
 
 /* ===== CTA Footer Buttons ===== */
 function CTAFooter() {
+  const t = useTranslations("Docs")
+
   return (
     <div className="mt-auto pt-6 px-3 pb-6 space-y-3 border-t border-amber-600/30">
       {/* Star the Repo */}
@@ -42,7 +44,7 @@ function CTAFooter() {
         className="flex items-center gap-2 w-full rounded-md bg-amber-500/10 border border-amber-500/30 px-3 py-2.5 text-sm font-medium text-amber-400 transition-all hover:bg-amber-500/20 hover:border-amber-500/50 cursor-pointer group"
       >
         <Star className="h-4 w-4 group-hover:fill-amber-400 transition-all" />
-        <span>Star the Repo</span>
+        <span>{t("star_repo")}</span>
       </a>
 
       {/* Contribute */}
@@ -53,7 +55,7 @@ function CTAFooter() {
         className="flex items-center gap-2 w-full rounded-md bg-blue-500/10 border border-blue-500/30 px-3 py-2.5 text-sm font-medium text-blue-400 transition-all hover:bg-blue-500/20 hover:border-blue-500/50 cursor-pointer group"
       >
         <GitPullRequest className="h-4 w-4 group-hover:scale-110 transition-transform" />
-        <span>Contribute</span>
+        <span>{t("contribute")}</span>
       </a>
 
       {/* NPM Package */}
@@ -72,6 +74,7 @@ function CTAFooter() {
 
 /* ===== SidebarNav ===== */
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+  const t = useTranslations("Docs")
   const pathname = usePathname()
 
   return (
@@ -79,7 +82,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       {/* Navigation Links */}
       <nav className="flex-1 space-y-1 py-6">
         <h2 className="mb-4 px-3 text-sm font-semibold text-white">
-          Documentation
+          {t("documentation")}
         </h2>
 
         {DOC_GROUPS.map((item) => {
@@ -97,7 +100,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                   : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
               )}
             >
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           )
         })}
@@ -111,6 +114,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 
 /* ===== Sidebar ===== */
 function Sidebar() {
+  const t = useTranslations("Docs")
   const [open, setOpen] = useState(false)
 
   return (
@@ -122,7 +126,7 @@ function Sidebar() {
             variant="outline"
             size="icon"
             className="lg:hidden fixed bottom-6 left-6 z-50 h-12 w-12 rounded-full border-white/10 bg-black/60 backdrop-blur-sm hover:bg-black/80 cursor-pointer"
-            aria-label="Open docs navigation"
+            aria-label={t("open_docs_navigation")}
           >
             <Menu className="h-5 w-5" />
           </Button>
@@ -130,9 +134,9 @@ function Sidebar() {
 
         <SheetContent side="left" className="w-64 bg-zinc-900/95 backdrop-blur-sm border-white/10 p-0">
           <SheetHeader className="sr-only">
-            <SheetTitle>Docs Navigation</SheetTitle>
+            <SheetTitle>{t("docs_navigation")}</SheetTitle>
             <SheetDescription>
-              Switch between documentation sections
+              {t("switch_sections")}
             </SheetDescription>
           </SheetHeader>
 
@@ -159,6 +163,7 @@ export default function DocsLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const t = useTranslations("Docs")
 
   return (
     <main className="relative min-h-screen text-white bg-black">
@@ -175,12 +180,12 @@ export default function DocsLayout({
               type="button"
               onClick={() => router.push("/")}
               className="text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-amber-600 hover:from-amber-300 hover:to-amber-500 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:ring-offset-2 focus:ring-offset-zinc-950 rounded cursor-pointer"
-              aria-label="Navigate to home page"
+              aria-label={t("go_home")}
             >
               Git Genie
             </button>
             <span className="ml-2 text-zinc-400 font-normal">
-              / Documentation
+              / {t("documentation")}
             </span>
           </h1>
         </div>

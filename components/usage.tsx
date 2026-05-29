@@ -10,42 +10,44 @@ import {
   AccordionTrigger,
 } from "./ui/accordion";
 import { CopyButton } from "./parts/copy-button";
+import { useTranslations } from 'next-intl';
 
 export default function Usage() {
+  const t = useTranslations("Usage");
   const flags = [
     {
       flag: "--genie",
-      desc: "Generate AI commit (alias: --ai).",
+      desc: t("f1"),
       example: 'gg "oauth added" --ai',
     },
     {
       flag: "--type <type>",
-      desc: "Set commit type (default: feat).",
+      desc: t("f2"),
       example: 'gg "refactor: cleanup" --type feat',
     },
     {
       flag: "--scope <scope>",
-      desc: "Set commit scope.",
+      desc: t("f3"),
       example: 'gg "fix(auth): token refresh" --scope auth',
     },
     {
       flag: "--no-branch",
-      desc: "Skip branch selection.",
+      desc: t("f4"),
       example: 'gg "chore: update deps" --no-branch',
     },
     {
       flag: "--push-to-main",
-      desc: "Push to main.",
+      desc: t("f5"),
       example: "gg --push-to-main",
     },
     {
       flag: "--remote <url>",
-      desc: "Add remote.",
+      desc: t("f6"),
       example: "gg --remote https://github.com/you/repo.git",
     },
     {
       flag: "--osc",
-      desc: "Branch name for open source",
+      desc: t("f7"),
       example: 'gg "improve docs" --osc --type docs',
     },
   ];
@@ -74,14 +76,14 @@ export default function Usage() {
         <AnimateIn>
           <div>
             <h2 id="usage-title" className="text-2xl font-semibold sm:text-3xl">
-              Usage & Flags
+              {t("title")}
             </h2>
             <div className="line h-1 mt-1 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
           </div>
         </AnimateIn>
         <AnimateIn delay={60}>
           <p className="mt-3 max-w-2xl text-zinc-300">
-            Configure Git Genie behavior with clean, human-friendly flags.
+            {t("subtitle")}
           </p>
         </AnimateIn>
       </div>
@@ -121,14 +123,14 @@ export default function Usage() {
               id="shortcuts-title"
               className="text-2xl font-semibold sm:text-3xl"
             >
-              Branch Management Shortcuts
+              {t("shortcuts_title")}
             </h2>
             <div className="line h-1 mt-1 animate-collapsible-down w-24 bg-gradient-to-br from-amber-400 to-amber-800"></div>
           </div>
         </AnimateIn>
         <AnimateIn delay={60}>
           <p className="mt-3 max-w-2xl text-zinc-300 mb-6">
-            Manage your branches effortlessly with these shortcuts.
+            {t("shortcuts_subtitle")}
           </p>
         </AnimateIn>
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-4">
@@ -138,9 +140,9 @@ export default function Usage() {
                 gg b &lt;branch&gt;
               </span>
               <span className="text-zinc-300 mb-4 text-sm">
-                Create and switch to a new branch.
+                {t("s1")}
                 <br />
-                <span className="text-xs text-zinc-400">git checkout -b</span>
+                <span className="text-xs text-zinc-400">{t("s1_sub")}</span>
               </span>
               <div className="mt-auto flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2">
                 <span className="font-mono text-xs text-zinc-200 break-all">
@@ -156,9 +158,9 @@ export default function Usage() {
                 gg s &lt;branch&gt;
               </span>
               <span className="text-zinc-300 mb-4 text-sm">
-                Switch to an existing branch.
+                {t("s2")}
                 <br />
-                <span className="text-xs text-zinc-400">git checkout</span>
+                <span className="text-xs text-zinc-400">{t("s2_sub")}</span>
               </span>
               <div className="mt-auto flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2">
                 <span className="font-mono text-xs text-zinc-200 break-all">
@@ -174,10 +176,10 @@ export default function Usage() {
                 gg wt ...
               </span>
               <span className="text-zinc-300 mb-4 text-sm">
-                Create a worktree for a branch.
+                {t("s3")}
                 <br />
                 <span className="text-xs text-zinc-400">
-                  Auto-creates branch if missing.
+                  {t("s3_sub")}
                 </span>
               </span>
               <div className="mt-auto flex items-center justify-between gap-2 rounded-xl border border-white/10 bg-black/30 px-3 py-2">

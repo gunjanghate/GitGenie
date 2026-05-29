@@ -7,45 +7,13 @@ import { CopyButton } from "./parts/copy-button";
 import AmbientBackground from "./parts/ambient-two";
 import { AnimateIn } from "./parts/animate-in";
 import { Package, KeyRound, Sparkles, GitBranch } from "lucide-react";
+import { useTranslations } from 'next-intl';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const STEPS = [
-  {
-    badge: "Step 1",
-    title: "Install",
-    icon: Package,
-    cmd: "npm install -g @gunjanghate/git-genie",
-    desc: "Get started by installing Git Genie globally or locally in your project. One command is all you need.",
-    highlight: "Easy Setup",
-  },
-  {
-    badge: "Step 2",
-    title: "Configure AI (once)",
-    icon: KeyRound,
-    cmd: "gg config YOUR_GEMINI_API_KEY",
-    desc: "Add your Gemini API key once. It's stored securely in ~/.gitgenie/config.json for future use.",
-    highlight: "Secure Config",
-  },
-  {
-    badge: "Step 3",
-    title: "Commit with AI",
-    icon: Sparkles,
-    cmd: 'gg "add user profile section" --type feat --scope ui --genie',
-    desc: "Describe your changes naturally. Git Genie generates Conventional Commits using AI in seconds.",
-    highlight: "AI-Powered",
-  },
-  {
-    badge: "Step 4",
-    title: "Push / Merge",
-    icon: GitBranch,
-    cmd: 'gg "finish oauth flow" --push-to-main',
-    desc: "Finalize and push to your branch or auto-merge to main. Streamline your entire workflow.",
-    highlight: "One-Click Deploy",
-  },
-];
-
 export default function HowItWorks() {
+
+
   const pinRef = useRef<HTMLDivElement | null>(null);
   const cardsRef = useRef<HTMLDivElement[]>([]);
 
@@ -132,6 +100,43 @@ export default function HowItWorks() {
     };
   }, []);
 
+  const t = useTranslations("HowItWorks");
+
+  const STEPS = [
+    {
+      badge: t("s1_badge"),
+      title: t("s1_title"),
+      icon: Package,
+      cmd: "npm install -g @gunjanghate/git-genie",
+      desc: t("s1_desc"),
+      highlight: t("s1_highlight"),
+    },
+    {
+      badge: t("s2_badge"),
+      title: t("s2_title"),
+      icon: KeyRound,
+      cmd: "gg config YOUR_GEMINI_API_KEY",
+      desc: t("s2_desc"),
+      highlight: t("s2_highlight"),
+    },
+    {
+      badge: t("s3_badge"),
+      title: t("s3_title"),
+      icon: Sparkles,
+      cmd: 'gg "add user profile section" --type feat --scope ui --genie',
+      desc: t("s3_desc"),
+      highlight: t("s3_highlight"),
+    },
+    {
+      badge: t("s4_badge"),
+      title: t("s4_title"),
+      icon: GitBranch,
+      cmd: 'gg "finish oauth flow" --push-to-main',
+      desc: t("s4_desc"),
+      highlight: t("s4_highlight"),
+    },
+  ];
+
   return (
     <section
       id="how-it-works"
@@ -145,16 +150,14 @@ export default function HowItWorks() {
         <AnimateIn>
           <div>
             <h2 id="how-title" className="text-2xl font-semibold sm:text-3xl">
-              How it works
+              {t("title")}
             </h2>
             <div className="h-1 mt-1 animate-collapsible-down w-20 bg-gradient-to-br from-amber-400 to-amber-700" />
           </div>
         </AnimateIn>
         <AnimateIn delay={60}>
           <p className="mt-3 max-w-2xl text-zinc-300">
-            Just 4 steps to streamline your commit workflow. From installation
-            to pushing production-ready commits, Git Genie handles the heavy
-            lifting with AI-powered Conventional Commits.
+            {t("subtitle")}
           </p>
         </AnimateIn>
       </div>

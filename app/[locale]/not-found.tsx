@@ -1,11 +1,13 @@
 "use client"
 
-import Link from "next/link"
+import { Link } from "@/lib/i18n/routing"
 import { ArrowLeft, AlertCircle } from "lucide-react"
 import AmbientBackground from "@/components/parts/ambient-background"
 import { Button } from "@/components/ui/button"
+import { useTranslations } from "next-intl"
 
 export default function NotFound() {
+  const t = useTranslations("NotFound");
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-zinc-950 text-white selection:bg-amber-400/20">
       {/* Background Effects */}
@@ -25,17 +27,17 @@ export default function NotFound() {
           404
         </h1>
         <h2 className="mb-6 text-2xl font-semibold text-zinc-200 sm:text-3xl">
-          Page not found
+          {t("title")}
         </h2>
         <p className="mb-8 max-w-md text-zinc-400">
-          Sorry, we couldn't find the page you're looking for. It might have been moved, deleted, or never existed.
+          {t("description")}
         </p>
 
         {/* Action */}
         <Button asChild className="gap-2 bg-amber-400 text-zinc-950 hover:bg-amber-300">
           <Link href="/">
             <ArrowLeft className="h-4 w-4" />
-            Back to Home
+            {t("back_home")}
           </Link>
         </Button>
       </div>
