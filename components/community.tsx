@@ -4,7 +4,7 @@ import AmbientBackground from "./parts/ambient-background"
 import { BackgroundParticles } from "./parts/background-particles"
 import Link from "next/link"
 import { useTranslations } from 'next-intl';
-
+// 
 export default function Community() {
   const t = useTranslations("Community");
   return (
