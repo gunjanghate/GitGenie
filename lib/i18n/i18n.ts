@@ -17,15 +17,11 @@ export async function getLocalizedContent({
 }: LocalizedContentParams) {
     // Simulating an external data source fetch handling
     const tryFetch = async (targetLocale: string) => {
-        try {
-            // Dummy check since we don't have a real CMS attached in this repo.
-            // E.g. fetch(API_URL, { next: { tags: [`${type}:${targetLocale}:${slug}`] } })
-            // For demonstration, we'll try to dynamically import local static JSON if it exists,
-            // or return null simulating a missing record.
-            return null;
-        } catch {
-            return null;
-        }
+        // TODO: Implement actual data fetching (e.g. headless CMS or local markdown/json)
+        // E.g. fetch(API_URL, { next: { tags: [`${type}:${targetLocale}:${slug}`] } })
+        // Currently returning null since no external dynamic content source is wired up.
+        // It's safe to use this as a scaffold once a real database is attached.
+        return null;
     };
 
     let content = await tryFetch(locale);

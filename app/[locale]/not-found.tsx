@@ -4,17 +4,14 @@ import { Link } from "@/lib/i18n/routing"
 import { ArrowLeft, AlertCircle } from "lucide-react"
 import AmbientBackground from "@/components/parts/ambient-background"
 import { Button } from "@/components/ui/button"
-import { useTranslations } from "next-intl"
-
 export default function NotFound() {
-  const t = useTranslations("NotFound");
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-zinc-950 text-white selection:bg-amber-400/20">
       {/* Background Effects */}
       <div className="absolute inset-0 z-0">
         <AmbientBackground />
       </div>
-      
+
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center px-4 text-center">
         {/* Icon */}
@@ -27,17 +24,17 @@ export default function NotFound() {
           404
         </h1>
         <h2 className="mb-6 text-2xl font-semibold text-zinc-200 sm:text-3xl">
-          {t("title")}
+          Page not found
         </h2>
         <p className="mb-8 max-w-md text-zinc-400">
-          {t("description")}
+          The page you are looking for doesn't exist or has been moved.
         </p>
 
         {/* Action */}
         <Button asChild className="gap-2 bg-amber-400 text-zinc-950 hover:bg-amber-300">
           <Link href="/">
             <ArrowLeft className="h-4 w-4" />
-            {t("back_home")}
+            Back to home
           </Link>
         </Button>
       </div>
