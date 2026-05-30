@@ -5,9 +5,9 @@
     "browser": true
   },
   "extends": [
-    "next/core-web-vitals"
+    "next/core-web-vitals",
+    "next/typescript"
   ],
-  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": "latest",
     "sourceType": "module",

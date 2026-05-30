@@ -1,6 +1,6 @@
 "use client"
 
-import Link from "next/link"
+import { Link } from "@/lib/i18n/routing"
 import { ArrowLeft, AlertCircle } from "lucide-react"
 import AmbientBackground from "@/components/parts/ambient-background"
 import { Button } from "@/components/ui/button"
