@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback } from "react"
 import DocsModal from "@/components/docs-modal"
 import AmbientBackground from "./parts/ambient-background"
 import Image from "next/image"
-
+// 
 declare global {
   interface Window {
     YT: typeof YT
