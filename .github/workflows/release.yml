@@ -21,20 +21,25 @@ jobs:
         with:
           fetch-depth: 0 # Necessary to generate changelog properly
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install Dependencies
-        run: npm ci
+        run: pnpm install
 
       - name: Build Project
-        run: npm run build
+        run: pnpm run build
 
       - name: Generate Tarball
-        run: npm pack
+        run: pnpm pack
         id: pack
 
       - name: Determine Version tag
