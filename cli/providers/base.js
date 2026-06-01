@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * Base abstract class for AI providers
  * All AI providers must extend this class and implement its methods

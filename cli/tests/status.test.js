@@ -1,4 +1,3 @@
-import { execaCommand } from 'execa';
 import chalk from 'chalk';
 import {
     getCurrentBranch,

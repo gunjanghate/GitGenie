@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import https from 'https';
-import chalk from 'chalk';
 
 // Bundled templates for offline use and fast access
 export const BUNDLED_TEMPLATES = {

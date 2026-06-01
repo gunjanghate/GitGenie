@@ -15,7 +15,7 @@ const tempHome = path.resolve('./tests/temp_home');
 os.homedir = () => tempHome;
 
 // Import dynamically after overriding homedir
-const { resolveApiKey } = await import('../utils/resolveApiKey.js');
+await import('../utils/resolveApiKey.js');
 const { getProviderApiKey, encrypt } = await import('../commands/config.js');
 
 const configDir = path.join(tempHome, '.gitgenie');

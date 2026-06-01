@@ -89,7 +89,7 @@ export class MistralProvider extends AIProvider {
     /**
      * Generate branch name using Mistral
      */
-    async generateBranchName(desc, opts) {
+    async generateBranchName(desc) {
         const prompt = `Generate a git branch name following best practices.
 
     REQUIREMENTS:

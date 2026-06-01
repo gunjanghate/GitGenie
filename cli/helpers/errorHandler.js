@@ -24,7 +24,7 @@ const LOCAL_PROVIDER_HINTS = {
     },
     lmstudio: {
         serverHint: 'Open LM Studio → load a model → enable the local server (port 1234)',
-        modelHint: (_model) => 'Make sure a model is loaded and the server is enabled in LM Studio',
+        modelHint: () => 'Make sure a model is loaded and the server is enabled in LM Studio',
         configHint: 'Reconfigure with: gg config --provider lmstudio --url <url> --model <model>',
         docsUrl: 'https://lmstudio.ai/docs',
     },
@@ -270,7 +270,7 @@ export function displayProviderError(error, providerName = 'gemini', context = '
     console.error(chalk.cyan(`   Falling back to manual ${context}.`));
 
     // Log to debug file if debug mode is enabled
-    logErrorToDebugFile(error, context);
+    logErrorToDebugFile(error, providerName, context);
 }
 
 /**
@@ -279,7 +279,7 @@ export function displayProviderError(error, providerName = 'gemini', context = '
  * @param {Error} error - The error object
  * @param {string} context - Context string
  */
-function logErrorToDebugFile(error, context) {
+function logErrorToDebugFile(error, providerName, context) {
     // Only log if debug mode is enabled
     if (!process.env.GITGENIE_DEBUG) return;
 

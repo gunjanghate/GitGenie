@@ -3,8 +3,7 @@ import { execaCommand } from 'execa';
 import chalk from 'chalk';
 import {
     StatusError,
-    handleStatusError,
-    formatNotInRepoError
+    handleStatusError
 } from './statusErrors.js';
 
 // Note: We create git instances per function call to avoid potential race conditions

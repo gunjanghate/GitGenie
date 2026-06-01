@@ -93,7 +93,7 @@ export class GroqProvider extends AIProvider {
     /**
      * Generate branch name using Groq
      */
-    async generateBranchName(desc, opts) {
+    async generateBranchName(desc) {
         const prompt = `Generate a git branch name following best practices.
 
     REQUIREMENTS:

@@ -1,7 +1,6 @@
 // Simple test to verify recovery functions work correctly
 import { parseReflog } from '../helpers/reflogParser.js';
-import { createRecoveryBranch, validateBranchName } from '../helpers/safeBranchOps.js';
-import { confirmRecoveryAction } from '../helpers/confirmationPrompt.js';
+import { validateBranchName } from '../helpers/safeBranchOps.js';
 
 // Test reflog parsing (read-only operation)
 console.log('Testing reflog parsing...');

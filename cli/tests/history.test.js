@@ -35,8 +35,7 @@ async function runTests() {
     const {
         parseCommitOutput,
         calculateStatistics,
-        buildGitLogCommand,
-        getCurrentUser
+        buildGitLogCommand
     } = await import('../helpers/historyLogic.js');
 
     const {
