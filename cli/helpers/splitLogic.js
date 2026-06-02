@@ -1,6 +1,5 @@
 import simpleGit from 'simple-git';
 import chalk from 'chalk';
-import ora from 'ora';
 
 const MAX_DIFF_LENGTH = 5000;
 const MAX_TOTAL_DIFF_SIZE = 30000;

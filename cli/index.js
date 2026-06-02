@@ -24,19 +24,7 @@ const { detectCommitType } = await import(
   new URL('./helpers/detectCommitType.js', import.meta.url)
 );
 
-const { displayGeminiError, getDebugModeTip } = await import(
-  new URL('./helpers/errorHandler.js', import.meta.url)
-);
 
-const {
-  analyzeStagedChanges,
-  groupFilesWithAI,
-  groupFilesHeuristic,
-  generateCommitMessageForGroup,
-  validateGroups
-} = await import(
-  new URL('./helpers/splitLogic.js', import.meta.url)
-);
 
 const { stageAllFiles } = await import(
   new URL('./helpers/gitUtils.js', import.meta.url)
@@ -50,32 +38,18 @@ const { registerPRCommand } = await import(
   new URL('./commands/pr.js', import.meta.url)
 );
 
-const {
-  promptGroupActions,
-  promptGroupReview,
-  promptMergeGroups,
-  confirmCommitAll,
-  promptStageChanges,
-  promptContinueAfterError,
-  showSplitSummary,
-  promptDryRun
-} = await import(
-  new URL('./helpers/splitUI.js', import.meta.url)
-);
+
 
 const {
   handleUndoInteractive,
   handleUndoSoft,
   handleUndoMixed,
-  handleUndoBatch,
   handleUndoHard
 } = await import(
   new URL('./helpers/undoLogic.js', import.meta.url)
 );
 
-const { handleUndoError } = await import(
-  new URL('./helpers/undoErrors.js', import.meta.url)
-);
+
 
 const { handleHistoryCommand } = await import(
   new URL('./helpers/historyLogic.js', import.meta.url)
@@ -85,6 +59,26 @@ const { handleStatusCommand } = await import(
   new URL('./helpers/statusLogic.js', import.meta.url)
 );
 
+const { parseReflog } = await import(
+  new URL('./helpers/reflogParser.js', import.meta.url)
+);
+
+const {
+  formatNoRecoveryOptions,
+  handleRecoveryError,
+  validateReflogIndex
+} = await import(
+  new URL('./helpers/recoverErrors.js', import.meta.url)
+);
+
+const { confirmRecoveryAction } = await import(
+  new URL('./helpers/confirmationPrompt.js', import.meta.url)
+);
+
+const { createRecoveryBranch, getCommitInfo } = await import(
+  new URL('./helpers/safeBranchOps.js', import.meta.url)
+);
+
 
 dotenv.config({ debug: false });
 const git = simpleGit();
@@ -92,6 +86,10 @@ const git = simpleGit();
 // Config logic moved to ./commands/config.js
 
 const program = new Command();
+
+const pkgPath = new URL('./package.json', import.meta.url);
+const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+program.version(pkg.version);
 
 // Banner and logo for help output (copied exactly from postinstall.js)
 const banner = `
@@ -103,14 +101,14 @@ const banner = `
        ${chalk.yellow("⚡")} ${chalk.red("Ready to code!")} ${chalk.yellow("⚡")}
 `;
 const logo = `
-   $$$$$$\   $$$$$$\  
-  $$  __$$\ $$  __$$\ 
-  $$ /  \__|$$ /  \__|
-  $$ |$$$$\ $$ |$$$$\ 
-  $$ | \_$$ $$ | \_$$|
+   $$$$$$\\   $$$$$$\\  
+  $$  __$$\\ $$  __$$\\ 
+  $$ /  \\__|$$ /  \\__|
+  $$ |$$$$\\ $$ |$$$$\\ 
+  $$ | \\_$$ $$ | \\_$$|
   $$ |  $$ $$ |  $$|
-   $$$$$$  \$$$$$$  |
-    \______/  \______/  
+   $$$$$$  \\$$$$$$  |
+    \\______/  \\______/  
 `;
 
 // Show banner/logo on help output
@@ -192,7 +190,7 @@ program.command('cl')
       console.log(chalk.gray(`  cd ${targetDir}`));
       console.log(chalk.gray('  code .'));
 
-     
+
       try {
         await execaCommand('code .', { cwd: path.resolve(process.cwd(), targetDir) });
         console.log(chalk.green(`Opened "${targetDir}" in VS Code`));
@@ -561,7 +559,7 @@ program
     const first = process.argv[2];
 
     // 🚫 If first arg is a known subcommand, do nothing here
-     if (['commit', 'b', 's', 'wt', 'cl', 'config', 'split', 'ignore', 'pr'].includes(first)) return;
+    if (['commit', 'b', 's', 'wt', 'cl', 'config', 'split', 'ignore', 'pr'].includes(first)) return;
 
     // No args → open menu
     if (!desc) {
@@ -721,38 +719,7 @@ async function generateCommitMessage(diff, opts, desc) {
   }
 }
 
-async function generatePRTitle(diff, opts, desc) {
-  const provider = await getActiveProviderInstance();
-  const providerName = await getActiveProvider();
 
-  if (!opts.genie || !provider) {
-    if (opts.genie && !provider) {
-      const { ProviderFactory } = await import(new URL('./providers/index.js', import.meta.url));
-      const isLocal = providerName && ProviderFactory.isLocalProvider(providerName);
-      console.warn(chalk.yellow('⚠ AI provider not configured. Falling back to manual PR title.'));
-      if (isLocal) {
-        console.warn(chalk.cyan(`To enable AI PR titles, make sure your ${providerName} server is running and configured:`));
-        console.warn(chalk.gray(`Example: gg config --provider ${providerName} --url <url> --model <model>`));
-      } else {
-        console.warn(chalk.cyan('To enable AI PR titles, configure an API key:'));
-        console.warn(chalk.gray('Example: gg config <your_api_key> --provider gemini'));
-      }
-    }
-    return `${opts.type}${opts.scope ? `(${opts.scope})` : ''}: ${desc}`;
-  }
-
-  const spinner = ora(`🧞 Generating PR title with ${provider.getName()}...`).start();
-  try {
-    const title = await provider.generatePRTitle(diff, opts, desc);
-    spinner.succeed(` PR title generated by ${provider.getName()}`);
-    return title;
-  } catch (err) {
-    spinner.fail('AI PR title generation failed.');
-    const { displayProviderError } = await import(new URL('./helpers/errorHandler.js', import.meta.url));
-    displayProviderError(err, providerName || 'gemini', 'PR title');
-    return `${opts.type}${opts.scope ? `(${opts.scope})` : ''}: ${desc}`;
-  }
-}
 
 async function generateBranchName(diff, opts, desc) {
   const provider = await getActiveProviderInstance();
@@ -995,7 +962,7 @@ async function runMainFlow(desc, opts) {
             // Only use the last part after slash for short title
             if (shortTitle.includes('/')) shortTitle = shortTitle.split('/')[1];
           } else {
-            shortTitle = desc.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
+            shortTitle = desc.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
           }
           suggestedBranch = `${opts.type}/#${issueNumber}-${shortTitle}`;
         } else {

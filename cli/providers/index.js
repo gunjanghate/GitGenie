@@ -60,7 +60,7 @@ export class ProviderFactory {
      * @returns {boolean} True if supported
      */
     static isProviderSupported(providerName) {
-        return this.providers.hasOwnProperty(providerName.toLowerCase());
+        return Object.prototype.hasOwnProperty.call(this.providers, providerName.toLowerCase());
     }
 
     /**

@@ -120,7 +120,7 @@ Return ONLY the PR title, no explanations or quotes.`;
         return (await this.#chat(prompt, 50)) || desc;
     }
 
-    async generateBranchName(desc, opts) {
+    async generateBranchName(desc) {
         await this.#ensureRunning();
         const prompt = `Generate a git branch name following best practices.
 

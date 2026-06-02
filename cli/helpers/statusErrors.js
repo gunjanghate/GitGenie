@@ -47,7 +47,7 @@ export function formatNotInRepoError() {
     console.error(chalk.yellow('Not a Git repository'));
     console.error(chalk.cyan('\n💡 Initialize a repository:'));
     console.error(chalk.gray('  git init'));
-    console.error(chalk.gray('  gg \"initial commit\" --no-branch'));
+    console.error(chalk.gray('  gg "initial commit" --no-branch'));
     console.error(''); // Empty line
 }
 

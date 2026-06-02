@@ -58,18 +58,14 @@ export async function parseReflog(count = 20) {
  * @returns {Promise<Array>} Array of potentially lost commits
  */
 export async function findLostCommits(count = 50) {
-  try {
-    const entries = await parseReflog(count);
-    
-    // Filter for potentially lost commits (commits that were reset away or rebased out)
-    const lostCommits = entries.filter(entry => {
-      return entry.action === 'reset' || 
-             entry.action === 'rebase' || 
-             (entry.action === 'commit' && entry.message.includes('amend'));
-    });
+  const entries = await parseReflog(count);
+  
+  // Filter for potentially lost commits (commits that were reset away or rebased out)
+  const lostCommits = entries.filter(entry => {
+    return entry.action === 'reset' || 
+           entry.action === 'rebase' || 
+           (entry.action === 'commit' && entry.message.includes('amend'));
+  });
 
-    return lostCommits;
-  } catch (error) {
-    throw error;
-  }
+  return lostCommits;
 }

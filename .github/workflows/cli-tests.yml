@@ -20,23 +20,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Install pnpm
+        uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
+        with:
+          version: 9
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
       
-      - name: Install CLI dependencies
+      - name: Install dependencies
         working-directory: ./cli
-        run: npm ci
+        run: pnpm install --frozen-lockfile
       
       - name: Run CLI tests
         working-directory: ./cli
-        run: npm test
+        run: pnpm test
       
       - name: Test CLI installation
         working-directory: ./cli
         run: |
-          npm link
+          pnpm link --global
           gg --help
           gg config --help
           gg use --help
