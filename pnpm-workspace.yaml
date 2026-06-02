@@ -1,0 +1,8 @@
+allowBuilds:
+  '@gunjanghate/git-genie': true
+  keytar: true
+  msw: true
+  sharp: true
+
+packages:
+  - 'cli'

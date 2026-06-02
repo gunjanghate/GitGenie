@@ -153,10 +153,10 @@ function runTests() {
         const error = createMockError('Test error');
         const result = parseGeminiError(error);
 
-        assert(result.hasOwnProperty('type'));
-        assert(result.hasOwnProperty('message'));
-        assert(result.hasOwnProperty('helpfulAction'));
-        assert(result.hasOwnProperty('originalError'));
+        assert(Object.prototype.hasOwnProperty.call(result, 'type'));
+        assert(Object.prototype.hasOwnProperty.call(result, 'message'));
+        assert(Object.prototype.hasOwnProperty.call(result, 'helpfulAction'));
+        assert(Object.prototype.hasOwnProperty.call(result, 'originalError'));
         assert.strictEqual(result.originalError, error);
 
         console.log('✅ Test 9 PASSED: Return correct structure for all errors');

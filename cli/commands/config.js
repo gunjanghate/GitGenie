@@ -21,7 +21,6 @@ try {
 
 // Keytar service configuration
 const SERVICE_NAME = "GitGenie";
-const ACCOUNT_NAME = "gemini_api_key";
 const ENCRYPTION_KEY_ACCOUNT = "encryption_key";
 
 // Config file path (~/.gitgenie/config.json)

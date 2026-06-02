@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0). Leave empty to use version from package.json'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        # actions/checkout@v4.1.7 (Consider adding Dependabot to keep this updated)
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0 # Necessary to generate changelog properly
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        # actions/setup-node@v4.0.3 (Consider adding Dependabot to keep this updated)
+        uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Project
+        run: pnpm run build
+
+      - name: Generate Tarball
+        run: pnpm pack
+
+      - name: Determine Version tag
+        id: version
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          if [ -n "$INPUT_VERSION" ]; then
+            echo "TAG_NAME=$INPUT_VERSION" >> $GITHUB_ENV
+          else
+            PKG_VERSION=$(node -p "require('./package.json').version")
+            echo "TAG_NAME=v$PKG_VERSION" >> $GITHUB_ENV
+          fi
+
+      - name: Get Tarball Filename
+        id: get_filename
+        run: |
+          PKG_NAME=$(node -p "require('./package.json').name.replace(/^@/, '').replace(/\//, '-')")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TARBALL="${PKG_NAME}-${PKG_VERSION}.tgz"
+          
+          if [ ! -f "$TARBALL" ]; then
+            echo "Error: Expected tarball $TARBALL not found."
+            exit 1
+          fi
+          
+          echo "TARBALL_FILE=$TARBALL" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          generate_release_notes: true
+          draft: true
+          files: ${{ env.TARBALL_FILE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -85,7 +85,7 @@ export class GeminiProvider extends AIProvider {
     /**
      * Generate branch name using Gemini
      */
-    async generateBranchName(desc, opts) {
+    async generateBranchName(desc) {
         const model = this.client.getGenerativeModel({ model: this.model });
 
         const prompt = `Generate a git branch name following best practices.
