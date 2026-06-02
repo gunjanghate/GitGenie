@@ -23,7 +23,7 @@ jobs:
           fetch-depth: 0 # Necessary to generate changelog properly
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa
         with:
           version: 9
 
@@ -35,7 +35,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install Dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build Project
         run: pnpm run build

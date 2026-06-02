@@ -87,6 +87,10 @@ const git = simpleGit();
 
 const program = new Command();
 
+const pkgPath = new URL('./package.json', import.meta.url);
+const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+program.version(pkg.version);
+
 // Banner and logo for help output (copied exactly from postinstall.js)
 const banner = `
     ${chalk.cyan("🔮")} ${chalk.magentaBright("Git")}${chalk.yellow("Genie")} ${chalk.cyan("🔮")}
@@ -186,7 +190,7 @@ program.command('cl')
       console.log(chalk.gray(`  cd ${targetDir}`));
       console.log(chalk.gray('  code .'));
 
-     
+
       try {
         await execaCommand('code .', { cwd: path.resolve(process.cwd(), targetDir) });
         console.log(chalk.green(`Opened "${targetDir}" in VS Code`));
@@ -555,7 +559,7 @@ program
     const first = process.argv[2];
 
     // 🚫 If first arg is a known subcommand, do nothing here
-     if (['commit', 'b', 's', 'wt', 'cl', 'config', 'split', 'ignore', 'pr'].includes(first)) return;
+    if (['commit', 'b', 's', 'wt', 'cl', 'config', 'split', 'ignore', 'pr'].includes(first)) return;
 
     // No args → open menu
     if (!desc) {
