@@ -1,7 +1,7 @@
 allowBuilds:
   '@gunjanghate/git-genie': false
-  '@parcel/watcher': false
-  '@swc/core': false
-  keytar: false
+  '@parcel/watcher': true
+  '@swc/core': true
+  keytar: true
   msw: false
-  sharp: false
+  sharp: true
