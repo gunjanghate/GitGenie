@@ -11,8 +11,11 @@ import Image from "next/image"
 import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text";
 import { ChevronRight } from "lucide-react";
 import TerminalDemo from "./Terminal";
+import { useTranslations } from 'next-intl';
+
 export default function Hero() {
-  const words = ["origins", "staging", "commits", "pushes"];
+  const t = useTranslations("Hero");
+  const words = t.raw("words") as string[];
   return (
     <header
       aria-label="Hero"
@@ -38,7 +41,7 @@ export default function Hero() {
             <Sparkles className="h-4 w-4 text-amber-400" aria-hidden="true" />{" "}
             <hr className="mx-2 h-4 w-px shrink-0 bg-neutral-500" />
             <AnimatedGradientText className="text-xs font-medium">
-              Your own Github Genie | <Link className="cursor-pointer hover:underline" href={"https://www.npmjs.com/package/@gunjanghate/git-genie"} target="_blank">3k+ downloads</Link>
+              {t("badge")} | <Link className="cursor-pointer hover:underline" href={"https://www.npmjs.com/package/@gunjanghate/git-genie"} target="_blank">{t("downloads")}</Link>
             </AnimatedGradientText>
             <ChevronRight
               className="ml-1 size-4 stroke-neutral-500 transition-transform
@@ -53,9 +56,9 @@ export default function Hero() {
               "text-balance text-center text-4xl font-semibold sm:text-5xl md:text-6xl leading-tight flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center"
             )}
           >
-            Meet{" "}
+            {t("meet")}{" "}
             <span className="text-transparent bg-clip-text bg-linear-to-bl from-amber-400 to-amber-800">
-              GitGenie
+              {t("title") || "GitGenie"}
             </span>{" "}
             {/* <Sparkles className="inline-block align-middle h-[1em] w-[1em] text-white" aria-hidden="true" /> */}
             <Image
@@ -72,24 +75,24 @@ export default function Hero() {
 
         <AnimateIn delay={100}>
           <article className="text-pretty mx-auto mt-6 max-w-3xl text-center text-lg leading-relaxed text-zinc-300 sm:text-xl mb-0">
-            Your AI-powered Git assistant — automate <FlipWords words={words} />{" "}
-            <br /> with just one command.
+            {t("subtitle")} — {t("tagline_start")} <FlipWords words={words} />{" "}
+            <br /> {t("tagline_end")}.
           </article>
         </AnimateIn>
         <AnimateIn delay={200}>
           <div className="mt-1 mb-6 flex lg:w-96 mx-auto items-center gap-2 rounded-lg border border-white/10 hover:border-amber-500/50 bg-black/60 px-4 py-2.5 font-mono text-sm text-zinc-200 transition-all duration-200 group-hover:border-amber-400/40">
-          <div className="flex-1 min-w-0">
-            <code
-              aria-label={`install command`}
-              className="block overflow-hidden text-ellipsis whitespace-nowrap pr-1"
-              title={"install command"}
-            >
-              npm i @gunjanghate/git-genie
-            </code>
-          </div>
-          <div className="shrink-0">
-            <CopyButton text={"npm i @gunjanghate/git-genie@latest"} />
-          </div>
+            <div className="flex-1 min-w-0">
+              <code
+                aria-label={t("install_command_label")}
+                className="block overflow-hidden text-ellipsis whitespace-nowrap pr-1"
+                title={t("install_command_label")}
+              >
+                npm i @gunjanghate/git-genie
+              </code>
+            </div>
+            <div className="shrink-0">
+              <CopyButton text={"npm i @gunjanghate/git-genie@latest"} />
+            </div>
           </div>
         </AnimateIn>
         <div className="w-full">
@@ -112,7 +115,7 @@ export default function Hero() {
             >
               <Image
                 src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1012878&theme=dark&t=1757106620847"
-                alt="GitGenie - Powered git assistant | Product Hunt"
+                alt={t("product_hunt_alt")}
                 width={250}
                 height={54}
                 style={{ width: "250px", height: "54px" }}

@@ -10,6 +10,13 @@ import FAQ from "@/components/faq";
 import HeroNav from "@/components/hero-nav";
 import NewAddOns from "@/components/new-add-ons";
 import ScrollSection from "@/components/scroll-section";
+import { setRequestLocale } from 'next-intl/server';
+import { routing } from '@/lib/i18n/routing';
+
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://gitgenie.vercel.app"),
   title: "Git Genie — AI-powered Git assistant",
@@ -39,7 +46,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
+export default async function Page({
+  params
+}: {
+  params: { locale: string };
+}) {
+  const resolvedParams = await Promise.resolve(params);
+  setRequestLocale(resolvedParams.locale);
   return (
     <main className="relative min-h-screen bg-black text-white overflow-x-hidden">
       {/* stack-wrapped sections will stick and layer */}

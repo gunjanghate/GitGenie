@@ -1,10 +1,9 @@
 "use client"
 
-import Link from "next/link"
+import { Link } from "@/lib/i18n/routing"
 import { ArrowLeft, AlertCircle } from "lucide-react"
 import AmbientBackground from "@/components/parts/ambient-background"
 import { Button } from "@/components/ui/button"
-
 export default function NotFound() {
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-zinc-950 text-white selection:bg-amber-400/20">
@@ -12,7 +11,7 @@ export default function NotFound() {
       <div className="absolute inset-0 z-0">
         <AmbientBackground />
       </div>
-      
+
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center px-4 text-center">
         {/* Icon */}
@@ -28,14 +27,14 @@ export default function NotFound() {
           Page not found
         </h2>
         <p className="mb-8 max-w-md text-zinc-400">
-          Sorry, we couldn't find the page you're looking for. It might have been moved, deleted, or never existed.
+          The page you are looking for doesn't exist or has been moved.
         </p>
 
         {/* Action */}
         <Button asChild className="gap-2 bg-amber-400 text-zinc-950 hover:bg-amber-300">
           <Link href="/">
             <ArrowLeft className="h-4 w-4" />
-            Back to Home
+            Back to home
           </Link>
         </Button>
       </div>

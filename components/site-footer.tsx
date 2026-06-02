@@ -1,11 +1,13 @@
-import Link from "next/link";
+import { Link } from "@/lib/i18n/routing";
 import AmbientBackground from "./parts/ambient-background";
 import chirag from "@/public/chirag.png";
 import Image from "next/image";
+import { useTranslations } from 'next-intl';
 
 export default function SiteFooter() {
+  const t = useTranslations("Footer");
   return (
-<footer className="relative border-t border-white/10 bg-black overflow-hidden w-full rounded-t-3xl">      {/* Subtle amber glow for footer cohesion */}
+    <footer className="relative border-t border-white/10 bg-black overflow-hidden w-full rounded-t-3xl">      {/* Subtle amber glow for footer cohesion */}
       <AmbientBackground variant="footer" />
 
       <div className="mx-auto grid grid-cols-2 md:flex md:flex-row max-w-6xl lg:justify-center lg:items-center gap-4 md:gap-8 lg:gap-32 px-4 md:px-6 py-8 md:py-12 text-center">
@@ -14,46 +16,46 @@ export default function SiteFooter() {
           links={[
             {
               href: "https://github.com/gunjanghate/GitGenie",
-              label: "GitHub Repo",
+              label: t("github_repo"),
             },
             {
               href: "https://www.npmjs.com/package/@gunjanghate/git-genie",
-              label: "NPM Package",
+              label: t("npm_package"),
             },
-            { href: "/docs", label: "Docs" },
+            { href: "/docs", label: t("docs") },
           ]}
         />
 
         <FooterCol
-          title="Community"
+          title={t("community")}
           links={[
             {
               href: "https://github.com/gunjanghate/GitGenie#contributing",
-              label: "Contribute",
+              label: t("contribute"),
             },
             {
               href: "https://github.com/gunjanghate/GitGenie/issues",
-              label: "Report Issues",
+              label: t("report_issues"),
             },
             {
               href: "https://github.com/gunjanghate/GitGenie/discussions",
-              label: "Discussion",
+              label: t("discussion"),
             },
           ]}
         />
 
         <FooterCol
-          title="Resources"
+          title={t("resources")}
           links={[
-            { href: "#how-it-works", label: "Install" },
-            { href: "#usage", label: "Usage" },
-            { href: "#usage", label: "Flags" },
-            { href: "#branch-management", label: "Branches" },
+            { href: "#how-it-works", label: t("install") },
+            { href: "#usage", label: t("usage") },
+            { href: "#usage", label: t("flags") },
+            { href: "#branch-management", label: t("branches") },
           ]}
         />
 
         <FooterCol
-          title="Follow"
+          title={t("follow")}
           links={[
             { href: "https://twitter.com/gunjanghate11", label: "Twitter/X" },
             {
@@ -79,7 +81,7 @@ export default function SiteFooter() {
           >
             <Image
               src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1012878&theme=dark&t=1757106620847"
-              alt="GitGenie - Powered git assistant | Product Hunt"
+              alt={t("product_hunt_alt")}
               width={250}
               height={54}
               style={{ width: "auto", height: "auto", maxWidth: "100%" }}
@@ -93,10 +95,10 @@ export default function SiteFooter() {
             src={chirag}
             width={18}
             height={18}
-            alt="Chirag"
+            alt={t("avatar_alt")}
             className="h-8 w-8 rounded-full"
           />
-          <p>© {new Date().getFullYear()} GitGenie. MIT Licensed.</p>
+          <p>© {new Date().getFullYear()} GitGenie. {t("copyright")}</p>
         </div>
       </div>
     </footer>

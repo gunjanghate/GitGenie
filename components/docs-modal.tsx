@@ -2,7 +2,8 @@
 "use client"
 
 import type React from "react"
-import Link from "next/link"
+import { Link } from "@/lib/i18n/routing"
+import { useTranslations } from "next-intl"
 
 /* ================= GETTING STARTED ================= */
 // UPDATED: 'Contents' list is clickable Markdown links [Title](#id)
@@ -374,6 +375,8 @@ gg split --genie
 export const DOCS_MD = DOCS_GETTING_STARTED
 
 export default function DocsModal() {
+  const t = useTranslations("Docs")
+
   return (
         <Link
         href={"/docs"}
@@ -382,7 +385,7 @@ export default function DocsModal() {
           prefetch={true}
           className="mx-auto my-10 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/90 transition hover:bg-white/10"
         >
-          View full docs
+          {t("view_full_docs")}
         </Link>
   )
 }
