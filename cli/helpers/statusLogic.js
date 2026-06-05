@@ -1,5 +1,3 @@
-// FIX Bug 1 (CWE-391): In getAheadBehindCounts catch block, only return null
-// for 'no upstream'/'@{u}' errors; re-throw all others (lock conflicts, corruption)
 import simpleGit from 'simple-git';
 import { execaCommand } from 'execa';
 import chalk from 'chalk';
