@@ -1,5 +1,3 @@
-// FIX Bug 4 (CWE-209/CWE-390): In handleUndoError generic fallback,
-// classify reflog/permission/lock errors and sanitize home-dir paths before printing.
 import chalk from 'chalk';
 
 /**
