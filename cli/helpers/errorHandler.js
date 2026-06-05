@@ -1,5 +1,3 @@
-// FIX Bug 3 (CWE-476): In parseProviderError, ensure msg=String(error?.message??error?.toString?.()??'')
-// FIX Bug 2 (CWE-400): Add MAX_LOG_BYTES = 5 * 1024 * 1024 cap to logErrorToDebugFile
 import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
