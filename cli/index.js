@@ -795,7 +795,13 @@ async function ensureRemoteOriginInteractive() {
         type: 'input',
         name: 'remoteUrl',
         message: 'Enter remote origin URL (e.g. https://github.com/user/repo.git):',
-        validate: (v) => v && v.startsWith('http') || v.startsWith('git@') ? true : 'Please enter a valid Git remote URL'
+        validate: (v) => {
+                    if (!v || !v.trim()) return 'Remote URL cannot be empty';
+                    const t = v.trim();
+                    const httpsOk = /^https:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\\s]*)?$/.test(t);
+                    const sshOk   = /^git@[a-zA-Z0-9.-]+:[a-zA-Z0-9._\\/-]+\.git$/.test(t);
+                    return (httpsOk || sshOk) ? true : 'Enter a valid Git URL (https://... or git@host:user/repo.git)';
+                  }
       }
     ]);
 
