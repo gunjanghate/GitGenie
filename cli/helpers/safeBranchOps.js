@@ -51,6 +51,22 @@ export async function createRecoveryBranch(commitHash, branchName = null) {
  * @returns {Promise<void>}
  */
 export async function cherryPickToBranch(targetBranch, commitHashes) {
+  // Guard: verify targetBranch exists before checkout to prevent detached HEAD (CWE-754)
+  const branches = await git.branchLocal();
+  if (!branches.all.includes(targetBranch)) {
+    throw new Error(
+      `Branch '${targetBranch}' does not exist locally. ` +
+      `Create it first with createRecoveryBranch() before cherry-picking into it.`
+    );
+  }
+  // Guard: refuse to cherry-pick when already in detached HEAD state
+  const headRef = (await git.revparse(["--abbrev-ref", "HEAD"])).trim();
+  if (headRef === "HEAD") {
+    throw new Error(
+      "Cannot cherry-pick from a detached HEAD state. " +
+      "Switch to a named branch first: git checkout <branch-name>"
+    );
+  }
   if (!Array.isArray(commitHashes) || commitHashes.length === 0) {
     throw new Error('Commit hashes array is required and must not be empty');
   }
