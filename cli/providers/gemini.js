@@ -25,8 +25,9 @@ export class GeminiProvider extends AIProvider {
     }
 
     validateApiKey(apiKey) {
-        // Gemini API keys typically start with 'AIza' and are 39 characters
-        return typeof apiKey === 'string' && apiKey.length > 20;
+        // Gemini API keys start with 'AIzaSy' and are 39 characters total
+        // Stricter regex aligns with resolveApiKey.js provider rules
+        return typeof apiKey === 'string' && /^AIzaSy[A-Za-z0-9\-_.=]{32,}$/.test(apiKey.trim());
     }
 
     /**
