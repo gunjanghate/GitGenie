@@ -118,6 +118,7 @@ export async function registerSplitCommand(program) {
         .command('split')
         .description('Split staged changes into logical atomic commits')
         .option('--genie', 'Enable AI-powered grouping (requires API key)')
+        .option('--no-genie', 'Force heuristic grouping only (skip AI even if API key is configured)')
         .option('--auto', 'Auto-commit all groups without confirmation')
         .option('--dry-run', 'Preview groups without committing')
         .option('--preview', 'Simulate all Git actions without executing them')
@@ -187,7 +188,8 @@ export async function registerSplitCommand(program) {
                 const provider = await getActiveProviderInstance();
                 const providerName = await getActiveProvider();
 
-                const useAI = opts.genie && provider;
+                // --no-genie explicitly disables AI even if --genie is passed or a provider is configured
+                const useAI = opts.genie && !opts.noGenie && provider;
 
                 if (useAI) {
                     try {
@@ -211,6 +213,8 @@ export async function registerSplitCommand(program) {
                         console.warn(chalk.yellow('⚠ No AI provider configured. Using heuristic grouping.'));
                         console.warn(chalk.cyan('For AI-powered grouping, configure an API key:'));
                         console.warn(chalk.gray('Example: gg config <your_api_key> --provider gemini'));
+                    } else if (opts.noGenie) {
+                        console.log(chalk.gray('ℹ Heuristic grouping enabled via --no-genie.'));
                     }
                     groups = groupFilesHeuristic(filesData, maxGroups);
                 }
