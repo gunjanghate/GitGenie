@@ -9,7 +9,7 @@ const git = simpleGit();
 export async function stageAllFiles() {
     const spinner = ora('📂 Staging all files...').start();
     try {
-        await git.add('./*');
+        await git.add(['-A']);  // fix: use --all to capture dotfiles and deletions
         spinner.succeed(' All files staged');
     } catch (err) {
         spinner.fail('Failed to stage files.');
