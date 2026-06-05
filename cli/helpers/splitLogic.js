@@ -1,6 +1,24 @@
 import simpleGit from 'simple-git';
 import chalk from 'chalk';
 
+// Binary file extensions — skip these in diff analysis to prevent
+// raw binary data from reaching AI providers (CWE-400 guard).
+const SPLIT_BINARY_EXTENSIONS = new Set([
+  "png","jpg","jpeg","gif","webp","svg","ico","bmp","tiff","avif",
+  "mp4","mov","avi","mkv","webm","mp3","wav","ogg","flac","aac",
+  "zip","tar","gz","bz2","xz","7z","rar",
+  "pdf","doc","docx","xls","xlsx","ppt","pptx",
+  "wasm","o","so","dll","exe","bin","node","pyc",
+  "db","sqlite","sqlite3","ttf","otf","woff","woff2",
+]);
+
+function isBinaryFile(filePath) {
+  const ext = (filePath.split(".").pop() ?? "").toLowerCase();
+  return SPLIT_BINARY_EXTENSIONS.has(ext);
+}
+
+
+
 const MAX_DIFF_LENGTH = 5000;
 const MAX_TOTAL_DIFF_SIZE = 30000;
 
