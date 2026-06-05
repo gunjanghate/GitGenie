@@ -15,6 +15,12 @@ import {
  * @param {number} count - Number of commits to fetch
  * @returns {Promise<Array>} Array of commit objects
  */
+/**
+ * SAFETY NOTE (CWE-116): git log format uses NUL (\0) as delimiter,
+ * NOT pipe (|). Pipe-delimited formats silently truncate commit messages
+ * that contain '|' literals (e.g. "feat: add A | B support").
+ * Always parse with: line.split('\0') after --pretty=format:%h%x00%s
+ */
 export async function getRecentCommits(count) {
     try {
         const { stdout } = await execa('git', ['log', '--oneline', '-n', String(count)]);
