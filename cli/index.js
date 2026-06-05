@@ -917,7 +917,9 @@ async function runMainFlow(desc, opts) {
     // 3.5 Check for detached HEAD state and show warning
     const branchInfo = await git.branch();
     if (branchInfo.detached) {
-      console.log(chalk.yellow('\n⚠️  You\'re currently in a detached HEAD state.'));
+      console.log(chalk.red('\n❌ Refusing to commit: you are in a detached HEAD state.'));
+        console.log(chalk.yellow('   Create a branch first: git checkout -b <new-branch>'));
+        process.exit(1);
       console.log(chalk.yellow('Changes made here won\'t belong to any branch.'));
       console.log(chalk.cyan('To continue safely, create a branch:'));
       console.log(chalk.gray('  git switch -c <new-branch-name>\n'));
