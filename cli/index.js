@@ -924,7 +924,7 @@ async function runMainFlow(desc, opts) {
     if (branchInfo.detached && opts.branch !== false && hasCommits) {
       console.log(chalk.red('\n❌ Refusing to commit in detached HEAD state.'));
       console.log(chalk.yellow('   Run: git checkout -b <new-branch>  to save your work.'));
-      console.log(chalk.cyan('   Or use: gg "<message>" --no-branch  to commit on a new branch.\n'));
+      console.log(chalk.cyan('   Or use: gg "<message>" --no-branch  to commit directly to main.\n'));
       process.exit(1);
     }
 
