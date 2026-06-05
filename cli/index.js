@@ -26,7 +26,7 @@ const { detectCommitType } = await import(
 
 
 
-const { stageAllFiles } = await import(
+const { stageAllFiles, validateRemoteUrl } = await import(
   new URL('./helpers/gitUtils.js', import.meta.url)
 );
 
@@ -795,7 +795,7 @@ async function ensureRemoteOriginInteractive() {
         type: 'input',
         name: 'remoteUrl',
         message: 'Enter remote origin URL (e.g. https://github.com/user/repo.git):',
-        validate: (v) => v && v.startsWith('http') || v.startsWith('git@') ? true : 'Please enter a valid Git remote URL'
+        validate: validateRemoteUrl
       }
     ]);
 
@@ -897,6 +897,11 @@ async function runMainFlow(desc, opts) {
 
     // 2️⃣ Add remote if provided
     if (opts.remote) {
+      const remoteValidation = validateRemoteUrl(opts.remote);
+      if (remoteValidation !== true) {
+        console.error(chalk.red(`❌ ${remoteValidation}`));
+        process.exit(1);
+      }
       try {
         await git.remote(['add', 'origin', opts.remote]);
         console.log(chalk.green(`Remote origin set to ${opts.remote}`));
@@ -914,13 +919,13 @@ async function runMainFlow(desc, opts) {
       hasCommits = false;
     }
 
-    // 3.5 Check for detached HEAD state and show warning
+    // 3.5 Block commits in detached HEAD unless --no-branch will create a branch
     const branchInfo = await git.branch();
-    if (branchInfo.detached) {
-      console.log(chalk.yellow('\n⚠️  You\'re currently in a detached HEAD state.'));
-      console.log(chalk.yellow('Changes made here won\'t belong to any branch.'));
-      console.log(chalk.cyan('To continue safely, create a branch:'));
-      console.log(chalk.gray('  git switch -c <new-branch-name>\n'));
+    if (branchInfo.detached && opts.branch !== false && hasCommits) {
+      console.log(chalk.red('\n❌ Refusing to commit in detached HEAD state.'));
+      console.log(chalk.yellow('   Run: git checkout -b <new-branch>  to save your work.'));
+      console.log(chalk.cyan('   Or use: gg "<message>" --no-branch  to commit on a new branch.\n'));
+      process.exit(1);
     }
 
     // 4️⃣ Determine branch interactively
