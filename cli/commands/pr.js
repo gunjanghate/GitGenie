@@ -13,8 +13,16 @@ export async function registerPRCommand(program) {
     .option("--genie", "Generate PR description using AI")
     .action(async (options) => {
       try {
-        const count = parseInt(options.count) || 5;
+        // Determine total commits and adjust count if necessary
+        const requestedCount = parseInt(options.count) || 5;
         const useAI = options.genie || false;
+        const totalCommitsStr = await git.raw(['rev-list', '--count', 'HEAD']);
+        const totalCommits = parseInt(totalCommitsStr.trim(), 10);
+        const count = Math.min(requestedCount, totalCommits);
+        if (requestedCount > totalCommits) {
+          console.log(chalk.yellow(`Requested ${requestedCount} commits but repository only has ${totalCommits}. Using ${count} commits.`));
+        }
+
 
         console.log(chalk.blue(`Analyzing last ${count} commits...\n`));
 
