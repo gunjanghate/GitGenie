@@ -236,9 +236,9 @@ export function groupFilesHeuristic(filesData, maxGroups = 5) {
                 rationale: 'Source code files grouped together'
             });
         } else {
-            const excessDirs = allDirs.slice(remainingSlots - 1);
+            const excessDirs = allDirs.slice(remainingSlots); // fix: was (remainingSlots - 1) — off-by-one caused wasteful merge
             // Group by directory
-            allDirs.slice(0, remainingSlots - 1).forEach(dir => { // Only iterate over dirs that will get their own group
+            allDirs.slice(0, remainingSlots).forEach( // fix: was remainingSlots - 1dir => { // Only iterate over dirs that will get their own group
                 groups.push({
                     files: sourceByDir[dir].map(f => f.path),
                     type: 'feat',
