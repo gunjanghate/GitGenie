@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { sanitizeCredentials } from '../utils/credentialSanitizer.js';
 
 /**
  * Local providers that run on-device — no API keys, different error surface.
@@ -294,16 +295,19 @@ function logErrorToDebugFile(error, providerName, context) {
 
         const timestamp = new Date().toISOString();
         const providerDisplayName = providerName || 'AI Provider';
+        // Sanitize message and stack so credentials in URLs are never written to disk
+        const safeMessage = sanitizeCredentials(error?.message || 'No message');
+        const safeStack = sanitizeCredentials(error?.stack || 'No stack trace available');
         const logEntry = `
 ================================================================================
 [${timestamp}] ${providerDisplayName} API Error - ${context}
 ================================================================================
-Error Message: ${error?.message || 'No message'}
+Error Message: ${safeMessage}
 Error Name: ${error?.name || 'Unknown'}
 Error Code: ${error?.code || 'N/A'}
 Status: ${error?.status || error?.statusCode || 'N/A'}
 Stack Trace:
-${error?.stack || 'No stack trace available'}
+${safeStack}
 ================================================================================
 
 `;

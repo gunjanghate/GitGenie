@@ -9,6 +9,7 @@ import inquirer from 'inquirer';
 import ora from 'ora';
 import path from 'path';
 import simpleGit from 'simple-git';
+import { sanitizeCredentials, sanitizeRemoteUrl } from './utils/credentialSanitizer.js';
 const {
   registerConfigCommand,
   getActiveProviderInstance,
@@ -167,6 +168,8 @@ program.command('cl')
   .argument('[dir]')
   .description('Clone repository')
   .action(async (url, dir) => {
+    // Sanitize the URL for display — never echo embedded credentials to the terminal
+    const safeUrl = sanitizeRemoteUrl(url);
     const spinner = ora('📥 Cloning repository...').start();
     try {
       await git.clone(url, dir);
@@ -174,7 +177,8 @@ program.command('cl')
       // Determine the target directory name for helpful next steps
       const repoNameFromUrl = (() => {
         try {
-          const parts = url.split('/').filter(Boolean);
+          // Use the sanitized URL so credentials are never part of the derived name
+          const parts = safeUrl.split('/').filter(Boolean);
           const last = parts[parts.length - 1] || '';
           return (last || 'repo').replace(/\.git$/i, '');
         } catch {
@@ -200,8 +204,9 @@ program.command('cl')
       }
     } catch (err) {
       spinner.fail('Failed to clone repository.');
-      console.log(chalk.red(err.message));
-      console.log(chalk.cyan('Tip: Ensure the URL is correct and you have access (SSH/HTTPS).'));
+      // Sanitize the error message — git often echoes the full URL (with credentials) in error output
+      console.log(chalk.red(sanitizeCredentials(err.message)));
+      console.log(chalk.cyan('Tip: Ensure the URL is correct and you have access. Prefer SSH keys or a Git credential helper over inline tokens.'));
     }
   });
 
