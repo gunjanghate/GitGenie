@@ -1,6 +1,8 @@
 import chalk from "chalk";
 import didYouMean from "didyoumean";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
+import fs from "fs";
+import path from "path";
 
 /**
  * Reads the current Git repository state from the working directory.
@@ -23,40 +25,34 @@ function getGitContext() {
     currentBranch: null,
   };
 
+  let gitDir;
   try {
-    execSync("git rev-parse --git-dir", { stdio: "ignore" });
+    gitDir = execFileSync("git", ["rev-parse", "--git-dir"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
     ctx.isGitRepo = true;
   } catch {
     return ctx;
   }
 
+  // Detect in-progress operations by checking for marker files in the git
+  // directory. fs + path are used instead of shell commands so paths with
+  // spaces are handled safely and the checks work on Windows as well.
   try {
-    const gitDir = execSync("git rev-parse --git-dir", { encoding: "utf8" }).trim();
-
-    ctx.isMerging = (() => {
-      try {
-        execSync(`test -f ${gitDir}/MERGE_HEAD`, { stdio: "ignore" });
-        return true;
-      } catch { return false; }
-    })();
-
-    ctx.isRebasing = (() => {
-      try {
-        execSync(`test -d ${gitDir}/rebase-merge || test -d ${gitDir}/rebase-apply`, { stdio: "ignore" });
-        return true;
-      } catch { return false; }
-    })();
-
-    ctx.isCherryPicking = (() => {
-      try {
-        execSync(`test -f ${gitDir}/CHERRY_PICK_HEAD`, { stdio: "ignore" });
-        return true;
-      } catch { return false; }
-    })();
+    ctx.isMerging = fs.existsSync(path.join(gitDir, "MERGE_HEAD"));
+    ctx.isRebasing = (
+      fs.existsSync(path.join(gitDir, "rebase-merge")) ||
+      fs.existsSync(path.join(gitDir, "rebase-apply"))
+    );
+    ctx.isCherryPicking = fs.existsSync(path.join(gitDir, "CHERRY_PICK_HEAD"));
   } catch { /* ignore */ }
 
   try {
-    const branch = execSync("git symbolic-ref --short HEAD 2>/dev/null", { encoding: "utf8" }).trim();
+    const branch = execFileSync("git", ["symbolic-ref", "--short", "HEAD"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
     ctx.currentBranch = branch || null;
     ctx.isDetachedHEAD = false;
   } catch {
@@ -64,7 +60,10 @@ function getGitContext() {
   }
 
   try {
-    const status = execSync("git status --porcelain", { encoding: "utf8" });
+    const status = execFileSync("git", ["status", "--porcelain"], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    });
     const lines = status.split("\n").filter(Boolean);
     ctx.hasStagedChanges = lines.some(l => !/^\?/.test(l) && l[0] !== " ");
     ctx.hasUntrackedFiles = lines.some(l => l.startsWith("??"));
@@ -123,11 +122,11 @@ function rankSuggestions(cmd, allCommands, ctx) {
   }
 
   if (ctx.hasStagedChanges && cmd.length <= 2) {
-    add("c", "staged changes detected - commit them with 'c'");
+    add("commit", "staged changes detected - commit them with 'commit'");
   }
 
   if (ctx.hasUncommittedChanges && !ctx.hasStagedChanges && cmd.length <= 2) {
-    add("s", "uncommitted changes - check status with 's'");
+    add("status", "uncommitted changes - review them with 'status'");
   }
 
   // Fuzzy match result goes after context-driven ones
