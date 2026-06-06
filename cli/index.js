@@ -268,7 +268,7 @@ program.command('ignore')
       if (options.template) {
         if (!pattern) {
           // Interactive selection with search
-          const { default: inquirerCheckboxPlus } = await import('inquirer-checkbox-plus');
+          const { default: inquirerCheckboxPlus } = await import('@inquirer/checkbox');
           inquirer.registerPrompt('checkbox-plus', inquirerCheckboxPlus);
 
           console.log(chalk.cyan('Controls: ↑↓ to navigate • space to select • type to filter • enter to submit'));
