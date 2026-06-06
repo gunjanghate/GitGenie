@@ -238,7 +238,8 @@ export function groupFilesHeuristic(filesData, maxGroups = 5) {
         } else {
             const excessDirs = allDirs.slice(remainingSlots); // fix: was (remainingSlots - 1) — off-by-one caused wasteful merge
             // Group by directory
-            allDirs.slice(0, remainingSlots).forEach( // fix: was remainingSlots - 1dir => { // Only iterate over dirs that will get their own group
+            // fix: was allDirs.slice(0, remainingSlots - 1) — off-by-one wasted a slot
+            allDirs.slice(0, remainingSlots).forEach(dir => {
                 groups.push({
                     files: sourceByDir[dir].map(f => f.path),
                     type: 'feat',

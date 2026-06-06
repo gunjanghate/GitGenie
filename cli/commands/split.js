@@ -184,13 +184,13 @@ export async function registerSplitCommand(program) {
                 // 2️⃣ Group files (AI or heuristic)
                 let groups = [];
                 const _rawMaxGroups = parseInt(opts.maxGroups, 10);
-    if (isNaN(_rawMaxGroups) || _rawMaxGroups < 1 || _rawMaxGroups > 50) {
-        console.error(chalk.red(
-            `\u2716  --max-groups must be a positive integer between 1 and 50 (got: ${opts.maxGroups})`
-        ));
-        process.exit(1);
-    }
-    const maxGroups = _rawMaxGroups;
+                if (isNaN(_rawMaxGroups) || _rawMaxGroups < 1 || _rawMaxGroups > 50) {
+                    console.error(chalk.red(
+                        `✖  --max-groups must be a positive integer between 1 and 50 (got: ${opts.maxGroups})`
+                    ));
+                    process.exit(1);
+                }
+                const maxGroups = _rawMaxGroups;
                 const provider = await getActiveProviderInstance();
                 const providerName = await getActiveProvider();
 
