@@ -117,7 +117,7 @@ export async function registerSplitCommand(program) {
     program
         .command('split')
         .description('Split staged changes into logical atomic commits')
-        .option('--genie', 'Enable AI-powered grouping (requires API key)')
+        .option('--genie', 'Enable AI-powered grouping (requires API key)', false)
         .option('--auto', 'Auto-commit all groups without confirmation')
         .option('--dry-run', 'Preview groups without committing')
         .option('--preview', 'Simulate all Git actions without executing them')
@@ -230,10 +230,10 @@ export async function registerSplitCommand(program) {
                         process.exit(0);
                     }
 
-                    const msgSpinner = opts.genie ? ora('🧞 Generating preview messages with AI...').start() : null;
+                    const msgSpinner = useAI ? ora('🧞 Generating preview messages with AI...').start() : null;
                     try {
                         for (const group of groups) {
-                            group.previewMessage = await generateCommitMessageForGroup(group, filesData, opts.genie ? provider : null);
+                            group.previewMessage = await generateCommitMessageForGroup(group, filesData, useAI ? provider : null);
                         }
                         if (msgSpinner) msgSpinner.succeed('AI messages generated');
                     } catch (err) {
@@ -313,7 +313,7 @@ export async function registerSplitCommand(program) {
                             }
 
                             // Generate commit message
-                            const message = group.customMessage || await generateCommitMessageForGroup(group, filesData, opts.genie ? provider : null);
+                            const message = group.customMessage || await generateCommitMessageForGroup(group, filesData, useAI ? provider : null);
 
                             await gitExec.commit(message);
                             spinner.succeed(chalk.green(`✓ Committed: ${message}`));
@@ -367,7 +367,7 @@ export async function registerSplitCommand(program) {
                                 }
 
                                 // Generate or use custom commit message
-                                const message = updatedGroup.customMessage || await generateCommitMessageForGroup(updatedGroup, filesData, opts.genie ? provider : null);
+                                const message = updatedGroup.customMessage || await generateCommitMessageForGroup(updatedGroup, filesData, useAI ? provider : null);
 
                                 await gitExec.commit(message);
                                 spinner.succeed(chalk.green(`✓ Committed: ${message}`));
