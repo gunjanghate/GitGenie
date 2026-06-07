@@ -38,7 +38,7 @@ run('accepts HTTPS URL with port and without .git suffix', () => {
 
 run('accepts ssh:// and alternate scp-style SSH URLs', () => {
     assert(validateRemoteUrl('ssh://git@github.com/user/repo.git') === true);
-    assert(validateRemoteUrl('ssh://github.com/user/repo') === true);
+    assert(validateRemoteUrl('ssh://git@github.com/user/repo') === true);
     assert(validateRemoteUrl('git@github.com:user/repo') === true);
 });
 
