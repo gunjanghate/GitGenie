@@ -897,14 +897,15 @@ async function runMainFlow(desc, opts) {
 
     // 2️⃣ Add remote if provided
     if (opts.remote) {
-      const remoteValidation = validateRemoteUrl(opts.remote);
+      const trimmedRemote = opts.remote.trim();
+      const remoteValidation = validateRemoteUrl(trimmedRemote);
       if (remoteValidation !== true) {
         console.error(chalk.red(`❌ ${remoteValidation}`));
         process.exit(1);
       }
       try {
-        await git.remote(['add', 'origin', opts.remote]);
-        console.log(chalk.green(`Remote origin set to ${opts.remote}`));
+        await git.remote(['add', 'origin', trimmedRemote]);
+        console.log(chalk.green(`Remote origin set to ${trimmedRemote}`));
       } catch {
         console.log(chalk.yellow('Remote origin may already exist.'));
         console.log(chalk.cyan('Tip: To change remote, run: git remote set-url origin <url>'));
@@ -924,7 +925,7 @@ async function runMainFlow(desc, opts) {
     if (branchInfo.detached && opts.branch !== false && hasCommits) {
       console.log(chalk.red('\n❌ Refusing to commit in detached HEAD state.'));
       console.log(chalk.yellow('   Run: git checkout -b <new-branch>  to save your work.'));
-      console.log(chalk.cyan('   Or use: gg "<message>" --no-branch  to commit directly to main.\n'));
+      console.log(chalk.cyan('   Or use: gg "<message>" --no-branch  to create a branch from this detached HEAD.\n'));
       process.exit(1);
     }
 
@@ -933,9 +934,15 @@ async function runMainFlow(desc, opts) {
     const currentBranch = branchInfo.current || 'main';
 
     if (opts.branch == false || !hasCommits) {
-      branchName = 'main';
-      await git.checkout(['-B', branchName]);
-      console.log(chalk.green(`Committing directly to branch: ${branchName}`));
+      if (branchInfo.detached) {
+        branchName = `gg-work/${Date.now()}`;
+        await git.checkout(['-b', branchName]);
+        console.log(chalk.green(`Created branch from detached HEAD: ${branchName}`));
+      } else {
+        branchName = 'main';
+        await git.checkout(['-B', branchName]);
+        console.log(chalk.green(`Committing directly to branch: ${branchName}`));
+      }
     } else {
       const { branchChoice } = await inquirer.prompt([{
         type: 'list',
@@ -1002,9 +1009,13 @@ async function runMainFlow(desc, opts) {
     // 5️⃣ Stage files
     let diff = await git.diff(['--cached']);
     if (!diff) {
-      // Check if there are unstaged changes
+      const status = await git.status();
       const unstagedDiff = await git.diff();
-      if (unstagedDiff) {
+      const hasUnstagedChanges = !!unstagedDiff
+        || status.not_added.length > 0
+        || status.deleted.length > 0
+        || status.modified.length > 0;
+      if (hasUnstagedChanges) {
         console.log(chalk.yellow('\n⚠️  You have modified files, but nothing is staged yet.'));
         console.log(chalk.cyan('Run git add <file> or git add . to stage your changes before committing.\n'));
       } else {
