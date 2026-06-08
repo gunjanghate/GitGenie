@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { AIProvider } from './base.js';
+import { validateApiKey as validateProviderApiKey } from '../utils/resolveApiKey.js';
 import ora from 'ora';
 
 /**
@@ -25,8 +26,7 @@ export class GeminiProvider extends AIProvider {
     }
 
     validateApiKey(apiKey) {
-        // Gemini API keys typically start with 'AIza' and are 39 characters
-        return typeof apiKey === 'string' && apiKey.length > 20;
+        return validateProviderApiKey('gemini', apiKey) !== null;
     }
 
     /**
