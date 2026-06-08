@@ -3,6 +3,9 @@
 
 [![npm version](https://img.shields.io/npm/v/@gunjanghate/git-genie.svg)](https://www.npmjs.com/package/@gunjanghate/git-genie)
 [![Downloads](https://img.shields.io/npm/dm/@gunjanghate/git-genie.svg)](https://www.npmjs.com/package/@gunjanghate/git-genie)
+[![Total Downloads](https://img.shields.io/npm/dt/@gunjanghate/git-genie.svg)](https://www.npmjs.com/package/@gunjanghate/git-genie)
+[![GitHub Stars](https://img.shields.io/github/stars/gunjanghate/GitGenie?style=social)](https://github.com/gunjanghate/GitGenie)
+[![License](https://img.shields.io/npm/l/@gunjanghate/git-genie.svg)](https://github.com/gunjanghate/git-genie/blob/main/LICENSE)
 
 </div>
 
