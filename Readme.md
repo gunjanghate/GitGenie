@@ -122,7 +122,7 @@ GitGenie now includes convenient shortcut commands for branch management and wor
 - `gg wt <branchName> [path]`: Create a worktree for a branch at an optional path
 - `gg cl <repoUrl> [directory]`: Clone a repository into an optional directory
 
-#### Examples:
+#### Examples
 
 ```bash
 # Create and switch to a new branch
@@ -490,7 +490,7 @@ gg "fix login bug" --osc
 
 gg "fix login bug" --osc --genie
 
-#### Basic Usage:
+#### Basic Usage
 
 ```powershell
 # Navigate to project directory
@@ -521,7 +521,7 @@ gg "add user dashboard" --type feat --push-to-main
 gg "initial commit" --remote https://github.com/username/repo.git --no-branch
 ```
 
-#### Interactive Workflow Example:
+#### Interactive Workflow Example
 
 ```powershell
 # Run with interactive prompts
@@ -539,7 +539,7 @@ gg "implement user management"
 #    Do you want to push branch "feat/implement-user-management-2025-09-01" to remote? (Y/n)
 ```
 
-#### Advanced Usage Scenarios:
+#### Advanced Usage Scenarios
 
 ```powershell
 # Testing the CLI tool functionality with AI
@@ -558,7 +558,7 @@ gg "update README with examples" --type docs --no-branch
 gg "optimize database queries" --type perf --scope db --genie --push-to-main
 ```
 
-#### Legacy Examples:
+#### Legacy Examples
 
 ```bash
 # First commit to a new repo, main branch, manual commit
@@ -619,8 +619,8 @@ gg "fix typo in README" --no-branch
 ## 🧪 Testing Commands
 
 ```powershell
-# Test basic functionality
-gg "test basic functionality" --no-ai --no-branch
+# Test basic functionality (no AI — default mode, just omit --genie)
+gg "test basic functionality" --no-branch
 
 # Test AI commit generation
 gg "test AI commit generation" --type test
@@ -727,7 +727,7 @@ Example test commands:
 
 `gg "test no changes" --no-branch`
 
-### Make sure:
+### Make sure
 
 - Commands execute without crashing
 - Prompts behave as expected
@@ -750,15 +750,15 @@ If you find a bug or want to suggest an improvement:
 
 - **_Branching_**
 
-* **_Do not commit directly to main._**
-* Create a feature branch:
+- **_Do not commit directly to main._**
+- Create a feature branch:
   `git checkout -b docs/improve-readme`
-* Commit Your Changes
+- Commit Your Changes
   - `git add .`
   - `git commit -m "docs: improve contributor onboarding section"`
-* Push and Open a PR
+- Push and Open a PR
   - `git push origin docs/improve-readme`
-* Then open a Pull Request on GitHub:
+- Then open a Pull Request on GitHub:
   - Base branch → main
   - Compare branch → your feature branch
   - Fill out the PR template and clearly explain what you changed and why.
