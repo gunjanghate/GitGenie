@@ -175,7 +175,7 @@ function renderFlags(flags: any[]) {
         </div>
         <div className="mt-auto flex items-center justify-between gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2">
           <span
-            className="truncate font-mono text-xs text-zinc-200"
+            className="min-w-0 break-all font-mono text-xs text-zinc-200"
             title={f.example}
           >
             {f.example}
