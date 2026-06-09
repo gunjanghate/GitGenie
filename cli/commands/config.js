@@ -474,6 +474,7 @@ export function registerConfigCommand(program) {
         // Local provider options (ollama / lmstudio)
         .option('--url <url>', 'Base URL for local AI server (e.g. http://localhost:11434)')
         .option('--model <model>', 'Model name for local AI provider (e.g. llama3.2)')
+        .option('--stdin', 'Read API key from stdin (secure, for scripting)')
         .action(async (apikey, options) => {
             try {
                 const { ProviderFactory } = await import('../providers/index.js');
@@ -513,7 +514,9 @@ export function registerConfigCommand(program) {
                     console.log(''); // Empty line
                     if (!hasConfigured) {
                         console.log(chalk.yellow('  No providers configured yet.'));
-                        console.log(chalk.cyan('  Cloud:  gg config <your-key> --provider <name>'));
+                        console.log(chalk.cyan('  Cloud:  gg config --provider <name>     (secure interactive mode)'));
+                        console.log(chalk.cyan('  Cloud:  echo "<key>" | gg config --stdin --provider <name>     (scripting)'));
+                        console.log(chalk.cyan('  Cloud:  export GEMINI_API_KEY="<key>"     (environment variable)'));
                         console.log(chalk.cyan('  Local:  gg config --provider ollama --url http://localhost:11434 --model llama3.2'));
                     }
                     process.exit(0);
@@ -554,11 +557,36 @@ export function registerConfigCommand(program) {
                 }
 
                 // Mode 2b: Save cloud provider API key
-                if (!apikey) {
-                    console.error(chalk.red('Error: API key is required for cloud providers when not using --status'));
-                    console.log(chalk.cyan('Usage: gg config <apikey> --provider <name>'));
-                    console.log(chalk.cyan('Check Status: gg config --status'));
-                    process.exit(1);
+                if (options.stdin) {
+                    const readline = await import('readline');
+                    const rl = readline.createInterface({ input: process.stdin });
+                    const keyFromStdin = await new Promise(resolve => {
+                        let data = '';
+                        rl.on('line', line => { data += line; });
+                        rl.on('close', () => resolve(data.trim()));
+                    });
+                    if (!keyFromStdin) {
+                        console.error(chalk.red('Error: No API key provided via stdin.'));
+                        process.exit(1);
+                    }
+                    apikey = keyFromStdin;
+                } else if (!apikey) {
+                    const { default: inquirer } = await import('inquirer');
+                    const { secretKey } = await inquirer.prompt([{
+                        type: 'password',
+                        name: 'secretKey',
+                        message: `Enter your ${providerName} API key (input will be hidden):`,
+                        validate: input => input.trim().length > 0 ? true : 'API key cannot be empty'
+                    }]);
+                    apikey = secretKey;
+                } else {
+                    console.warn(chalk.yellow('⚠  Security: Passing API keys as CLI arguments is insecure.'));
+                    console.warn(chalk.yellow('   The key is visible in shell history, process listings, and terminal logs.'));
+                    console.warn(chalk.cyan('   Safer alternatives:'));
+                    console.warn(chalk.cyan('     • Set the environment variable: export GEMINI_API_KEY=your_key'));
+                    console.warn(chalk.cyan('     • Use interactive mode (just run: gg config --provider <name>)'));
+                    console.warn(chalk.cyan('     • Pipe via stdin: echo "your_key" | gg config --stdin --provider <name>'));
+                    console.warn('');
                 }
 
                 await saveProviderApiKey(providerName, apikey);
