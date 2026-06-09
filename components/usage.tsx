@@ -1,14 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { AnimateIn } from "./parts/animate-in";
 import AmbientBackground from "./parts/ambient-two";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "./ui/accordion";
 import { CopyButton } from "./parts/copy-button";
 import { useTranslations } from 'next-intl';
 
@@ -53,17 +46,6 @@ export default function Usage() {
   ];
 
   // Responsive Check: Initialize as null to avoid hydration mismatch, then determine on mount
-  const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const checkDesktop = () => {
-      setIsDesktop(window.innerWidth >= 1024);
-    };
-    // Check on mount and resize
-    checkDesktop();
-    window.addEventListener("resize", checkDesktop);
-    return () => window.removeEventListener("resize", checkDesktop);
-  }, []);
 
   return (
     <section
@@ -93,24 +75,9 @@ export default function Usage() {
           - Desktop (isDesktop = true): Renders type="multiple" (Grid Layout)
           - Mobile (isDesktop = false): Renders type="single" (Stack Layout)
       */}
-      {isDesktop === null ? null : isDesktop ? (
-        // DESKTOP: Multiple cards can be open, 4-column grid
-        <Accordion
-          type="multiple"
-          className="grid items-stretch gap-6 lg:grid-cols-4 auto-rows-[1fr] mb-16"
-        >
-          {renderFlags(flags)}
-        </Accordion>
-      ) : (
-        // MOBILE/TABLET: Only one card open at a time, Single column stack
-        <Accordion
-          type="single"
-          collapsible
-          className="grid items-start gap-4 grid-cols-1 mb-16"
-        >
-          {renderFlags(flags)}
-        </Accordion>
-      )}
+      <div className="grid items-stretch gap-6 lg:grid-cols-4 grid-cols-1 auto-rows-[1fr] mb-16">
+        {renderFlags(flags)}
+      </div>
 
       {/* Branch Management Shortcuts Section */}
       <section
@@ -199,30 +166,23 @@ export default function Usage() {
 function renderFlags(flags: any[]) {
   return flags.map((f, i) => (
     <AnimateIn key={`${f.flag}-${i}`} delay={i * 80}>
-      <AccordionItem
-        value={f.flag}
-        className="relative flex flex-col justify-between rounded-2xl border border-white/10 bg-zinc-900/40 px-4 py-2 h-full"
-      >
-        <AccordionTrigger className="group w-full rounded-xl px-1 py-2 text-left no-underline hover:no-underline cursor-pointer">
-          <div className="flex flex-col gap-1 pr-2">
-            <span className="font-mono text-sm text-amber-400 break-words">
-              {f.flag}
-            </span>
-            <span className="text-zinc-300 text-sm leading-snug">{f.desc}</span>
-          </div>
-        </AccordionTrigger>
-        <AccordionContent className="transition-all">
-          <div className="mt-3 flex items-center justify-between gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2">
-            <span
-              className="truncate font-mono text-xs text-zinc-200"
-              title={f.example}
-            >
-              {f.example}
-            </span>
-            <CopyButton text={f.example} />
-          </div>
-        </AccordionContent>
-      </AccordionItem>
+      <div className="relative flex flex-col justify-between rounded-2xl border border-white/10 bg-zinc-900/40 px-4 py-4 h-full">
+        <div className="flex flex-col gap-1 mb-3">
+          <span className="font-mono text-sm text-amber-400 break-words">
+            {f.flag}
+          </span>
+          <span className="text-zinc-300 text-sm leading-snug">{f.desc}</span>
+        </div>
+        <div className="mt-auto flex items-center justify-between gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2">
+          <span
+            className="truncate font-mono text-xs text-zinc-200"
+            title={f.example}
+          >
+            {f.example}
+          </span>
+          <CopyButton text={f.example} />
+        </div>
+      </div>
     </AnimateIn>
   ));
 }
