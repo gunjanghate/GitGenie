@@ -23,10 +23,11 @@ export function validateRemoteUrl(url) {
     if (!url || !url.trim()) return 'Remote URL cannot be empty';
 
     const trimmed = url.trim();
-    const httpsPattern = /^https:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/[^\s]*)?$/;
-    const sshPattern = /^git@[a-zA-Z0-9.-]+:[a-zA-Z0-9._\/-]+\.git$/;
+    const httpsPattern = /^https:\/\/[a-zA-Z0-9.-]+(?::\d{1,5})?\/[^\s]+$/;
+    const sshScpPattern = /^git@[a-zA-Z0-9.-]+:[a-zA-Z0-9._\/-]+(?:\.git)?$/;
+    const sshUrlPattern = /^ssh:\/\/git@[a-zA-Z0-9.-]+(?::\d{1,5})?\/[a-zA-Z0-9._\/-]+(?:\.git)?$/;
 
-    return (httpsPattern.test(trimmed) || sshPattern.test(trimmed))
+    return (httpsPattern.test(trimmed) || sshScpPattern.test(trimmed) || sshUrlPattern.test(trimmed))
         ? true
-        : 'Please enter a valid Git remote URL (https://... or git@host:user/repo.git)';
+        : 'Please enter a valid Git remote URL (https://host[:port]/path, ssh://[user@]host[:port]/path, or user@host:path)';
 }
