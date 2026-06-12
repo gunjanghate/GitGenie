@@ -12,6 +12,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { routing } from '@/lib/i18n/routing';
 import { notFound } from 'next/navigation';
+import { MagicSparkle } from "@/components/magic-sparkle"
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -81,6 +82,7 @@ export default async function RootLayout({
       <body
         className={`min-h-screen flex flex-col bg-black text-white font-sans ${plusJakarta.variable} ${GeistMono.variable}`}
       >
+        <MagicSparkle />
         <NextIntlClientProvider messages={messages}>
           <SmoothScrollProvider>
             <Suspense fallback={null}>{children}</Suspense>
