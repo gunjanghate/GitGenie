@@ -14,13 +14,14 @@ interface Sparkle {
 export function MagicSparkle() {
   const isMobile = useIsMobile()
   const [sparkles, setSparkles] = useState<Sparkle[]>([])
+  const [isEnabled, setIsEnabled] = useState(false)
   const idCounterRef = useRef(0)
   const lastSpawnRef = useRef(0)
 
-  const prefersReducedMotion = 
-    typeof window !== 'undefined' 
-      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches 
-      : true
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    setIsEnabled(!prefersReducedMotion)
+  }, [])
 
   const spawnSparkle = useCallback((x: number, y: number) => {
     const sparkle: Sparkle = {
@@ -33,7 +34,7 @@ export function MagicSparkle() {
   }, [])
 
   useEffect(() => {
-    if (isMobile || prefersReducedMotion || typeof window === 'undefined') return
+    if (isMobile || !isEnabled) return
 
     const handleMouseMove = (e: MouseEvent) => {
       const now = Date.now()
@@ -45,7 +46,7 @@ export function MagicSparkle() {
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true })
     return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [isMobile, prefersReducedMotion, spawnSparkle])
+  }, [isMobile, isEnabled, spawnSparkle])
 
   useEffect(() => {
     if (sparkles.length === 0) return
@@ -57,7 +58,7 @@ export function MagicSparkle() {
     return () => clearTimeout(timeout)
   }, [sparkles])
 
-  if (isMobile || prefersReducedMotion || typeof window === 'undefined') return null
+  if (isMobile || !isEnabled) return null
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
