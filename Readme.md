@@ -432,7 +432,7 @@ GitGenie Project/
 - Graceful fallback to manual mode when AI fails
 - Support for all conventional commit types and scopes
 
-#### Auto-detect commit type (non-genie)
+**Auto-detect commit type (non-genie)**
 
 - When you don’t pass `--type` and you’re not using `--genie`, GitGenie analyzes your staged changes and picks a suitable commit type (e.g., `fix`, `docs`, `refactor`).
 - You’ll see a log like:
@@ -480,17 +480,17 @@ GitGenie Project/
 - **Entry Point**: `index.js`
 - **Node Version**: 16+ recommended
 
-### Example Usage & Sample Commands
+## Example Usage & Sample Commands
 
+```powershell
 # Open source contribution branch (manual short title)
-
 gg "fix login bug" --osc
 
 # Open source contribution branch (AI short title)
-
 gg "fix login bug" --osc --genie
+```
 
-#### Basic Usage
+### Basic Usage
 
 ```powershell
 # Navigate to project directory
@@ -521,7 +521,7 @@ gg "add user dashboard" --type feat --push-to-main
 gg "initial commit" --remote https://github.com/username/repo.git --no-branch
 ```
 
-#### Interactive Workflow Example
+### Interactive Workflow Example
 
 ```powershell
 # Run with interactive prompts
@@ -539,7 +539,7 @@ gg "implement user management"
 #    Do you want to push branch "feat/implement-user-management-2025-09-01" to remote? (Y/n)
 ```
 
-#### Advanced Usage Scenarios
+### Advanced Usage Scenarios
 
 ```powershell
 # Testing the CLI tool functionality with AI
@@ -558,7 +558,7 @@ gg "update README with examples" --type docs --no-branch
 gg "optimize database queries" --type perf --scope db --genie --push-to-main
 ```
 
-#### Legacy Examples
+### Legacy Examples
 
 ```bash
 # First commit to a new repo, main branch, manual commit
@@ -623,7 +623,7 @@ gg "fix typo in README" --no-branch
 gg "test basic functionality" --no-branch
 
 # Test AI commit generation
-gg "test AI commit generation" --type test
+gg "test AI commit generation" --type test --genie
 
 # Test branch creation
 gg "test branch creation" --type feat --scope testing
@@ -711,21 +711,19 @@ git init
 
 Example test commands:
 
+```powershell
 # Basic commit (manual)
-
-`gg "test basic commit" --no-branch`
+gg "test basic commit" --no-branch
 
 # Test AI commit message
-
-`gg "test ai commit" --genie`
+gg "test ai commit" --genie
 
 # Test branch creation
-
-`gg "test branch flow" --type feat`
+gg "test branch flow" --type feat
 
 # Test error handling (no changes)
-
-`gg "test no changes" --no-branch`
+gg "test no changes" --no-branch
+```
 
 ### Make sure
 
