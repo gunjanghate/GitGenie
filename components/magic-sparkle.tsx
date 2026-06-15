@@ -9,6 +9,9 @@ interface Sparkle {
   x: number
   y: number
   size: number
+  velocityX?: number
+  velocityY?: number
+  isClick?: boolean
 }
 
 export function MagicSparkle() {
@@ -33,6 +36,28 @@ export function MagicSparkle() {
     setSparkles(prev => [...prev.slice(-15), sparkle])
   }, [])
 
+  const spawnClickSparkles = useCallback((x: number, y: number) => {
+    const newSparkles: Sparkle[] = []
+    const numSparkles = 8 + Math.floor(Math.random() * 6)
+    
+    for (let i = 0; i < numSparkles; i++) {
+      const angle = (Math.PI * 2 * i) / numSparkles + Math.random() * 0.5
+      const speed = 30 + Math.random() * 50
+      const sparkle: Sparkle = {
+        id: idCounterRef.current++,
+        x: x,
+        y: y,
+        size: Math.random() * 6 + 3,
+        velocityX: Math.cos(angle) * speed,
+        velocityY: Math.sin(angle) * speed,
+        isClick: true,
+      }
+      newSparkles.push(sparkle)
+    }
+    
+    setSparkles(prev => [...prev.slice(-30), ...newSparkles])
+  }, [])
+
   useEffect(() => {
     if (isMobile || !isEnabled) return
 
@@ -44,9 +69,17 @@ export function MagicSparkle() {
       }
     }
 
+    const handleClick = (e: MouseEvent) => {
+      spawnClickSparkles(e.clientX, e.clientY)
+    }
+
     window.addEventListener('mousemove', handleMouseMove, { passive: true })
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [isMobile, isEnabled, spawnSparkle])
+    window.addEventListener('click', handleClick, { passive: true })
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('click', handleClick)
+    }
+  }, [isMobile, isEnabled, spawnSparkle, spawnClickSparkles])
 
   useEffect(() => {
     if (sparkles.length === 0) return
@@ -66,17 +99,21 @@ export function MagicSparkle() {
         <motion.div
           key={sparkle.id}
           initial={{ 
-            scale: 0,
+            scale: sparkle.isClick ? 0 : 0,
             opacity: 1,
+            x: sparkle.velocityX ? 0 : undefined,
+            y: sparkle.velocityY ? 0 : undefined,
           }}
           animate={{ 
-            scale: [0, 1.2, 0],
-            opacity: [1, 1, 0],
+            scale: sparkle.isClick ? [0, 1, 0] : [0, 1.2, 0],
+            opacity: sparkle.isClick ? [1, 1, 0] : [1, 1, 0],
+            x: sparkle.velocityX ? sparkle.velocityX * 0.5 : undefined,
+            y: sparkle.velocityY ? sparkle.velocityY * 0.5 : undefined,
           }}
           transition={{
-            duration: 0.6,
-            times: [0, 0.3, 1],
-            ease: 'easeOut',
+            duration: sparkle.isClick ? 0.5 : 0.6,
+            times: sparkle.isClick ? [0, 0.2, 1] : [0, 0.3, 1],
+            ease: sparkle.isClick ? 'easeOut' : 'easeOut',
           }}
           style={{
             position: 'absolute',
@@ -85,8 +122,12 @@ export function MagicSparkle() {
             width: sparkle.size,
             height: sparkle.size,
             borderRadius: '50%',
-            background: 'radial-gradient(circle, #ffda35 0%, #ee9919 50%, transparent 70%)',
-            boxShadow: '0 0 6px 2px rgba(255, 218, 53, 0.6)',
+            background: sparkle.isClick 
+              ? 'radial-gradient(circle, #fff 0%, #ffda35 40%, transparent 70%)'
+              : 'radial-gradient(circle, #ffda35 0%, #ee9919 50%, transparent 70%)',
+            boxShadow: sparkle.isClick 
+              ? '0 0 8px 3px rgba(255, 255, 255, 0.8), 0 0 12px 4px rgba(255, 218, 53, 0.6)'
+              : '0 0 6px 2px rgba(255, 218, 53, 0.6)',
             pointerEvents: 'none',
           }}
         />
