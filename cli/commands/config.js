@@ -471,6 +471,7 @@ export function registerConfigCommand(program) {
         .description('Save your AI provider API key or check configuration status')
         .option('--provider <name>', 'Provider name (gemini, mistral, groq, ollama, lmstudio)', 'gemini')
         .option('--status', 'Check configuration status of all providers')
+        .option('--stdin', 'Read API key from stdin (secure, avoids shell history exposure)')
         // Local provider options (ollama / lmstudio)
         .option('--url <url>', 'Base URL for local AI server (e.g. http://localhost:11434)')
         .option('--model <model>', 'Model name for local AI provider (e.g. llama3.2)')
@@ -513,7 +514,7 @@ export function registerConfigCommand(program) {
                     console.log(''); // Empty line
                     if (!hasConfigured) {
                         console.log(chalk.yellow('  No providers configured yet.'));
-                        console.log(chalk.cyan('  Cloud:  gg config <your-key> --provider <name>'));
+                        console.log(chalk.cyan('  Cloud:  echo "your_key" | gg config --stdin --provider <name>'));
                         console.log(chalk.cyan('  Local:  gg config --provider ollama --url http://localhost:11434 --model llama3.2'));
                     }
                     process.exit(0);
@@ -554,9 +555,19 @@ export function registerConfigCommand(program) {
                 }
 
                 // Mode 2b: Save cloud provider API key
+                if (options.stdin) {
+                    const stdinChunks = [];
+                    for await (const chunk of process.stdin) {
+                        stdinChunks.push(chunk);
+                    }
+                    apikey = Buffer.concat(stdinChunks).toString('utf-8').trim();
+                }
+
                 if (!apikey) {
                     console.error(chalk.red('Error: API key is required for cloud providers when not using --status'));
-                    console.log(chalk.cyan('Usage: gg config <apikey> --provider <name>'));
+                    console.log(chalk.cyan('Secure usage: gg config --stdin --provider <name>'));
+                    console.log(chalk.cyan('        or:  echo "your_key" | gg config --stdin --provider <name>'));
+                    console.log(chalk.cyan('        or:  export GEMINI_API_KEY="your_key"'));
                     console.log(chalk.cyan('Check Status: gg config --status'));
                     process.exit(1);
                 }
