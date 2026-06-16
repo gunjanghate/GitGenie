@@ -406,7 +406,7 @@ export class TemplateManager {
      * Get a template by name (bundled -> cache -> github)
      */
     async getTemplate(name) {
-        const lowerName = name.toLowerCase();
+        const lowerName = name.toLowerCase().replace(/\.\./g, '').replace(/[\\/]/g, '_');
 
         // 1. Check bundled templates
         if (BUNDLED_TEMPLATES[lowerName]) {
@@ -435,7 +435,7 @@ export class TemplateManager {
 
         // 3. Fetch from GitHub
         try {
-            const content = await this.fetchFromGitHub(name);
+            const content = await this.fetchFromGitHub(lowerName);
             // Save to cache
             fs.writeFileSync(cacheFile, content, 'utf-8');
             return {
