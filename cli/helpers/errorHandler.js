@@ -210,7 +210,8 @@ export function parseProviderError(error, providerName = 'gemini') {
         errorType = ErrorType.INVALID_API_KEY;
         userMessage = 'AI generation failed: Invalid or missing API key.';
         helpfulAction = `Please reconfigure your ${providerDisplayName} API key:
-   ${chalk.gray(`gg config <your_api_key> --provider ${providerName}`)}
+   Secure method: export ${providerName.toUpperCase()}_API_KEY="your_key"
+   Or pipe: echo "your_key" | gg config --stdin --provider ${providerName}
    Get your key at: ${chalk.cyan(patterns.docsUrl)}`;
     }
     // Check for network errors
@@ -238,14 +239,16 @@ export function parseProviderError(error, providerName = 'gemini') {
         errorType = ErrorType.GENERIC_API_ERROR;
         userMessage = 'AI generation failed due to an API error.';
         helpfulAction = `Check your API key and network connection:
-   ${chalk.gray(`gg config <your_api_key> --provider ${providerName}`)}`;
+   Secure method: export ${providerName.toUpperCase()}_API_KEY="your_key"
+   Or pipe: echo "your_key" | gg config --stdin --provider ${providerName}`;
     }
     // Unknown error
     else {
         errorType = ErrorType.UNKNOWN_ERROR;
         userMessage = 'AI generation failed unexpectedly.';
         helpfulAction = `Please check your configuration and try again:
-   ${chalk.gray(`gg config <your_api_key> --provider ${providerName}`)}`;
+   Secure method: export ${providerName.toUpperCase()}_API_KEY="your_key"
+   Or pipe: echo "your_key" | gg config --stdin --provider ${providerName}`;
     }
 
     return {
