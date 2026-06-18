@@ -138,7 +138,7 @@ ${banner}
       '\nTry your first AI-powered commit:\n' +
       chalk.magenta('   gg "your changes" --genie\n') +
       chalk.yellow("⚡ Unlock Genie powers:") +
-      '\n   gg config <your_api_key>\n' +
+      '\n   gg config --provider gemini\n' +
       chalk.cyan("Or just get started with a manual commit:") +
       '\n' + chalk.magenta('   gg "your commit message"\n') +
       chalk.blue("📖 Docs & guide: https://gitgenie.vercel.app/\n");
