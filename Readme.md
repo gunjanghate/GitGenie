@@ -676,8 +676,8 @@ Click `Fork` on GitHub to create your own copy of the repository.
 **_2️⃣ Clone Your Fork_**
 
 ```bash
-git clone https://github.com/<your-username>/gitgenie-cli.git
-cd gitgenie-cli
+git clone https://github.com/<your-username>/GitGenie.git
+cd GitGenie
 ```
 
 **_3️⃣ Install Dependencies_**
