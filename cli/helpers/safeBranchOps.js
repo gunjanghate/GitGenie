@@ -113,6 +113,12 @@ export async function getCommitInfo(commitHash) {
  * @param {string} branchName - Branch name to validate
  * @returns {Promise<boolean>} true if valid and available
  */
+
+/**
+ * Check if a branch name is valid and available
+ * @param {string} branchName - Branch name to validate
+ * @returns {Promise<boolean>} true if valid and available
+ */
 export async function validateBranchName(branchName) {
   if (!branchName || typeof branchName !== 'string') {
     return false;
@@ -128,7 +134,13 @@ export async function validateBranchName(branchName) {
     // Check if branch already exists
     await execa('git', ['show-ref', '--verify', `refs/heads/${branchName}`]);
     return false; // Branch exists
-  } catch {
-    return true; // Branch doesn't exist, name is available
+  } catch (error) {
+    const stderr = error.stderr || '';
+    // git's normal "ref not found" message contains this specific phrase
+    if (stderr.includes('not a valid ref')) {
+      return true; // genuinely available — ref simply doesn't exist
+    }
+    // anything else (not a repo, git missing, permissions, etc.) is a real failure
+    throw new Error(`Could not validate branch name: ${stderr || error.message}`);
   }
 }
