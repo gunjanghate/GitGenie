@@ -226,7 +226,13 @@ export function groupFilesHeuristic(filesData, maxGroups = 5) {
         const remainingSlots = maxGroups - groups.length;
         const allDirs = Object.keys(sourceByDir);
 
-        if (allDirs.length === 1 || remainingSlots === 1) {
+        if (remainingSlots <= 0 && groups.length > 0) {
+            // No budget left — fold source files into the last existing group
+            // instead of creating a new one, so maxGroups is never exceeded
+            groups[groups.length - 1].files.push(
+                ...filesByCategory.source.map(f => f.path)
+            );
+        } else if (allDirs.length === 1 || remainingSlots <= 1) {
             // All source files in one group
             groups.push({
                 files: filesByCategory.source.map(f => f.path),
