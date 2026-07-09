@@ -220,17 +220,28 @@ export async function getProviderApiKey(providerName) {
  */
 export async function saveProviderApiKey(providerName, apikey) {
     // Validate input
-    if (!apikey || typeof apikey !== 'string' || apikey.trim().length === 0) {
+    if (!apikey || typeof apikey !== 'string') {
         throw new Error('API key must be a non-empty string');
     }
 
     const trimmedApiKey = apikey.trim();
+
+    if (trimmedApiKey.length === 0) {
+        throw new Error('API key cannot be empty or contain only whitespace');
+    }
+
+    // Validate against provider-specific rules
+    const validated = validateApiKey(providerName, trimmedApiKey);
+    if (!validated) {
+        throw new Error(`Invalid API key format for provider "${providerName}". Please check your API key and try again.`);
+    }
+
     const keytarAccount = `${providerName}_api_key`;
 
     if (keytar) {
         try {
             // Try to save to keytar first (secure storage)
-            await keytar.setPassword(SERVICE_NAME, keytarAccount, trimmedApiKey);
+            await keytar.setPassword(SERVICE_NAME, keytarAccount, validated);
         } catch (error) {
             // Keytar failed, fallback to config.json (encrypted)
         }
@@ -246,7 +257,7 @@ export async function saveProviderApiKey(providerName, apikey) {
         if (!config.providers) config.providers = {};
 
         // Encrypt and save API key
-        const encryptedKey = await encrypt(trimmedApiKey);
+        const encryptedKey = await encrypt(validated);
         config.providers[providerName] = {
             apiKey: encryptedKey,
             configuredAt: new Date().toISOString()
@@ -561,12 +572,24 @@ export function registerConfigCommand(program) {
                     process.exit(1);
                 }
 
+                if (typeof apikey === 'string' && apikey.trim().length === 0) {
+                    console.error(chalk.red('Error: API key cannot be empty or contain only whitespace'));
+                    console.log(chalk.yellow('Please provide a valid API key for your provider'));
+                    console.log(chalk.cyan('Usage: gg config <your-api-key> --provider <name>'));
+                    process.exit(1);
+                }
+
                 await saveProviderApiKey(providerName, apikey);
                 console.log(chalk.green(`${providerName.charAt(0).toUpperCase() + providerName.slice(1)} API key saved successfully!`));
                 console.log(chalk.cyan(`${providerName} is now your active AI provider`));
             } catch (err) {
                 console.error(chalk.red('Failed to save configuration.'));
                 console.error(chalk.yellow(err.message));
+                console.log(chalk.gray(''));
+                console.log(chalk.cyan('Troubleshooting tips:'));
+                console.log(chalk.gray('  1. Ensure your API key is not empty or only whitespace'));
+                console.log(chalk.gray('  2. Check that you are using the correct provider name'));
+                console.log(chalk.gray('  3. Verify your API key format matches the expected pattern'));
             }
             process.exit(0);
         });
