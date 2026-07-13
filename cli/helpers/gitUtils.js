@@ -24,8 +24,8 @@ export function validateRemoteUrl(url) {
 
     const trimmed = url.trim();
     const httpsPattern = /^https:\/\/[a-zA-Z0-9.-]+(?::\d{1,5})?\/[^\s]+$/;
-    const sshScpPattern = /^git@[a-zA-Z0-9.-]+:[a-zA-Z0-9._\/-]+(?:\.git)?$/;
-    const sshUrlPattern = /^ssh:\/\/git@[a-zA-Z0-9.-]+(?::\d{1,5})?\/[a-zA-Z0-9._\/-]+(?:\.git)?$/;
+    const sshScpPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+:[a-zA-Z0-9._\/-]+(?:\.git)?$/;
+    const sshUrlPattern = /^ssh:\/\/[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+(?::\d{1,5})?\/[a-zA-Z0-9._\/-]+(?:\.git)?$/;
 
     return (httpsPattern.test(trimmed) || sshScpPattern.test(trimmed) || sshUrlPattern.test(trimmed))
         ? true

@@ -44,8 +44,10 @@ async function testStagesDeletions() {
     execSync('git add README.md', { stdio: 'ignore' });
     execSync('git commit -m "init"', { stdio: 'ignore' });
 
-    execSync('git rm --cached README.md', { stdio: 'ignore' });
     await rm(join(process.cwd(), 'README.md'), { force: true });
+
+    const before = await simpleGit().status();
+    assert(before.deleted.includes('README.md'), 'README.md should be unstaged deletion before stageAllFiles');
 
     await stageAllFiles();
 
